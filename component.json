@@ -5,13 +5,16 @@
   "version": "0.0.1",
   "keywords": [],
   "dependencies": {
-    "ksana/document":"*",
+    "ksana/document": "*",
     "ksanaforge/boot": "*",
     "brighthas/bootstrap": "*",
     "component/jquery": "*",
     "dhammagear-workshop/main": "*",
     "dhammagear-workshop/comp1": "*",
-    "ksanaforge/docview": "*"
+    "ksanaforge/docview": "*",
+    "ksanaforge/docsurface": "*",
+    "dhammagear-workshop/sampledoc": "*",
+    "dhammagear-workshop/contextmenu": "*"
   },
   "development": {},
   "paths": [

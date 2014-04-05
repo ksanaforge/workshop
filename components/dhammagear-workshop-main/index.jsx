@@ -1,5 +1,6 @@
 /** @jsx React.DOM */
-
+var sampledoc=Require("sampledoc");
+var contextmenu=Require("contextmenu");
 var docview=Require("docview"); 
 //sfxdfffasdfff
 var main = React.createClass({
@@ -27,11 +28,11 @@ var main = React.createClass({
   render: function() {
     return (
       <div>
-        <docview/>
         Hello,{this.state.bar}
         <button onClick={this.openImageViewer}>Open Image Viewer</button>
         <button onClick={this.closeImageViewer}>Close Image Viewer</button>
         <button onClick={this.moveImageViewer}>move window</button>
+        <docview doc={sampledoc} menu={contextmenu}/>
       </div>
     );
   }
