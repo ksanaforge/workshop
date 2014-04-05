@@ -1,0 +1,119 @@
+
+importer 
+  convert other format to workshop input format
+  this is done only once, and perhaps by expertise.
+  it might be fixed and stablized in the future, 
+  but keep it simple now.
+
+  so don't put it as part of the workshop
+
+workshop input format 
+  medium paging
+    add semanic paging
+    proof reading markups
+
+  convert to semanic paging for indexer
+
+
+screen
+
+must implement first **
+login screen **
+- Login before doing anything (first time need github)
+  if username <email> not in local storage
+
+home screen 
+- OPEN ( previous database) **
+- NEW  (external module)
+  1)- Import from 
+      - TEI lite/Accelon XML/MS-Word
+    - From scratch
+      - set initial total number of page (automatic page naming)
+    goto main working screen
+  2) goto setting screen, then goto main working screen
+
+setting screen (save setting in dg-proj.json)
+- initial configuration
+  - text folder / *git repo
+  - image folder
+  - language
+- setting
+  - layout
+
+main working screen
+  - go back to home
+  - task selector (decide where to store markup file)
+  - autosave
+  - commit work
+
+export and test screen
+- launch with standalone search 
+- build check 
+
+chrome browser only
+
+user login:
+  read local storage username
+  pop login screen if not found
+
+storage
+  write to disk directly
+
+
+git 
+ made chages
+ git stage
+ git commit --author="user <useremail>" -m "message"
+ git push --repo https://name:password@github.com/name/repo.git
+
+
+folder structure:
+/dhammagear-workshop = ~   application root
+~/dg/              binary database file
+~/projects.json    project location (absolute)
+~/markup.json      markup defination
+~/template.json
+
+project folder : git repo 
+project1/.gitignore png jpg gif
+project1/setting.json   project settings
+project1/tasks.json     task defination (task: [markup1,markup2..])
+files in json
+project1/inscription/[vol]/[chapter].json 
+project1/markup/[task]/[vol]/[chapter].json // acquire file lock
+project1/image/[vol]/[page].png  //not in github
+project1/tool/   conversion program here
+project1/js/     per project js files
+
+
+at first, each chapter is a "one page" document.
+
+working screen show one physical page and maybe one more line of next page.
+
+demo flow:
+1) open a project
+2) create some markup
+3) commit
+4) show it on github ( author different from committer)
+
+advance
+dynamic convert to logical markup (reflow)
+
+
+main markup screen.
+1) no caret
+2) when selection is made, show a menu underneath 
+   modify text  ( with reason)
+   from "A"
+   to   "XA"   // insert before
+   to   "AX"   // insert after
+   to   "X"    // modify
+   to   "'     // delete
+
+   apply markup   (no reason)
+   clear markup (within or overlap)
+
+3) store raw user event . ( time, author)
+4) markups are sorted by text offset.
+
+

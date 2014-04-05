@@ -1,0 +1,34 @@
+{
+  "name": "dhammagear-workshop",
+  "repo": "https://github.com/dhammagear/dhammagear-workshop.git",
+  "description": "hello world",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {
+    "ksana/document":"*",
+    "ksanaforge/boot": "*",
+    "brighthas/bootstrap": "*",
+    "component/jquery": "*",
+    "dhammagear-workshop/main": "*",
+    "dhammagear-workshop/comp1": "*",
+    "ksanaforge/docview": "*"
+  },
+  "development": {},
+  "paths": [
+    "components",
+    "../components",
+    "../node_modules/"
+  ],
+  "local": [
+    "facebook/react",
+    "mquan/cortex"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": [
+    "index.js"
+  ],
+  "styles": [
+    "index.css"
+  ]
+}
