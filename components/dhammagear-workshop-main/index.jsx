@@ -25,6 +25,11 @@ var main = React.createClass({
       window.open('imageviewer.html')
     );
     this.new_win.isFullscreen=true; 
+  }, 
+  onSelection:function(api,start,len) {
+    if (len==0) { 
+      api("toggleMarkup",start,len,{type:"fullstop"});  
+    } 
   },
   render: function() {
     return (
@@ -33,7 +38,12 @@ var main = React.createClass({
         <button onClick={this.openImageViewer}>Open Image Viewer</button>
         <button onClick={this.closeImageViewer}>Close Image Viewer</button>
         <button onClick={this.moveImageViewer}>move window</button>
-        <docview doc={sampledoc} menu={contextmenu} styles={styles}/>
+        <docview 
+          doc={sampledoc} 
+          menu={contextmenu} 
+          styles={styles}
+          onSelection={this.onSelection}
+        />
       </div>
     );
   }
