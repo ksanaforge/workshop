@@ -9,12 +9,12 @@
     "ksanaforge/boot": "*",
     "brighthas/bootstrap": "*",
     "component/jquery": "*",
+    "ksanaforge/docview": "*",
     "dhammagear-workshop/main": "*",
     "dhammagear-workshop/comp1": "*",
-    "ksanaforge/docview": "*",
-    "ksanaforge/docsurface": "*",
     "dhammagear-workshop/sampledoc": "*",
-    "dhammagear-workshop/contextmenu": "*"
+    "dhammagear-workshop/contextmenu": "*",
+    "dhammagear-workshop/styles": "*"
   },
   "development": {},
   "paths": [
