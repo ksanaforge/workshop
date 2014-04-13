@@ -3,29 +3,13 @@ var sampledoc=Require("sampledoc");
 var contextmenu=Require("contextmenu");
 var styles=Require("styles")[0].markups;
 var docview=Require("docview"); 
+var mainmenu=Require("mainmenu"); 
+var devmenu=Require("devmenu"); 
 //sfxdfffasdfff
 var main = React.createClass({
   getInitialState: function() {
     return {bar: "world2"};
   },
-  moveImageViewer:function() {
-    if (!this.new_win) return;
-    //this.new_win.resizeTo(100,100);
-    //this.new_win.resizeTo();
-    var d=this.new_win.window.document;
-    d.getElementById("test").innerHTML="test"
-  },
-  closeImageViewer:function() {
-    if (!this.new_win) return;
-    this.new_win.close();
-  },
-  openImageViewer:function() {
-    var gui = nodeRequire('nw.gui'); 
-    this.new_win = gui.Window.get(
-      window.open('imageviewer.html')
-    );
-    this.new_win.isFullscreen=true; 
-  }, 
   onSelection:function(api,start,len) {
     if (len==0) { 
       api("toggleMarkup",start,len,{type:"fullstop"});  
@@ -34,10 +18,8 @@ var main = React.createClass({
   render: function() {
     return (
       <div>
-         Hello,{this.state.bar}
-        <button onClick={this.openImageViewer}>Open Image Viewer</button>
-        <button onClick={this.closeImageViewer}>Close Image Viewer</button>
-        <button onClick={this.moveImageViewer}>move window</button>
+        <devmenu/>
+        <mainmenu/>
         <docview 
           doc={sampledoc} 
           menu={contextmenu} 
