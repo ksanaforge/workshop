@@ -1,6 +1,12 @@
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other"); 
+var BTN=React.createClass({
+  render:function() {
+    return <button className="btn btn-primary" onClick={this.props.onClick}>
+    {this.props.caption}</button>
+  }
+})
 var mainmenu = React.createClass({
   getInitialState: function() {
     return {bar: "world"};
@@ -15,14 +21,24 @@ var mainmenu = React.createClass({
       console.log(this.value);
     }, false);
   },
+  nextPage:function() {
+    this.props.action("next");
+  },
+  prevPage:function() {
+    this.props.action("prev");
+  },
   render: function() {
     return (
       <div>
         <input style={{"display":"none"}} ref="fileDialog" type="file" 
         accept=".json,.js" />
-        <button className="btn btn-primary" onClick={this.newFile}>New</button>
-        <button className="btn btn-primary" onClick={this.chooseFile}>Open</button>
-        <button className="btn btn-primary" onClick={this.saveFile}>Save</button>
+        <BTN caption="New" onClick={this.newFile}/>
+        <BTN caption="Open File" onClick={this.chooseFile}/>
+        <BTN caption="Open Markup" onClick={this.chooseFile}/>
+        <BTN caption="Save" onClick={this.saveFile}/>
+        　
+        <BTN caption="prev" onClick={this.prevPage}/>
+        <BTN caption="next" onClick={this.nextPage}/>        
       </div>
     );
   }

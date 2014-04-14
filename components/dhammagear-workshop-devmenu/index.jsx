@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 
-//var othercomponent=Require("other"); 
+
 var devmenu = React.createClass({
   getInitialState: function() {
     return {bar: "world"};
@@ -16,12 +16,19 @@ var devmenu = React.createClass({
     );
     this.new_win.isFullscreen=true; 
   }, 
+  openFiles:function() { //platform dependent
+
+  },
   moveWindow:function() {
     //if (!this.new_win) return;
     var gui = nodeRequire('nw.gui');
     var win = gui.Window.get();
-    win.moveTo(1920,-500)
-    win.resizeTo(1080,500);
+    //home
+    win.moveTo(1920,-500);
+     win.resizeTo(1080,500);
+    //office
+    win.moveTo(3020,-350)
+    win.resizeTo(800,700);
     //this.new_win.resizeTo();
     //var d=this.new_win.window.document;
     //d.getElementById("test").innerHTML="test"
@@ -30,6 +37,7 @@ var devmenu = React.createClass({
     return (
       <div>
         <button onClick={this.moveWindow}>move window</button>
+        <button onClick={this.openFiles}>open files</button>
       </div>
     );
   }
