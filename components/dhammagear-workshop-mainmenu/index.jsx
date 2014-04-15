@@ -41,7 +41,7 @@ var mainmenu = React.createClass({
         <BTN caption="Save Markup" onClick={this.saveMarkup}/>
         　
         <BTN caption="prev" onClick={this.prevPage}/>
-        <BTN caption="next" onClick={this.nextPage}/>        
+        <BTN caption="next" onClick={this.nextPage}/>
       </div>
     );
   }
