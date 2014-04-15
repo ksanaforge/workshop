@@ -13,7 +13,7 @@ var devmenu = React.createClass({
     var gui = nodeRequire('nw.gui'); 
     this.new_win = gui.Window.get(
       window.open('imageviewer.html')
-    );
+    ); 
     this.new_win.isFullscreen=true; 
   }, 
   openFiles:function() { //platform dependent

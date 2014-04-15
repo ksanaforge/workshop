@@ -28,6 +28,10 @@ var main = React.createClass({
       if (this.state.pageid<this.state.doc.pageCount-1) {
         this.setState({pageid: this.state.pageid+1});
       }
+    } else if (type==="savemarkup") {
+      persistent.saveMarkup(this.state.doc,function(){
+        console.log("saved!!!")
+      }); 
     }
   },
   page:function() {

@@ -24,6 +24,9 @@ var mainmenu = React.createClass({
   nextPage:function() {
     this.props.action("next");
   },
+  saveMarkup:function() {
+    this.props.action("savemarkup");
+  },
   prevPage:function() {
     this.props.action("prev");
   },
@@ -35,7 +38,7 @@ var mainmenu = React.createClass({
         <BTN caption="New" onClick={this.newFile}/>
         <BTN caption="Open File" onClick={this.chooseFile}/>
         <BTN caption="Open Markup" onClick={this.chooseFile}/>
-        <BTN caption="Save" onClick={this.saveFile}/>
+        <BTN caption="Save Markup" onClick={this.saveMarkup}/>
         　
         <BTN caption="prev" onClick={this.prevPage}/>
         <BTN caption="next" onClick={this.nextPage}/>        
