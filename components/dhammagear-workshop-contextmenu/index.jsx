@@ -1,14 +1,16 @@
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other");
-
-var contextmenu = React.createClass({
+var inlinemenu = {
+  "doubt":Require("inlinemenu_doubt")
+}
+var contextpopup = React.createClass({
   getInitialState: function() {
     return {selectedText:"",bar: "world"};
-  },
+  },  
   onPopup:function(context) {
     this.setState(context);
-  },
+  },  
   markup:function(e) {
     var type=(typeof e =="string")?e:e.target.attributes["data-markup"].value;
     this.props.onPageAction("addMarkup",this.state.selstart,this.state.sellength,{type:type})
@@ -28,6 +30,7 @@ var contextmenu = React.createClass({
       </button>
       <ul className="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.changeText}>Change Text</a></li>
+        <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="doubt">Doubt</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="noun">Noun</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="verb">Verb</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.clearMarkup}>Clear Markup</a></li>
@@ -39,4 +42,7 @@ var contextmenu = React.createClass({
     );
   }
 });
-module.exports=contextmenu;
+module.exports={
+  popup:contextpopup,
+  inline:inlinemenu,
+ };

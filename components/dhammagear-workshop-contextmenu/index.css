@@ -1,2 +1,12 @@
 .contextmenu {}
 #contextMenu { display:none;}
+
+span.inlinemenu {display: none;position:relative;left:-5px;top:10px}
+span.inlinemenu div {
+position:absolute;
+	top:0px;left:-1px;width:400px
+}
+
+span:hover + span.inlinemenu {  display: inline}
+span.inlinemenu:hover {display: inline;}
+

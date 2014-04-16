@@ -16,7 +16,8 @@
     "dhammagear-workshop/contextmenu": "*",
     "dhammagear-workshop/styles": "*",
     "dhammagear-workshop/mainmenu": "*",
-    "dhammagear-workshop/devmenu": "*"
+    "dhammagear-workshop/devmenu": "*",
+    "dhammagear-workshop/inlinemenu_doubt": "*"
   },
   "development": {},
   "paths": [

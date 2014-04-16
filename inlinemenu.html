@@ -2,21 +2,31 @@
 <head>
 <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf8">
 	<style>
-  .question {border-style:solid;border-color:red;border-width:1px;}
-	span#menu {position:relative;left:-30px;top:30px}
-	#menu span {position:absolute;width:200px}
-	button {opacity:0.65;}
-	button:hover {opacity:1;}
+
+
+span.hidden {display: none;position:relative;left:0px;top:-5px}
+span.hidden div {border-radius:5px;border-style:solid;border-color:gray;background:yellow;position:absolute;top:0px;left:-1px;width:200px}
+span#q {border-width:1px;border-style:solid;border-color:green;}
+span#q:hover {border-color:red;}
+span#q:hover + span.hidden {  display: inline}
+span.hidden:hover {display: inline;}
+
+
 	</style>
 </head>
 <body>
-<div style="font-size:200%">
-123456<br/>
-123456<br/>
-ab<span class="question">cd</span><span id="menu"><span><button>yes</button><button>no</button></span></span>efghijklm
+aaa<br/>
+<div>
+ABC<span id="q">To </span><span id="q">be </span><span id="q">fixed</span><span class="hidden"><div>
+resolve menu<input value="abc"></input><br/>
+<button>a</button><button>b</button></div></span>EFG
+<br/>other text,other text
+
+<span id="q">To </span><span id="q">be </span><span id="q">fixed2</span><span class="hidden"><div>
+resolve menu<input value="abc"></input><br/>
+<button>c</button><button>d</button></div></span>EFG
 <br/>
-123456<br/>
-123456<br/>
 </div>
+
 </body>
 </html>

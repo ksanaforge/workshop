@@ -2,6 +2,7 @@ var styles = [
   {
     "name":"part of speech",
     "markups": {
+      "doubt":  {"background-image":"url('svg/silvercircle.svg')" },
       "verb":  {"background-image":"url('svg/underline3.svg')" },
       "noun":  {"background-image":"url('svg/yellowcircle.svg')"} ,
       "abstract" :  {"background-image":"url('svg/silvercircle.svg')"},
