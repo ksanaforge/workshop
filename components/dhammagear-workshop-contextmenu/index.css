@@ -3,7 +3,7 @@
 
 span.inlinemenu {display: none;position:relative;left:-5px;top:10px}
 span.inlinemenu div {
-position:absolute;
+  position:absolute;
 	top:0px;left:-1px;width:400px
 }
 

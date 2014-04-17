@@ -2,7 +2,8 @@
 
 //var othercomponent=Require("other");
 var inlinemenu = {
-  "doubt":Require("inlinemenu_doubt")
+  "doubt":Require("inlinemenu_doubt"),
+  "changes":Require("inlinemenu_applychange")
 }
 var contextpopup = React.createClass({
   getInitialState: function() {

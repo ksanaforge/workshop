@@ -6,6 +6,13 @@ var styles = [
       "verb":  {"background-image":"url('svg/overline.svg')" },
       "verb_b":  {"background-image":"url('svg/overline_b.svg')" },
       "verb_e":  {"background-image":"url('svg/overline_e.svg')" },
+      
+      "changes":  {
+          'border-bottom': '2px solid orange'
+      },
+      //"changes":  {"background-image":"url('svg/overline.svg')" },
+      //"changes_b":  {"background-image":"url('svg/overline_b.svg')" },
+      //"changes_e":  {"background-image":"url('svg/overline_e.svg')" },
 
       "noun":  {"background-image":"url('svg/yellowcircle.svg')"} ,
       "abstract" :  {"background-image":"url('svg/silvercircle.svg')"},
