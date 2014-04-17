@@ -5,22 +5,31 @@ var inlinemenu_doubt = React.createClass({
   getInitialState: function() {
     return {bar: "world"};
   },
-  changetype:function(e) {
-    var type=(typeof e =="string")?e:e.target.attributes["data-markup"].value;
-    this.props.markup.type=type;
+  apply:function(e) {
+    this.props.markup.reason=this.refs.reason.getDOMNode().value;
+    this.props.markup.text=this.refs.inputtext.getDOMNode().value;
+    this.props.markup.insert=this.refs.cbinsert.getDOMNode().checked && this.props.markup.text.length;
     this.props.action("markupupdate");
+  },
+  clear:function() {
+    var n=this.refs.inputtext.getDOMNode();
+    n.focus();
+    n.value="";
   },
   render: function() {
     return ( 
       <div className="well">
-        <div className="input-group input-group-lg">
-          <span className="input-group-addon">$</span>
-          <input placeholder="Username" type="text" className="form-control" defaultValue={this.props.text}></input>
-          <span className="input-group-addon">.00</span>
-        </div><br/>
 
-        <button className="btn btn-success" onClick={this.changetype} data-markup="verb">Yes</button>
-        <button className="btn btn-danger" onClick={this.changetype} data-markup="noun">No</button>
+        <span className="input-group input-group-lg">
+          <span className="input-group-addon" onClick={this.clear}>{"\u2573"}</span>
+          <input ref="inputtext"  onMouseOver={this.movemove} className="focus form-control" defaultValue={this.props.markup.text}></input>
+          <span className="input-group-addon"><input onChange={this.apply} ref="cbinsert" defaultChecked={this.props.markup.insert} type="checkbox"/></span>
+        </span>
+        <span className="input-group input-group-lg">
+          <span className="input-group-addon">Reason</span>
+          <textarea rows="5" ref="reason" className="form-control" defaultValue={this.props.markup.reason}></textarea>
+        </span>
+        <button className="form-control btn btn-success" onClick={this.apply}>Apply</button>
       </div>
     );
   }

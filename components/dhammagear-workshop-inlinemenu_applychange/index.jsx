@@ -71,8 +71,8 @@ var inlinemenu_applychange = React.createClass({
   render: function() {
     return (
       <div className="well">
-      <button onClick={this.reset} className="form-control btn btn-large btn-warning">Reset</button>
       {this.choices("radioname")}
+      <button onClick={this.reset} className="form-control btn btn-large btn-warning">Reset</button>
       </div>
     );
   } 

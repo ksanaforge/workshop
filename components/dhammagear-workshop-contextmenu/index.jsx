@@ -39,7 +39,7 @@ var contextpopup = React.createClass({
         <li className="divider"></li>
         <li><a role="menuitem" tabIndex="-1" href="#">Extra Markup</a></li>
       </ul>
-    </div>
+    </div> 
     );
   }
 });

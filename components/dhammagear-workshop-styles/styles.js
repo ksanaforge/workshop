@@ -2,13 +2,13 @@ var styles = [
   {
     "name":"part of speech",
     "markups": {
-      "doubt":  {"background-image":"url('svg/silvercircle.svg')" },
+      "doubt":  {'border-bottom': '1px solid orange'},
       "verb":  {"background-image":"url('svg/overline.svg')" },
       "verb_b":  {"background-image":"url('svg/overline_b.svg')" },
       "verb_e":  {"background-image":"url('svg/overline_e.svg')" },
       
       "changes":  {
-          'border-bottom': '2px solid orange'
+          'border-bottom': '3px solid orange'
       },
       //"changes":  {"background-image":"url('svg/overline.svg')" },
       //"changes_b":  {"background-image":"url('svg/overline_b.svg')" },

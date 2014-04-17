@@ -6,7 +6,3 @@ span.inlinemenu div {
   position:absolute;
 	top:0px;left:-1px;width:400px
 }
-
-span:hover + span.inlinemenu {  display: inline}
-span.inlinemenu:hover {display: inline;}
-
