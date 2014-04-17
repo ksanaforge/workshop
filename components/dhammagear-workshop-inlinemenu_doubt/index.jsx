@@ -11,7 +11,7 @@ var inlinemenu_doubt = React.createClass({
     this.props.action("markupupdate");
   },
   render: function() {
-    return (
+    return ( 
       <div className="well">
         <div className="input-group input-group-lg">
           <span className="input-group-addon">$</span>
