@@ -14,7 +14,7 @@ var Change=React.createClass({
       <span data-date={this.props.now}>
       <span className="input-group input-group-lg">
         <span className="input-group-addon">{this.props.m.author}</span>
-        <input type="text" className="form-control" defaultValue={this.props.m.text} />
+        <input type="text" className="form-control" value={this.props.m.text} />
         <span className="input-group-addon">
           {React.DOM.input(opts)}
         </span>
