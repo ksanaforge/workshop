@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 
-//var othercomponent=Require("other"); 
+var contentnavigator=Require("contentnavigator"); 
 var BTN=React.createClass({
   render:function() {
     return <button className="btn btn-primary" onClick={this.props.onClick}>
@@ -21,27 +21,25 @@ var mainmenu = React.createClass({
       console.log(this.value);
     }, false);
   },
-  nextPage:function() {
-    this.props.action("next");
+  projectview:function() {
+      this.props.action("projectview");
   },
   saveMarkup:function() {
     this.props.action("savemarkup");
-  },
-  prevPage:function() {
-    this.props.action("prev");
-  },
+  },  
   render: function() {
     return (
       <div>
+        <button className="btn btn-success" onClick={this.projectview}>Project</button>
+
         <input style={{"display":"none"}} ref="fileDialog" type="file" 
         accept=".json,.js" />
-        <BTN caption="New" onClick={this.newFile}/>
+        <contentnavigator action={this.props.action}/>
+        
         <BTN caption="Open File" onClick={this.chooseFile}/>
         <BTN caption="Open Markup" onClick={this.chooseFile}/>
         <BTN caption="Save Markup" onClick={this.saveMarkup}/>
-        　
-        <BTN caption="prev" onClick={this.prevPage}/>
-        <BTN caption="next" onClick={this.nextPage}/>
+
       </div>
     );
   }

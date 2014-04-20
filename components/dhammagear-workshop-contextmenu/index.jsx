@@ -4,7 +4,7 @@
 var inlinemenu = {
   "doubt":Require("inlinemenu_doubt"),
   "changes":Require("inlinemenu_applychange")
-}
+} 
 var contextpopup = React.createClass({
   getInitialState: function() {
     return {selectedText:"",bar: "world"};

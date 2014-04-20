@@ -7,9 +7,12 @@
   "dependencies": {
     "ksana/document": "*",
     "ksanaforge/boot": "*",
+    "ksanaforge/tabui": "*",
     "brighthas/bootstrap": "*",
     "component/jquery": "*",
     "ksanaforge/docview": "*",
+    "ksanaforge/kse": "*",
+    "ksanaforge/kse-mixins": "*",
     "dhammagear-workshop/main": "*",
     "dhammagear-workshop/comp1": "*",
     "dhammagear-workshop/sampledoc": "*",
@@ -18,7 +21,13 @@
     "dhammagear-workshop/mainmenu": "*",
     "dhammagear-workshop/devmenu": "*",
     "dhammagear-workshop/inlinemenu_doubt": "*",
-    "dhammagear-workshop/inlinemenu_applychange": "*"
+    "dhammagear-workshop/inlinemenu_applychange": "*",
+    "dhammagear-workshop/projectlist": "*",
+    "dhammagear-workshop/createproject": "*",
+    "dhammagear-workshop/projectview": "*",
+    "dhammagear-workshop/referenceview": "*",
+    "dhammagear-workshop/contentnavigator": "*",
+    "dhammagear-workshop/about": "*"
   },
   "development": {},
   "paths": [
