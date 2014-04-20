@@ -10,11 +10,17 @@ var Change=React.createClass({
       "name":this.props.name,
       "onChange":this.props.select
     }
+    var isInsert=function(m) {
+      if (m.insert)
+        return <span className="input-group-addon"><input type="checkbox" checked="true"></input></span>
+      else return "";
+    }
     return (
       <span data-date={this.props.now}>
       <span className="input-group input-group-lg">
         <span className="input-group-addon">{this.props.m.author}</span>
         <input type="text" className="form-control" value={this.props.m.text} />
+        {isInsert(this.props.m)}
         <span className="input-group-addon">
           {React.DOM.input(opts)}
         </span>
