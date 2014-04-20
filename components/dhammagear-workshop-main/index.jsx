@@ -71,10 +71,11 @@ var main = React.createClass({
     this.state.tabs.push( {"id":"t5","caption":"About","content":about,"notclosable":true})
     this.forceUpdate();
   },
+   //<button onClick={this.newtab}>newtab</button>
   render:function() {
     return <div>
     <tabui ref="maintab" tabs={this.state.tabs}/>
-    <button onClick={this.newtab}>newtab</button>
+   
     </div>
   }
   /*
