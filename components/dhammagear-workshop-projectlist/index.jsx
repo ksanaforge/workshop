@@ -5,7 +5,7 @@
 var projectlist = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
-    return {bar: "world",projects:[]};
+    return {bar: "world",projects:[],selected:-1};
   },
   componentDidMount:function() {
     this.$yase('enumProject').done(function(res){
@@ -16,14 +16,27 @@ var projectlist = React.createClass({
     var cb=e.target.parentElement.querySelector('input');
     cb.checked=true;
   },
+  hoverProject:function(e) {
+    if (e.target.parentElement.nodeName!='TR') return;
+    var selected=e.target.parentElement.attributes['data-i'].value;
+    if (this.state.selected==selected) return;
+
+    this.setState({selected:selected});
+  },
   renderProject:function(p,i) {
-    return <tr className="warning" onClick={this.selectproject}>
+    var d=p.lastModified;
+    var formatted=d.getDay()+'/'+d.getMonth()+'/'+d.getFullYear();
+    return <tr data-i={i} className="warning" onMouseOver={this.hoverProject}>
       <td>{p.name}</td>
       <td>{p.desc}</td>
       <td>{p.author}</td>
-      <td>{p.lastModified.toString()}</td>
-      <td><input type="radio" name="projects" defaultChecked={i==0} /></td>
-      <td></td>
+      <td>{formatted}</td>
+      <td>
+        <span style={{visibility:this.state.selected==i?"":"hidden"}} >
+          <button onClick={this.editproject} className="btn btn-warning">Edit</button>
+          <button onClick={this.openproject} className="btn btn-success">Open</button>
+        </span>
+      </td>
     </tr>
   },
   sortHeader:function(e) {
@@ -37,7 +50,9 @@ var projectlist = React.createClass({
     this.forceUpdate();
   },
   openproject:function() {
-    //create new tab
+    var p=this.state.projects[this.state.selected];
+    if (!p) return;
+    this.props.action("openproject",p);
   },
   editproject:function() {
     //dialog
@@ -45,13 +60,14 @@ var projectlist = React.createClass({
   newproject:function() {
     //dialog
   },
+
   render: function() {
     return (
       <div>
-        
+        <button onClick={this.newproject} className="btn btn-warning ">New</button>                
         <table className="table table-bordered table-hover">
       <thead onClick={this.sortHeader}>
-        <tr>
+        <tr >
         <td data-field="name">Name</td>
         <td data-field="desc">Description</td>
         <td data-field="author">Author</td>
@@ -62,10 +78,6 @@ var projectlist = React.createClass({
         {this.state.projects.map(this.renderProject)}
         </tbody>
         </table>
-        <button onClick={this.newproject} className="btn btn-warning ">New</button>
-        <button onClick={this.openproject} className="btn btn-warning">Edit</button>
-        <button onClick={this.editproject} className="btn btn-large pull-right btn-success">Open</button>
-        
       </div>
     );
   }

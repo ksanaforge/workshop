@@ -18,7 +18,9 @@ var main = React.createClass({
   getInitialState: function() {
     var doc=persistent.open("../node_modules/ksana-document/test/daodejin.kd")
     var tabs=[ 
-      {"id":"t123","caption":"Projects","content":projectlist,"active":true,"notclosable":true},
+      {"id":"t123","caption":"Projects",
+        "content":projectlist,"active":true,"notclosable":true,
+        "params":{"action":this.action}},
    //   {"id":"t4","caption":"About","content":about,"notclosable":true},
 //      {"id":"t456","caption":"yyy","content":docview,"params":{"msg":"hello"}},
 //      {"id":"t789","caption":"zzz","content":rtab,"params":{"msg":"hello222"}}
@@ -48,6 +50,13 @@ var main = React.createClass({
       }); 
     } else if (type=="projectview") {
       this.setState({projectview:true});
+    } else if (type=="openproject") {
+      var proj=args[0];
+      var obj={"id":"p_"+proj.folder,"caption":proj.name,
+        "content":projectview,"active":true,
+        "params":{"action":this.action, project:proj}};
+
+      this.refs.maintab.newTab(obj);
     }
   },
   page:function() {
@@ -74,6 +83,7 @@ var main = React.createClass({
    //<button onClick={this.newtab}>newtab</button>
   render:function() {
     return <div>
+    <devmenu action={this.action}/>
     <tabui ref="maintab" tabs={this.state.tabs}/>
    
     </div>
