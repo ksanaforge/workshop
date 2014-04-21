@@ -7,7 +7,8 @@
   "window": {
     "toolbar": true,
     "width": 1060,
-    "height": 700
+    "height": 700,
+    "icon": "dhammagear.png"
   },
  "repositories": [
   {
