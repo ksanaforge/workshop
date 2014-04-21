@@ -31,12 +31,14 @@ var projectlist = React.createClass({
       <td>{p.desc}</td>
       <td>{p.author}</td>
       <td>{formatted}</td>
+      <td>0</td>
       <td>
         <span style={{visibility:this.state.selected==i?"":"hidden"}} >
-          <button onClick={this.editproject} className="btn btn-warning">Edit</button>
-          <button onClick={this.openproject} className="btn btn-success">Open</button>
+          <button onClick={this.editproject} className="btn btn-default">Edit</button>
+          <button onClick={this.openproject} className="btn btn-warning">Open</button>
         </span>
       </td>
+
     </tr>
   },
   sortHeader:function(e) {
@@ -64,14 +66,30 @@ var projectlist = React.createClass({
   render: function() {
     return (
       <div>
-        <button onClick={this.newproject} className="btn btn-warning ">New</button>                
+        <div className="row">
+        <div className="col-md-8">
+          <button onClick={this.newproject} className="btn btn-default ">Create New Project</button>
+        </div>
+
+        <div className="col-md-4">
+          <div className="input-group">
+          <input type="text" className="form-control"/>
+          <span className="input-group-btn">
+            <button className="btn btn-default" type="button">Go!</button>
+          </span>
+          </div>
+        </div>
+  
+        </div>
+
         <table className="table table-bordered table-hover">
       <thead onClick={this.sortHeader}>
         <tr >
         <td data-field="name">Name</td>
         <td data-field="desc">Description</td>
         <td data-field="author">Author</td>
-        <td data-field="lastmodified">last modified</td><td></td>
+        <td data-field="lastmodified">last modified</td>
+        <td data-field="hits">Hits</td>
       </tr>
       </thead>
         <tbody>

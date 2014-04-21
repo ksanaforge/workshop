@@ -32,6 +32,14 @@ var inlinemenu_doubt = React.createClass({
         <button className="form-control btn btn-success" onClick={this.apply}>Apply</button>
       </div>
     );
-  }
+  },
+  componentDidMount:function() {
+    this.refs.inputtext.getDOMNode().focus();
+    console.log('focus')
+  },
+  componentDidUpdate:function() {
+    this.refs.inputtext.getDOMNode().focus();
+    console.log('focus')
+  }  
 });
 module.exports=inlinemenu_doubt;

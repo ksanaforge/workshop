@@ -3,7 +3,7 @@ var bootstrap=Require('bootstrap');
 if (typeof $ =='undefined') $=Require('jquery');
 
 var tabui=Require("tabui"); 
-var contextmenu=Require("contextmenu");
+
 var styles=Require("styles")[0].markups;
 var docview=Require("docview"); 
 var mainmenu=Require("mainmenu"); 
@@ -12,20 +12,19 @@ var reference=Require("referenceview");
 var projectlist=Require("projectlist"); 
 var projectview=Require("projectview");
 var about=Require("about");
-var persistent=Require('ksana-document').persistent;
 //sfxdfffasdfff 
 var main = React.createClass({ 
   getInitialState: function() {
-    var doc=persistent.open("../node_modules/ksana-document/test/daodejin.kd")
+//    var doc=persistent.open("../node_modules/ksana-document/test/daodejin.kd")
     var tabs=[ 
-      {"id":"t123","caption":"Projects",
+      {"id":"t123","caption":"Home",
         "content":projectlist,"active":true,"notclosable":true,
         "params":{"action":this.action}},
    //   {"id":"t4","caption":"About","content":about,"notclosable":true},
 //      {"id":"t456","caption":"yyy","content":docview,"params":{"msg":"hello"}},
 //      {"id":"t789","caption":"zzz","content":rtab,"params":{"msg":"hello222"}}
     ];
-    return {bar: "world2", doc:doc, tabs:tabs,pageid:1};
+    return {bar: "world2", tabs:tabs,pageid:1};
   },
   onSelection:function(api,start,len) {
     if (len==0) { 
@@ -52,11 +51,21 @@ var main = React.createClass({
       this.setState({projectview:true});
     } else if (type=="openproject") {
       var proj=args[0];
-      var obj={"id":"p_"+proj.folder,"caption":proj.name,
+      var obj={"id":"p_"+proj.shortname,"caption":proj.name,
         "content":projectview,"active":true,
         "params":{"action":this.action, project:proj}};
 
       this.refs.maintab.newTab(obj);
+    } else if (type=="openfile") {
+      var file=args[0];
+      var proj=args[1];
+      var template=args[2] || "docview_default";
+      var docview=Require(template);
+
+      var obj={"id":"f_"+file.shortname,"caption":proj.shortname+'/'+file.shortname,
+        "content":docview,"active":true,
+        "params":{"action":this.action, file:file, project:proj}};
+        this.refs.maintab.newTab(obj);
     }
   },
   page:function() {

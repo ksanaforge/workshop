@@ -19,9 +19,6 @@ var contextpopup = React.createClass({
   clearMarkup:function() { 
     this.props.onPageAction("clearMarkups",this.state.selstart,this.state.sellength);
   },
-  changeText:function() {
-
-  },
   render: function() {
     return ( 
     <div className="dropdown">
