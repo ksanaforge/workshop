@@ -43,7 +43,7 @@ var fileList = React.createClass({
     var e=e.target;
     while (e) {
       if (e.attributes['data-i']) {
-        var i=e.attributes['data-i'].value;
+        var i=parseInt(e.attributes['data-i'].value);
         break;
       } else e=e.parentElement;
     }
@@ -80,20 +80,35 @@ var fileList = React.createClass({
 });
 var projectview = React.createClass({
   mixins: Require('kse-mixins'),
+  storekey:function() {
+    return this.props.project.shortname+'.lastopen';
+  },
   getInitialState: function() {
+    this.lastOpen=JSON.parse(localStorage.getItem(this.storekey()));
+    if (!this.lastOpen) this.lastOpen={folder:0,file:-1};
     return {bar: "world",folders:[],files:[]};
   },
   componentDidMount:function() {
     this.$yase("getProjectFolders",this.props.project.path).done(function(data){
       this.setState({folders:data});
-      if (data.length) this.selectFolder(0);
+      if (data.length) {
+        this.selectFolder( this.lastOpen.folder );
+      }
     })
   },
   selectFolder:function(i) {
     var f=this.state.folders[i];
     this.$yase("getProjectFiles",f).done(function(data){
       this.setState({files:data, selectedFolder:i});
+      if (this.lastOpen.file>-1) {
+        this.selectFile(this.lastOpen.file);
+      }
     })
+  },
+  saveLastOpen:function() {
+    var o={folder:this.state.selectedFolder,
+           file:this.state.selectedFile}
+    localStorage.setItem(this.storekey(),JSON.stringify(o));
   },
   selectFile:function(i) {
     var f=this.state.files[i];
@@ -101,6 +116,7 @@ var projectview = React.createClass({
     this.props.action("openfile",f,proj,
       this.props.project.templates.docview||"docview_default");
     this.setState({selectedFile:i});
+    this.saveLastOpen();
   },
   makescrollable:function() {
     var f=this.refs.folderList.getDOMNode();

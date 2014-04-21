@@ -8,7 +8,11 @@ var contentnavigator=Require("contentnavigator");
 var docview_tibetan = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
-    return {doc:null,pageid:1};
+    var pageid=parseInt(localStorage.getItem(this.storekey()))||1;
+    return {doc:null,pageid:pageid};
+  },
+  storekey:function() {
+    return this.props.project.shortname+'.pageid';
   },
   action:function(type) {
     var args = Array.prototype.slice.call(arguments);
@@ -44,6 +48,7 @@ var docview_tibetan = React.createClass({
   },
 
   render: function() {
+    localStorage.setItem(this.storekey(),this.state.pageid);
     return (
       <div>
         <contentnavigator page={this.page()} action={this.action}/>
