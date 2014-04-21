@@ -27,8 +27,8 @@ var devmenu = React.createClass({
     win.moveTo(1920,-500);
      win.resizeTo(1080,500);
     //office
-    win.moveTo(2720,-350)
-    win.resizeTo(1080,700);
+    win.moveTo(2620,-350)
+    win.resizeTo(1180,900);
     //this.new_win.resizeTo();
     //var d=this.new_win.window.document;
     //d.getElementById("test").innerHTML="test"

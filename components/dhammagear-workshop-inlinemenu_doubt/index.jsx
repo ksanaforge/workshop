@@ -35,11 +35,9 @@ var inlinemenu_doubt = React.createClass({
   },
   componentDidMount:function() {
     this.refs.inputtext.getDOMNode().focus();
-    console.log('focus')
   },
   componentDidUpdate:function() {
     this.refs.inputtext.getDOMNode().focus();
-    console.log('focus')
   }  
 });
 module.exports=inlinemenu_doubt;
