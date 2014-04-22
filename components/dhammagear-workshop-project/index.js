@@ -6,7 +6,7 @@ var tibetan={
 		"suggest":Require("inlinemenu_suggest_tibetan"),
 		"changes":Require("inlinemenu_applychange")
 	},
-	"contextmenu" : Require("contextmenu")
+	"contextmenu" : Require("contextmenu_tibetan")
 }
 templates={tibetan:tibetan};
 var openProject=function(proj) {

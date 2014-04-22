@@ -58,7 +58,7 @@ var fileList = React.createClass({
       var f=this.props.files[i];
       if (i==this.state.selected) cls="warning"; else cls="";
       out.push(<tr key={'f'+i} onMouseMove={this.hoverFile} className={cls} data-i={i}>
-        <td>{f.shortname}
+        <td>{f.shortname.substring(0,f.shortname.length-3)}
         <span className="pull-right" style={{visibility:this.state.selected==i?"":"hidden"}}>
         <button className="btn btn-warning" onClick={this.select}>Open</button>
         </span>

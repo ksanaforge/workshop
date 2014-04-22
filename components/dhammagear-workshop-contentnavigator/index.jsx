@@ -41,7 +41,7 @@ var contentnavigator = React.createClass({
     if (!this.props.page) return <div></div>
     return (
       <div className="row">
-      <div className="col-md-4">
+      <div className="col-md-3">
         <div className="input-group">
              <span className="input-group-btn">
               <button className="btn btn-default" onClick={this.firstPage}>First</button>

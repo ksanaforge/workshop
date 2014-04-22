@@ -5,6 +5,7 @@ var contextmenu=Require("contextmenu");
 var styles=Require("styles")[0].markups;
 var docview=Require("docview");
 var contentnavigator=Require("contentnavigator");
+var imageview=Require("imageview");
 var docview_tibetan = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
@@ -56,7 +57,11 @@ var docview_tibetan = React.createClass({
      // api("toggleMarkup",start,len,{type:"fullstop"});  
     } 
   },
-
+  imagefilename:function() {
+    var page=this.page();
+    if (!page)return ""
+    return this.page().name;
+  },
   render: function() {
     localStorage.setItem(this.storekey(),this.state.pageid);
     return (
@@ -69,6 +74,7 @@ var docview_tibetan = React.createClass({
             styles={styles}
             onSelection={this.onSelection}
           ></docview>
+        <imageview project={this.props.project} src={this.imagefilename()}/>
       </div>
     );
   }

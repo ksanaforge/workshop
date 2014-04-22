@@ -37,7 +37,6 @@ var devmenu = React.createClass({
     return (
       <div>
         <button onClick={this.moveWindow}>move window</button>
-        <button onClick={this.openFiles}>open files</button>
       </div>
     );
   }
