@@ -29,7 +29,9 @@
     "dhammagear-workshop/contentnavigator": "*",
     "dhammagear-workshop/about": "*",
     "dhammagear-workshop/docview_tibetan": "*",
-    "dhammagear-workshop/scratchpad": "*"
+    "dhammagear-workshop/scratchpad": "*",
+    "dhammagear-workshop/project": "*",
+    "dhammagear-workshop/inlinemenu_suggest_tibetan": "*"
   },
   "development": {},
   "paths": [

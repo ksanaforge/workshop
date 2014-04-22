@@ -1,6 +1,8 @@
  /** @jsx React.DOM */
+/*
+TODO save folder name and file name string in localstorage, instead of number
+*/
 
-//var othercomponent=Require("other"); 
 var fileControls=React.createClass({
   render:function() {
     return <button className="btn">Create New File</button>
@@ -20,7 +22,7 @@ var folderList = React.createClass({
     for (var i=0;i<this.props.folders.length;i++) {
       var f=this.props.folders[i];
       if (i==this.state.selected) cls="warning"; else cls="";
-      out.push(<tr className={cls} onClick={this.select} data-i={i}>
+      out.push(<tr key={'d'+i} className={cls} onClick={this.select} data-i={i}>
         <td>{f.shortname}</td>
         </tr>);
     };
@@ -55,7 +57,7 @@ var fileList = React.createClass({
     for (var i=0;i<this.props.files.length;i++) {
       var f=this.props.files[i];
       if (i==this.state.selected) cls="warning"; else cls="";
-      out.push(<tr onMouseMove={this.hoverFile} className={cls} data-i={i}>
+      out.push(<tr key={'f'+i} onMouseMove={this.hoverFile} className={cls} data-i={i}>
         <td>{f.shortname}
         <span className="pull-right" style={{visibility:this.state.selected==i?"":"hidden"}}>
         <button className="btn btn-warning" onClick={this.select}>Open</button>
@@ -80,43 +82,29 @@ var fileList = React.createClass({
 });
 var projectview = React.createClass({
   mixins: Require('kse-mixins'),
-  storekey:function() {
-    return this.props.project.shortname+'.lastopen';
-  },
   getInitialState: function() {
-    this.lastOpen=JSON.parse(localStorage.getItem(this.storekey()));
-    if (!this.lastOpen) this.lastOpen={folder:0,file:-1};
     return {bar: "world",folders:[],files:[]};
   },
   componentDidMount:function() {
-    this.$yase("getProjectFolders",this.props.project.path).done(function(data){
+    this.$ksana("getProjectFolders",this.props.project).done(function(data){
       this.setState({folders:data});
       if (data.length) {
-        this.selectFolder( this.lastOpen.folder );
+        this.selectFolder( 0 );
       }
-    })
+    });
   },
   selectFolder:function(i) {
     var f=this.state.folders[i];
-    this.$yase("getProjectFiles",f).done(function(data){
-      this.setState({files:data, selectedFolder:i});
-      if (this.lastOpen.file>-1) {
-        this.selectFile(this.lastOpen.file);
-      }
+    this.$ksana("getProjectFiles",f).done(function(data){
+      this.setState({files:data});
     })
-  },
-  saveLastOpen:function() {
-    var o={folder:this.state.selectedFolder,
-           file:this.state.selectedFile}
-    localStorage.setItem(this.storekey(),JSON.stringify(o));
   },
   selectFile:function(i) {
     var f=this.state.files[i];
-    var proj=this.state.folders[this.state.selectedFolder];
-    this.props.action("openfile",f,proj,
-      this.props.project.templates.docview||"docview_default");
+    this.props.action("openfile",f,this.props.project,
+      this.props.project.tmpl.docview||"docview_default");
+
     this.setState({selectedFile:i});
-    this.saveLastOpen();
   },
   makescrollable:function() {
     var f=this.refs.folderList.getDOMNode();

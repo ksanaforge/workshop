@@ -8,7 +8,7 @@ var projectlist = React.createClass({
     return {bar: "world",projects:[],selected:-1};
   },
   componentDidMount:function() {
-    this.$yase('enumProject').done(function(res){
+    this.$ksana('enumProject').done(function(res){
       this.setState({projects:res});
     })
   },
@@ -26,7 +26,7 @@ var projectlist = React.createClass({
   renderProject:function(p,i) {
     var d=p.lastModified;
     var formatted=d.getDay()+'/'+d.getMonth()+'/'+d.getFullYear();
-    return <tr data-i={i} className="warning" onMouseOver={this.hoverProject}>
+    return <tr key={'p'+i} data-i={i} className="warning" onMouseOver={this.hoverProject}>
       <td>{p.name}</td>
       <td>{p.desc}</td>
       <td>{p.author}</td>

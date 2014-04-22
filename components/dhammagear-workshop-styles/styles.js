@@ -2,7 +2,7 @@ var styles = [
   {
     "name":"part of speech",
     "markups": {
-      "doubt":  {'border-bottom': '1px solid orange'},
+      "suggest":  {'border-bottom': '1px solid orange'},
       "verb":  {"background-image":"url('svg/overline.svg')" },
       "verb_b":  {"background-image":"url('svg/overline_b.svg')" },
       "verb_e":  {"background-image":"url('svg/overline_e.svg')" },

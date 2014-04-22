@@ -14,6 +14,11 @@ var docview_tibetan = React.createClass({
   storekey:function() {
     return this.props.project.shortname+'.pageid';
   },
+  saveMarkup:function() {
+    this.$ksana("saveMarkup",{doc:this.state.doc},function(data){
+      console.log(data);
+    });
+  },
   action:function(type) {
     var args = Array.prototype.slice.call(arguments);
     var type=args.shift();
@@ -29,11 +34,16 @@ var docview_tibetan = React.createClass({
       this.setState({pageid:this.state.doc.pageCount-1});
     } else if (type=="gopage") {
       var page=this.state.doc.pageByName(args[0])
-      if (page) this.setState({pageid:page.id});
+      if (page) {
+        this.setState({pageid:page.id});
+        this.forceUpdate();
+      }
     }
+
+    this.saveMarkup();
   },
   componentDidMount:function() {
-    this.$yase("openDocument",this.props.file.path).done(function(data){
+    this.$yase("openDocument",this.props.file.filename).done(function(data){
       this.setState({doc:data});
     });
   },
@@ -54,7 +64,7 @@ var docview_tibetan = React.createClass({
         <contentnavigator page={this.page()} action={this.action}/>
         <docview 
             page={this.page()} 
-            tokenizer={this.props.project.tokenizer}
+            template={this.props.project.tmpl}
             menu={contextmenu} 
             styles={styles}
             onSelection={this.onSelection}

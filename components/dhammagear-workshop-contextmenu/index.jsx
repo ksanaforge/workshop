@@ -1,11 +1,6 @@
 /** @jsx React.DOM */
 
-//var othercomponent=Require("other");
-var inlinemenu = {
-  "doubt":Require("inlinemenu_doubt"),
-  "changes":Require("inlinemenu_applychange")
-} 
-var contextpopup = React.createClass({
+var contextmenu = React.createClass({
   getInitialState: function() {
     return {selectedText:"",bar: "world"};
   },  
@@ -28,7 +23,7 @@ var contextpopup = React.createClass({
       </button>
       <ul className="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.changeText}>Change Text</a></li>
-        <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="doubt">Doubt</a></li>
+        <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="suggest">Suggest</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="noun">Noun</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="verb">Verb</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.clearMarkup}>Clear Markup</a></li>
@@ -40,7 +35,4 @@ var contextpopup = React.createClass({
     );
   }
 });
-module.exports={
-  popup:contextpopup,
-  inline:inlinemenu,
- };
+module.exports=contextmenu;

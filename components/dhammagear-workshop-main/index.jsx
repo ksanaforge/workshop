@@ -11,6 +11,7 @@ var devmenu=Require("devmenu");
 var reference=Require("referenceview"); 
 var projectlist=Require("projectlist"); 
 var projectview=Require("projectview");
+var project=Require("project");
 var about=Require("about");
 //sfxdfffasdfff 
 var main = React.createClass({ 
@@ -43,17 +44,14 @@ var main = React.createClass({
       if (this.state.pageid<this.state.doc.pageCount-1) {
         this.setState({pageid: this.state.pageid+1});
       }
-    } else if (type==="savemarkup") {
-      persistent.saveMarkup(this.state.doc,function(){
-        console.log("saved!!!")
-      }); 
     } else if (type=="projectview") {
       this.setState({projectview:true});
     } else if (type=="openproject") {
       var proj=args[0];
+      project.openProject(proj);
       var obj={"id":"p_"+proj.shortname,"caption":proj.name,
         "content":projectview,"active":true,
-        "params":{"action":this.action, project:proj}};
+        "params":{"action":this.action, "project":proj}};
 
       this.refs.maintab.newTab(obj);
     } else if (type=="openfile") {
@@ -62,7 +60,8 @@ var main = React.createClass({
       var template=args[2] || "docview_default";
       var docview=Require(template);
 
-      var obj={"id":"f_"+file.shortname,"caption":proj.shortname+'/'+file.shortname,
+      var obj={"id":"f_"+file.shortname,
+        "caption":proj.shortname+'/'+file.withfoldername,
         "content":docview,"active":true,
         "params":{"action":this.action, file:file, project:proj}};
         this.refs.maintab.newTab(obj);
@@ -94,32 +93,7 @@ var main = React.createClass({
     return <div>
     <devmenu action={this.action}/>
     <tabui ref="maintab" tabs={this.state.tabs}/>
-   
     </div>
   }
-  /*
-  render: function() {
-    return (
-      <div>
-        {this.projectview()}
-        <devmenu action={this.action}/>
-        <mainmenu action={this.action}/>
-        <div className="row">
-          <div className="col-md-8">
-          <docview 
-            page={this.page()} 
-            menu={contextmenu} 
-            styles={styles}
-            onSelection={this.onSelection}
-          ></docview>
-          </div>
-          <div  className="col-md-4">
-          <reference/>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  */
 });
 module.exports=main;
