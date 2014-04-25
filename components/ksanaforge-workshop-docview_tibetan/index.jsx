@@ -62,6 +62,9 @@ var docview_tibetan = React.createClass({
     if (!page)return ""
     return this.page().name;
   },
+  componentDidUpdate:function() {
+    this.props.action("openimage",this.imagefilename(),this.props.project);
+  },
   render: function() {
     localStorage.setItem(this.storekey(),this.state.pageid);
     return (
@@ -74,7 +77,6 @@ var docview_tibetan = React.createClass({
             styles={styles}
             onSelection={this.onSelection}
           ></docview>
-        <imageview project={this.props.project} src={this.imagefilename()}/>
       </div>
     );
   }

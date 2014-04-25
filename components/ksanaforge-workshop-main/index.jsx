@@ -6,6 +6,7 @@ var tabui=Require("tabui");
 
 var styles=Require("styles")[0].markups;
 var docview=Require("docview"); 
+var imageview=Require("imageview");
 var mainmenu=Require("mainmenu"); 
 var devmenu=Require("devmenu"); 
 var reference=Require("referenceview"); 
@@ -13,6 +14,7 @@ var projectlist=Require("projectlist");
 var projectview=Require("projectview");
 var project=Require("project");
 var about=Require("about");
+var searchmain=Require("searchmain");
 //sfxdfffasdfff 
 var main = React.createClass({ 
   mixins:Require('kse-mixins'),
@@ -26,7 +28,13 @@ var main = React.createClass({
 //      {"id":"t456","caption":"yyy","content":docview,"params":{"msg":"hello"}},
 //      {"id":"t789","caption":"zzz","content":rtab,"params":{"msg":"hello222"}}
     ];
-    return {bar: "world2", tabs:tabs,pageid:1};
+    var auxs=[
+      {"id":"searchtab","caption":"search","content":searchmain,
+      "active":true,"notclosable":true},
+
+      
+    ]
+    return {bar: "world2", tabs:tabs, auxs:auxs,pageid:1};
   },
   onSelection:function(api,start,len) {
     if (len==0) { 
@@ -65,12 +73,20 @@ var main = React.createClass({
       var proj=args[1];
       var template=args[2] || "docview_default";
       var docview=Require(template);
-
+ 
       var obj={"id":"f_"+file.shortname,
         "caption":proj.shortname+'/'+file.withfoldername,
         "content":docview,"active":true,
         "params":{"action":this.action, file:file, project:proj}};
         this.refs.maintab.newTab(obj);
+    } else if (type=="openimage") {
+      var file=args[0];
+      var proj=args[1];
+      var obj={"id":"sourceimage",
+        "caption":'source',
+        "content":imageview,"active":true,
+        "params":{"action":this.action, src:file, project:proj}};
+        this.refs.auxtab.newTab(obj);
     }
   },
   page:function() {
@@ -99,10 +115,19 @@ var main = React.createClass({
     if (this.state.developer)return <devmenu action={this.action}/>;
     else return null;
   },
+  makescrollable:function() {
+    var f=this.refs.maintab.getDOMNode();
+    //f.style.height='50%';
+    f.style.height=document.body.offsetHeight/2-f.getBoundingClientRect().top;
+  },
+  componentDidUpdate:function() {
+    this.makescrollable();
+  },
   render:function() {
     return <div>
     {this.showdevmenu()}
     <tabui ref="maintab" tabs={this.state.tabs}/>
+    <tabui ref="auxtab" tabs={this.state.auxs}/>
     </div>
   }
 });

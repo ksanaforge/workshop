@@ -20,10 +20,11 @@ var imageview = React.createClass({
   render: function() {
     return (
       <div>
-        <button className="btn btn-default">image control buttons</button>
+        
         <img className="sourceimage" src={this.expandFileName(this.props.src)}/>
       </div>
     );
   }
 }); 
+//<button className="btn btn-default">image control buttons</button>
 module.exports=imageview;

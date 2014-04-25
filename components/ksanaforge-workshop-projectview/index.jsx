@@ -106,15 +106,20 @@ var projectview = React.createClass({
 
     this.setState({selectedFile:i});
   },
+  
   makescrollable:function() {
+    var tabheight=this.getDOMNode().getBoundingClientRect().height;
     var f=this.refs.folderList.getDOMNode();
-    f.style.height=document.body.offsetHeight-f.getBoundingClientRect().top;
+    f.style.height='90%';//tabheight-f.getBoundingClientRect().top;
+//    f.style.height=document.body.offsetHeight/2-f.getBoundingClientRect().top;
     f=this.refs.fileList.getDOMNode();
-    f.style.height=document.body.offsetHeight-f.getBoundingClientRect().top;
+//    f.style.height=document.body.offsetHeight/2-f.getBoundingClientRect().top;
+    f.style.height='90%';//f.style.height=tabheight- f.getBoundingClientRect().top;
   },
   componentDidUpdate:function() {
     this.makescrollable();
   },
+  
   render: function() {
     return (
       <div className="projectview">

@@ -1,2 +1,2 @@
 var boot=require("boot");
-boot("dhammagear-workshop","main","main");
+boot("ksanaforge-workshop","main","main");
