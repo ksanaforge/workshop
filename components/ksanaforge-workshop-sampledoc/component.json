@@ -1,0 +1,13 @@
+{
+  "name": "sampledoc",
+  "repo": "ksanaforge-workshop/sampledoc",
+  "description": "hello world",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {},
+  "development": {},
+  "license": "MIT",
+  "main": "sample.js",
+  "scripts": ["sample.js"],
+  "styles": []
+}

@@ -1,0 +1,13 @@
+{
+  "name": "styles",
+  "repo": "ksanaforge-workshop/styles",
+  "description": "hello world",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {},
+  "development": {},
+  "license": "MIT",
+  "main": "styles.js",
+  "scripts": ["styles.js"],
+  "styles": []
+}
