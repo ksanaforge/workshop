@@ -55,6 +55,7 @@ var projectlist = React.createClass({
     var p=this.state.projects[this.state.selected];
     if (!p) return;
     this.props.action("openproject",p);
+    //open recently edited file automatically
   },
   editproject:function() {
     //dialog
@@ -68,7 +69,7 @@ var projectlist = React.createClass({
       <div>
         <div className="row">
         <div className="col-md-8">
-          <button onClick={this.newproject} className="btn btn-default ">Create New Project</button>
+          <button onClick={this.newproject} className="btn btn-default">Create New Project</button>
         </div>
 
         <div className="col-md-4">

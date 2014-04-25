@@ -1,0 +1,13 @@
+stand alone mode
+save markup with username suffix ?
+
+username store in localStorage
+
+send markup inform to server (with user name)
+add markup .modify markup , delete markup 
+retrive renewed markups of same page if changed. (each markup update bump version number)
+
+create index
+search
+
+merging markup at same position from different users

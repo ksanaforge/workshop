@@ -15,6 +15,7 @@ var project=Require("project");
 var about=Require("about");
 //sfxdfffasdfff 
 var main = React.createClass({ 
+  mixins:Require('kse-mixins'),
   getInitialState: function() {
 //    var doc=persistent.open("../node_modules/ksana-document/test/daodejin.kd")
     var tabs=[ 
@@ -31,6 +32,11 @@ var main = React.createClass({
     if (len==0) { 
       api("toggleMarkup",start,len,{type:"fullstop"});  
     } 
+  },
+  componentDidMount:function() {
+    this.$ksana("getUserSettings").done(function(data){
+      this.setState(data);
+    });
   },
   action:function() {
     var args = Array.prototype.slice.call(arguments);
@@ -89,9 +95,13 @@ var main = React.createClass({
     this.forceUpdate();
   },
    //<button onClick={this.newtab}>newtab</button>
+  showdevmenu:function() {
+    if (this.state.developer)return <devmenu action={this.action}/>;
+    else return null;
+  },
   render:function() {
     return <div>
-    <devmenu action={this.action}/>
+    {this.showdevmenu()}
     <tabui ref="maintab" tabs={this.state.tabs}/>
     </div>
   }
