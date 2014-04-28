@@ -2,13 +2,10 @@
 
 //var othercomponent=Require("other"); 
 var inlinemenu_suggest_tibetan = React.createClass({
-  getInitialState: function() {
-    return {bar: "world"};
-  },
   apply:function(e) {
-    this.props.markup.reason=this.refs.reason.getDOMNode().value;
-    this.props.markup.text=this.refs.inputtext.getDOMNode().value;
-    this.props.markup.insert=this.refs.cbinsert.getDOMNode().checked && this.props.markup.text.length;
+    this.markup().reason=this.refs.reason.getDOMNode().value;
+    this.markup().text=this.refs.inputtext.getDOMNode().value;
+    this.markup().insert=this.refs.cbinsert.getDOMNode().checked && this.markup().text.length;
     this.props.action("markupupdate");
   },
   clear:function() {
@@ -16,20 +13,34 @@ var inlinemenu_suggest_tibetan = React.createClass({
     n.focus();
     n.value="";
   },
+  remove:function() {
+    this.props.action("removemarkup",this.props.markup);
+  },
+  markup:function() {
+    return this.props.markup.payload;
+  },
   render: function() {
     return ( 
       <div className="well">
         <span>{this.props.text}</span>
         <span className="input-group input-group-lg">
           <span className="input-group-addon" onClick={this.clear}>{"\u2573"}</span>
-          <input ref="inputtext"  onMouseOver={this.movemove} className="focus form-control" defaultValue={this.props.markup.text}></input>
-          <span className="input-group-addon"><input onChange={this.apply} ref="cbinsert" defaultChecked={this.props.markup.insert} type="checkbox"/></span>
+          <input ref="inputtext"  onMouseOver={this.movemove} className="focus form-control" defaultValue={this.markup().text}></input>
+          <span className="input-group-addon"><input onChange={this.apply} ref="cbinsert" defaultChecked={this.markup().insert} type="checkbox"/></span>
         </span>
         <span className="input-group input-group-lg">
           <span className="input-group-addon">Reason</span>
-          <textarea rows="5" ref="reason" className="form-control" defaultValue={this.props.markup.reason}></textarea>
+          <textarea rows="5" ref="reason" className="form-control" defaultValue={this.markup().reason}></textarea>
         </span>
-        <button className="form-control btn btn-success" onClick={this.apply}>Apply</button>
+        <span className="row">
+          <span className="col-sm-4">
+            <button className="form-control btn btn-danger" onClick={this.remove}>Remove</button>
+          </span>
+          <span className="col-sm-8">
+            <button className="pull-right form-control btn btn-success" onClick={this.apply}>Apply</button>
+          </span>
+        </span>
+
       </div>
     );
   },

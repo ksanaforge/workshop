@@ -4,7 +4,8 @@ var tibetan={
 	"tokenize": Require('ksana-document').tokenizers.tibetan,
 	"inlinemenu": {
 		"suggest":Require("inlinemenu_suggest_tibetan"),
-		"changes":Require("inlinemenu_applychange")
+		"revision":Require("inlinemenu_suggest_tibetan"),
+		"suggests":Require("inlinemenu_applychange")
 	},
 	"contextmenu" : Require("contextmenu_tibetan")
 }

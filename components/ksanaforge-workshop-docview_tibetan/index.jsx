@@ -23,6 +23,7 @@ var docview_tibetan = React.createClass({
   action:function(type) {
     var args = Array.prototype.slice.call(arguments);
     var type=args.shift();
+    var save=true;
 
     var pageid=this.state.pageid;
     if (type=="next") {
@@ -37,11 +38,18 @@ var docview_tibetan = React.createClass({
       var page=this.state.doc.pageByName(args[0])
       if (page) {
         this.setState({pageid:page.id});
-        this.forceUpdate();
+        //this.forceUpdate();
       }
+    } else if (type=="markupupdate") {
+      this.state.doc.markDirty();
+      save=false;
+    } else if (type=="removemarkup") {
+      var markup=args[0];
+      this.page().clearMarkups(markup.start,markup.len,this.props.user.name);
+      this.forceUpdate();
+      save=false;
     }
-
-    this.saveMarkup();
+    if (save) this.saveMarkup();
   },
   componentDidMount:function() {
     this.$yase("openDocument",this.props.file.filename).done(function(data){
@@ -72,9 +80,10 @@ var docview_tibetan = React.createClass({
         <contentnavigator page={this.page()} action={this.action}/>
         <docview 
             page={this.page()} 
+            user={this.props.user}
             template={this.props.project.tmpl}
-            menu={contextmenu} 
             styles={styles}
+            action={this.action}
             onSelection={this.onSelection}
           ></docview>
       </div>

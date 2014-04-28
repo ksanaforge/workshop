@@ -5,7 +5,7 @@
   "main": "index.html",
   "single-instance":true,
   "window": {
-    "toolbar": false,
+    "toolbar": true,
     "width": 1400,
     "height": 800,
     "icon": "dhammagear.png"

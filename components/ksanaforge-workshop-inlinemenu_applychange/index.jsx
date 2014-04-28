@@ -5,10 +5,9 @@
 var Change=React.createClass({
   render:function() {
     var opts={
-      "type":"radio" , 
       "data-choice":this.props.i, 
       "name":this.props.name,
-      "onChange":this.props.select
+      "onClick":this.props.select
     }
     var isInsert=function(m) {
       if (m.insert)
@@ -22,7 +21,7 @@ var Change=React.createClass({
         <input type="text" className="form-control" value={this.props.m.text} />
         {isInsert(this.props.m)}
         <span className="input-group-addon">
-          {React.DOM.input(opts)}
+          {React.DOM.button(opts,"Accept")}
         </span>
       </span>
         {this.props.m.reason}
@@ -34,32 +33,35 @@ var inlinemenu_applychange = React.createClass({
   getInitialState: function() {
     return {now : new Date()};
   },
-  select:function(e) {
-    this.props.markup.selected=parseInt(e.target.attributes['data-choice'].value)+1;
-    this.props.action("markupupdate");
-    this.setState({now:new Date()});    
+  markup:function() {
+    return this.props.markup.payload;
   },
-  reset:function() {
-    this.props.markup.selected=0;
-    this.setState({now:new Date()});
-    this.props.action("markupupdate");
+  select:function(e) {
+    var selected=parseInt(e.target.attributes['data-choice'].value);
+    var accepted=this.markup().choices[selected];
+    var payload={author:this.props.user.name, 
+        insert:accepted.insert ,text:accepted.text, 
+        contributor:accepted.author};
+    var newmarkup={start:this.props.markup.start,len:this.props.markup.len,
+      payload:payload};
+    this.props.action("newmarkup",newmarkup);
+    
   },
   choices:function(name) {
     var out=[];
-    for (var i=0;i<this.props.markup.choices.length;i++) {
-      var checked= ( (this.props.markup.selected-1)===i);//this.props.markup
+    for (var i=0;i<this.markup().choices.length;i++) {
       out.push(Change({
         ref:'o'+i,
         now:this.state.now,
         select:this.select,
-        m:this.props.markup.choices[i],
-        i:i,name:name,checked:checked}));
+        m:this.markup().choices[i],
+        i:i,name:name}));
     }
     return out;
   },
   setselected:function() {
-    if (this.props.markup.selected) {
-      this.refs['o'+(this.props.markup.selected-1)].getDOMNode()
+    if (this.markup().selected) {
+      this.refs['o'+(this.markup().selected-1)].getDOMNode()
       .querySelector("input[type=radio]").checked=true;
     } else {
       var radio=this.getDOMNode().querySelectorAll("input[type=radio]");
@@ -74,11 +76,14 @@ var inlinemenu_applychange = React.createClass({
   componentDidUpdate:function() {
     this.setselected();
   },
+  otherAnswer:function() {
+    return <span>other</span>
+  },
   render: function() {
     return (
       <div className="well">
       {this.choices("radioname")}
-      <button onClick={this.reset} className="form-control btn btn-large btn-warning">Reset</button>
+      {this.otherAnswer()}
       </div>
     );
   } 

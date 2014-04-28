@@ -34,7 +34,8 @@
     "ksanaforge-workshop/inlinemenu_suggest_tibetan": "*",
     "ksanaforge-workshop/contextmenu_tibetan": "*",
     "ksanaforge-workshop/imageview": "*",
-    "ksanaforge-workshop/searchmain": "*"
+    "ksanaforge-workshop/searchmain": "*",
+    "ksanaforge-workshop/userlogin": "*"
   },
   "development": {},
   "paths": [

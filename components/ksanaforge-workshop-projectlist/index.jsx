@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 
-//var othercomponent=Require("other"); 
+
 
 var projectlist = React.createClass({
   mixins: Require('kse-mixins'),
@@ -13,8 +13,9 @@ var projectlist = React.createClass({
     })
   },
   selectproject:function(e) {
-    var cb=e.target.parentElement.querySelector('input');
-    cb.checked=true;
+    //if (!e.target.parentElement.attributes['data-i']) return;
+   // var i=parseInt(e.target.parentElement.attributes['data-i'].value);
+   // this.setState({selected:i});
   },
   hoverProject:function(e) {
     if (e.target.parentElement.nodeName!='TR') return;
@@ -25,8 +26,11 @@ var projectlist = React.createClass({
   },
   renderProject:function(p,i) {
     var d=p.lastModified;
+    var cls=(i==this.state.selected)?"warning":"";
     var formatted=d.getDay()+'/'+d.getMonth()+'/'+d.getFullYear();
-    return <tr key={'p'+i} data-i={i} className="warning" onMouseOver={this.hoverProject}>
+    return <tr key={'p'+i} data-i={i} className={cls} 
+     onClick={this.selectproject}
+     onMouseOver={this.hoverProject}>
       <td>{p.name}</td>
       <td>{p.desc}</td>
       <td>{p.author}</td>
@@ -63,9 +67,8 @@ var projectlist = React.createClass({
   newproject:function() {
     //dialog
   },
-
   render: function() {
-    return (
+    return ( 
       <div>
         <div className="row">
         <div className="col-md-8">
@@ -73,24 +76,19 @@ var projectlist = React.createClass({
         </div>
 
         <div className="col-md-4">
-          <div className="input-group">
-          <input type="text" className="form-control"/>
-          <span className="input-group-btn">
-            <button className="btn btn-default" type="button">Go!</button>
-          </span>
-          </div>
         </div>
-  
+
         </div>
 
         <table className="table table-bordered table-hover">
       <thead onClick={this.sortHeader}>
-        <tr >
+        <tr>
         <td data-field="name">Name</td>
         <td data-field="desc">Description</td>
         <td data-field="author">Author</td>
         <td data-field="lastmodified">last modified</td>
         <td data-field="hits">Hits</td>
+        <td></td>
       </tr>
       </thead>
         <tbody>

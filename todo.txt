@@ -11,3 +11,13 @@ create index
 search
 
 merging markup at same position from different users
+
+
+seperate server/client doc instance , test server mode
+
+merge from users, select users
+after approve , save new markup.
+
+
+build database single click , 
+status report

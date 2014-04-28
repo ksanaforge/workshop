@@ -15,26 +15,34 @@ var projectview=Require("projectview");
 var project=Require("project");
 var about=Require("about");
 var searchmain=Require("searchmain");
+var userlogin=Require("userlogin"); 
 //sfxdfffasdfff 
 var main = React.createClass({ 
   mixins:Require('kse-mixins'),
-  getInitialState: function() {
-//    var doc=persistent.open("../node_modules/ksana-document/test/daodejin.kd")
-    var tabs=[ 
-      {"id":"t123","caption":"Home",
-        "content":projectlist,"active":true,"notclosable":true,
+  defaultMainTabs:function(){
+    try {
+      this.user=JSON.parse(localStorage.getItem("user"));
+    }  catch (e) {
+      this.user={name:"",admin:false};
+    }
+    return [
+    {"id":"tuser","caption":this.user.name||"Guest","content":userlogin,"active":true,
+        "notclosable":true,"params":{"action":this.action,"user":this.user}},
+    {"id":"projects","caption":"Projects","content":projectlist,"notclosable":true,
         "params":{"action":this.action}},
-   //   {"id":"t4","caption":"About","content":about,"notclosable":true},
-//      {"id":"t456","caption":"yyy","content":docview,"params":{"msg":"hello"}},
-//      {"id":"t789","caption":"zzz","content":rtab,"params":{"msg":"hello222"}}
     ];
-    var auxs=[
+  },  
+  defaultAuxTabs:function(){
+    return [
       {"id":"searchtab","caption":"search","content":searchmain,
       "active":true,"notclosable":true},
-
-      
     ]
-    return {bar: "world2", tabs:tabs, auxs:auxs,pageid:1};
+  },
+  getInitialState: function() {
+//    var doc=persistent.open("../node_modules/ksana-document/test/daodejin.kd")
+    var tabs=this.defaultMainTabs();
+    var auxs=this.defaultAuxTabs();
+    return {tabs:tabs, auxs:auxs,pageid:1};
   },
   onSelection:function(api,start,len) {
     if (len==0) { 
@@ -52,12 +60,6 @@ var main = React.createClass({
 
     if (type==="setdoc") {
       this.setState({doc:args[0]});
-    } else if (type==="prev") {
-      if (this.state.pageid>1) this.setState({pageid: this.state.pageid-1});
-    } else if (type==="next") {
-      if (this.state.pageid<this.state.doc.pageCount-1) {
-        this.setState({pageid: this.state.pageid+1});
-      }
     } else if (type=="projectview") {
       this.setState({projectview:true});
     } else if (type=="openproject") {
@@ -77,7 +79,7 @@ var main = React.createClass({
       var obj={"id":"f_"+file.shortname,
         "caption":proj.shortname+'/'+file.withfoldername,
         "content":docview,"active":true,
-        "params":{"action":this.action, file:file, project:proj}};
+        "params":{"action":this.action, file:file, project:proj,user:this.user}};
         this.refs.maintab.newTab(obj);
     } else if (type=="openimage") {
       var file=args[0];
@@ -85,9 +87,18 @@ var main = React.createClass({
       var obj={"id":"sourceimage",
         "caption":'source',
         "content":imageview,"active":true,
-        "params":{"action":this.action, src:file, project:proj}};
+        "params":{"action":this.action, src:file, project:proj,user:this.user}};
         this.refs.auxtab.newTab(obj);
-    }
+    } else if (type=="login") {
+      var user=args[0];
+      localStorage.setItem("user",JSON.stringify(user));
+      this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()});
+    } else if (type=="logout") {
+      localStorage.setItem("user","{}");
+      this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()});
+    } else if (type=="start") {
+      this.refs.maintab.goTab("projects");
+    } 
   },
   page:function() {
     return this.state.doc.getPage(this.state.pageid);

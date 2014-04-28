@@ -18,7 +18,7 @@ var contentnavigator = React.createClass({
   },
   pageIdChange:function() {
     clearTimeout(this.pageidtimer);
-    this.pageidtimer=setTimeout(this.setPageId.bind(this) ,200);
+    this.pageidtimer=setTimeout(this.setPageId.bind(this) ,500);
   },
   nextPage:function() {
     this.props.action("next");
