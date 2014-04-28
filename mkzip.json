@@ -1,11 +1,11 @@
 {
 	"files":["ksanaforge-workshop/settings.json",
 		 "ksanaforge-workshop/dhammagear.png",
-		 "ksanaforge-workshop/svg",
-		 "ksanaforge-workshop//ksana_databases/jiangkangyur"
+		 "ksanaforge-workshop/svg"
 	],
 	"repos":["node_modules/ksana-document",
 				"node_modules/yadb",
 			"node_modules/yase"
-	]
+	],
+	"name":"ksanaforge"
 }

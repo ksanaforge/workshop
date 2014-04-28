@@ -25,7 +25,6 @@ var userlogin = React.createClass({
     return (
       <div className="container row">
       <div className="col-md-5 col-md-offset-5">
-      <h1>KsanaForge Workshop</h1>
       <h3>Welcome Back, {this.props.user.name}  {this.isAdmin()} </h3>
       
       <div className="row">
@@ -43,7 +42,6 @@ var userlogin = React.createClass({
     return (
     <div className="container row">
       <div className="col-md-5 col-md-offset-5">
-      <h1>KsanaForge Workshop</h1>
       <form className="form-signin" role="form">
         <h2 className="form-signin-heading">Please sign in</h2>
         <input ref="username" defaultValue={this.props.user.name} className="form-control" placeholder="username" required="true" autofocus="true"></input>

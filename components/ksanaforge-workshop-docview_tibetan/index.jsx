@@ -43,6 +43,9 @@ var docview_tibetan = React.createClass({
     } else if (type=="markupupdate") {
       this.state.doc.markDirty();
       save=false;
+    } else if (type=="addmarkup") {
+      this.page().addMarkup(args[0],args[1],args[2]);
+      save=false;
     } else if (type=="removemarkup") {
       var markup=args[0];
       this.page().clearMarkups(markup.start,markup.len,this.props.user.name);

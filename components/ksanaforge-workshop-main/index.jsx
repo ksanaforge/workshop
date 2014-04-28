@@ -52,6 +52,7 @@ var main = React.createClass({
   componentDidMount:function() {
     this.$ksana("getUserSettings").done(function(data){
       this.setState(data);
+      window.document.title=data.title;
     });
   },
   action:function() {

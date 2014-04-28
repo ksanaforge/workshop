@@ -21,7 +21,7 @@ var inlinemenu_suggest_tibetan = React.createClass({
   },
   render: function() {
     return ( 
-      <div className="well">
+      <div className="inlinemenu well">
         <span>{this.props.text}</span>
         <span className="input-group input-group-lg">
           <span className="input-group-addon" onClick={this.clear}>{"\u2573"}</span>
@@ -45,7 +45,7 @@ var inlinemenu_suggest_tibetan = React.createClass({
     );
   },
   focus:function() {
-    this.refs.inputtext.getDOMNode().focus();
+    if (this.refs.inputtext) this.refs.inputtext.getDOMNode().focus();
   },
   componentDidMount:function() {
     setTimeout(  this.focus.bind(this),300);

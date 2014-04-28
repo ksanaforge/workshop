@@ -5,27 +5,25 @@
 var Change=React.createClass({
   render:function() {
     var opts={
+      "className":"btn btn-success",
       "data-choice":this.props.i, 
       "name":this.props.name,
       "onClick":this.props.select
     }
     var isInsert=function(m) {
       if (m.insert)
-        return <span className="input-group-addon"><input type="checkbox" checked="true"></input></span>
+        return <span><input type="checkbox" checked="true"></input></span>
       else return "";
     }
     return (
       <span data-date={this.props.now}>
-      <span className="input-group input-group-lg">
-        <span className="input-group-addon">{this.props.m.author}</span>
-        <input type="text" className="form-control" value={this.props.m.text} />
-        {isInsert(this.props.m)}
-        <span className="input-group-addon">
-          {React.DOM.button(opts,"Accept")}
-        </span>
-      </span>
+        <span className="label label-info">{this.props.m.author}</span>
+         {isInsert(this.props.m)}
+        <span>{this.props.m.text}</span>
+       
+        {React.DOM.button(opts,"Accept")}
         {this.props.m.reason}
-      <br/>
+      <hr/>
     </span>);
   }
 })
@@ -39,13 +37,20 @@ var inlinemenu_applychange = React.createClass({
   select:function(e) {
     var selected=parseInt(e.target.attributes['data-choice'].value);
     var accepted=this.markup().choices[selected];
-    var payload={author:this.props.user.name, 
+    var payload={type:"revision",author:this.props.user.name, 
         insert:accepted.insert ,text:accepted.text, 
         contributor:accepted.author};
-    var newmarkup={start:this.props.markup.start,len:this.props.markup.len,
-      payload:payload};
-    this.props.action("newmarkup",newmarkup);
-    
+    var m=this.props.markup;
+    this.props.action("addmarkup",m.start,m.len,payload);
+  },
+  myanwser:function() {
+    var insert=this.refs.cbinsert.getDOMNode().checked;
+    var inputtext=this.refs.inputtext.getDOMNode().value;
+    var payload={type:"revision",author:this.props.user.name, 
+        insert:insert ,text:inputtext};
+    var m=this.props.markup;
+    this.props.action("addmarkup",m.start,m.len,payload);
+
   },
   choices:function(name) {
     var out=[];
@@ -76,13 +81,34 @@ var inlinemenu_applychange = React.createClass({
   componentDidUpdate:function() {
     this.setselected();
   },
+  clear:function() {
+    var n=this.refs.inputtext.getDOMNode();
+    n.focus();
+    n.value="";
+  },  
+  close:function() {
+    this.props.action("markupupdate");
+  },
   otherAnswer:function() {
-    return <span>other</span>
+    return (
+    <span className="row">
+        <span className="input-group input-group-lg">
+          <span className="input-group-addon" onClick={this.clear}>{"\u2573"}</span>
+          <input ref="inputtext"  onMouseOver={this.movemove} className="focus form-control" defaultValue={this.markup().text}></input>
+          <span className="input-group-addon"><input onChange={this.apply} ref="cbinsert" defaultChecked={this.markup().insert} type="checkbox"/></span>
+        </span>
+
+        <button className="btn btn-warning" onClick={this.close}>Decide later</button>
+        <button className="pull-right btn btn-success" onClick={this.myanwser}>Mine is Better</button>
+
+    </span>);
   },
   render: function() {
     return (
-      <div className="well">
+      <div className="inlinemenu well"> 
+      <span>{this.props.text}</span><br/>
       {this.choices("radioname")}
+      <hr size="1"/>
       {this.otherAnswer()}
       </div>
     );
