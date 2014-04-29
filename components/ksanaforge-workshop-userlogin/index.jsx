@@ -29,7 +29,7 @@ var userlogin = React.createClass({
       
       <div className="row">
         <div className="col-md-4 pull-right">
-        <button className="btn btn-lg btn-primary btn-block" onClick={this.logout}>Sign out</button>
+        <button className="btn btn-lg btn-warning btn-block" onClick={this.logout}>Sign out</button>
         </div>
       </div>
       <hr size="1"/>

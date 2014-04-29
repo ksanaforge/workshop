@@ -21,7 +21,7 @@ var folderList = React.createClass({
     var cls="",out=[];
     for (var i=0;i<this.props.folders.length;i++) {
       var f=this.props.folders[i];
-      if (i==this.state.selected) cls="warning"; else cls="";
+      if (i==this.state.selected) cls="success"; else cls="";
       out.push(<tr key={'d'+i} className={cls} onClick={this.select} data-i={i}>
         <td>{f.shortname}</td>
         </tr>);
@@ -39,9 +39,17 @@ var folderList = React.createClass({
 });
 var fileList = React.createClass({
   getInitialState:function() {
-    return {selected:0};
+    return {selected:0,hovered:-1};
   },
   select:function(e) {
+    var ee=e.target.parentElement.attributes['data-i'];
+    if (!ee) return;
+    this.setState({selected:parseInt(ee.value)});
+  },
+  leave:function(e) {
+    this.setState({hovered:-1});
+  },
+  openfile:function(e) {
     var e=e.target;
     while (e) {
       if (e.attributes['data-i']) {
@@ -56,11 +64,13 @@ var fileList = React.createClass({
     var cls="",out=[];
     for (var i=0;i<this.props.files.length;i++) {
       var f=this.props.files[i];
-      if (i==this.state.selected) cls="warning"; else cls="";
-      out.push(<tr key={'f'+i} onMouseMove={this.hoverFile} className={cls} data-i={i}>
+      if (i==this.state.selected) cls="success"; else cls="";
+      out.push(<tr key={'f'+i} onClick={this.select} 
+           onMouseEnter={this.hoverFile} onMouseLeave={this.leave}
+           className={cls} data-i={i}>
         <td>{f.shortname.substring(0,f.shortname.length-3)}
-        <span className="pull-right" style={{visibility:this.state.selected==i?"":"hidden"}}>
-        <button className="btn btn-warning" onClick={this.select}>Open</button>
+        <span className="pull-right" style={{visibility:this.state.hovered==i?"":"hidden"}}>
+        <button className="btn btn-success" onClick={this.openfile}>Open</button>
         </span>
         </td>
         </tr>);
@@ -69,10 +79,10 @@ var fileList = React.createClass({
   }, 
   hoverFile:function(e) {
     if (e.target.parentElement.nodeName!='TR') return;
-    var selected=e.target.parentElement.attributes['data-i'].value;
-    if (this.state.selected==selected) return;
+    var hovered=e.target.parentElement.attributes['data-i'].value;
+    if (this.state.hovered==hovered) return;
 
-    this.setState({selected:selected});
+    this.setState({hovered:hovered});
   },
   render:function() {
     return <div  className="fileList">

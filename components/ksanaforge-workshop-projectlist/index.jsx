@@ -5,7 +5,7 @@
 var projectlist = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
-    return {bar: "world",projects:[],selected:-1};
+    return {bar: "world",projects:[],hovered:-1,selected:-1};
   },
   componentDidMount:function() {
     this.$ksana('enumProject').done(function(res){
@@ -13,20 +13,20 @@ var projectlist = React.createClass({
     })
   },
   selectproject:function(e) {
-    //if (!e.target.parentElement.attributes['data-i']) return;
-   // var i=parseInt(e.target.parentElement.attributes['data-i'].value);
-   // this.setState({selected:i});
+    if (!e.target.parentElement.attributes['data-i']) return;
+    var i=parseInt(e.target.parentElement.attributes['data-i'].value);
+    this.setState({selected:i});
   },
   hoverProject:function(e) {
     if (e.target.parentElement.nodeName!='TR') return;
-    var selected=e.target.parentElement.attributes['data-i'].value;
-    if (this.state.selected==selected) return;
+    var hovered=e.target.parentElement.attributes['data-i'].value;
+    if (this.state.hovered==hovered) return;
 
-    this.setState({selected:selected});
+    this.setState({hovered:hovered});
   },
   renderProject:function(p,i) {
     var d=p.lastModified;
-    var cls=(i==this.state.selected)?"warning":"";
+    var cls=(i==this.state.selected)?"success":"";
     var formatted=d.getDay()+'/'+d.getMonth()+'/'+d.getFullYear();
     return <tr key={'p'+i} data-i={i} className={cls} 
      onClick={this.selectproject}
@@ -37,9 +37,9 @@ var projectlist = React.createClass({
       <td>{formatted}</td>
       <td>0</td>
       <td>
-        <span style={{visibility:this.state.selected==i?"":"hidden"}} >
+        <span style={{visibility:this.state.hovered==i?"":"hidden"}} >
           <button onClick={this.editproject} className="btn btn-default">Edit</button>
-          <button onClick={this.openproject} className="btn btn-warning">Open</button>
+          <button onClick={this.openproject} className="btn btn-success">Open</button>
         </span>
       </td>
 
@@ -56,7 +56,7 @@ var projectlist = React.createClass({
     this.forceUpdate();
   },
   openproject:function() {
-    var p=this.state.projects[this.state.selected];
+    var p=this.state.projects[this.state.hovered];
     if (!p) return;
     this.props.action("openproject",p);
     //open recently edited file automatically
@@ -82,14 +82,14 @@ var projectlist = React.createClass({
 
         <table className="table table-bordered table-hover">
       <thead onClick={this.sortHeader}>
-        <tr>
-        <td data-field="name">Name</td>
-        <td data-field="desc">Description</td>
-        <td data-field="author">Author</td>
-        <td data-field="lastmodified">last modified</td>
-        <td data-field="hits">Hits</td>
-        <td></td>
-      </tr>
+        <tr className="">
+        <th data-field="name">Name</th>
+        <th data-field="desc">Description</th>
+        <th data-field="author">Author</th>
+        <th data-field="lastmodified">last modified</th>
+        <th data-field="hits">Hits</th>
+        <th></th>
+        </tr>
       </thead>
         <tbody>
         {this.state.projects.map(this.renderProject)}

@@ -37,7 +37,7 @@ var inlinemenu_accept_tibetan = React.createClass({
 
         <span className="row">
           <span className="col-sm-4">
-            <button className="form-control btn btn-danger" onClick={this.remove}>Remove</button>
+            <button className="form-control btn btn-warning" onClick={this.remove}>Reset</button>
           </span>
           <span className="col-sm-8">
             <button className="pull-right form-control btn btn-success" onClick={this.apply}>Ok</button>
