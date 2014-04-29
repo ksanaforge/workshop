@@ -9,10 +9,10 @@ var contextmenu = React.createClass({
   },  
   markup:function(e) {
     var type=(typeof e =="string")?e:e.target.attributes["data-markup"].value;
-    this.props.onPageAction("addMarkup",this.state.selstart,this.state.sellength,{type:type})
+    this.props.action("addMarkup",{type:type})
   },
   clearMarkup:function() { 
-    this.props.onPageAction("clearMarkups",this.state.selstart,this.state.sellength);
+    this.props.action("clearmarkups");
   },
   render: function() {
     return ( 

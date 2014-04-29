@@ -11,6 +11,7 @@
     "brighthas/bootstrap": "*",
     "component/jquery": "*",
     "ksanaforge/docview": "*",
+    "ksanaforge/docsurface": "*",
     "ksanaforge/kse": "*",
     "ksanaforge/kse-mixins": "*",
     "ksanaforge-workshop/main": "*",
@@ -36,7 +37,8 @@
     "ksanaforge-workshop/imageview": "*",
     "ksanaforge-workshop/searchmain": "*",
     "ksanaforge-workshop/userlogin": "*",
-    "ksanaforge-workshop/inlinemenu_accept_tibetan": "*"
+    "ksanaforge-workshop/inlinemenu_accept_tibetan": "*",
+    "ksanaforge-workshop/surfacetest": "*"
   },
   "development": {},
   "paths": [

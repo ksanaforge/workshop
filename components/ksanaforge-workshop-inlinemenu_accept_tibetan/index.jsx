@@ -51,7 +51,7 @@ var inlinemenu_accept_tibetan = React.createClass({
     if (this.refs.inputtext) this.refs.inputtext.getDOMNode().focus();
   },
   componentDidMount:function() {
-    setTimeout(  this.focus.bind(this),300);
+    setTimeout(  this.focus,300);
   },
 });
 module.exports=inlinemenu_accept_tibetan;

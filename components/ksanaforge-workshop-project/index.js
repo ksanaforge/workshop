@@ -9,9 +9,13 @@ var tibetan={
 	},
 	"contextmenu" : Require("contextmenu_tibetan")
 }
-templates={tibetan:tibetan};
+var chinese={
+	"docview":"docview_chinese",
+	"tokenize":Require('ksana-document').tokenizers.simple
+}
+templates={tibetan:tibetan,chinese:chinese};
 var openProject=function(proj) {
 	proj.tmpl=templates[proj.template];
 	return proj;
 }
-module.exports={openProject:openProject};
+module.exports={openProject:openProject,templates:templates};

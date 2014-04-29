@@ -1,5 +1,5 @@
 /** @jsx React.DOM */
-
+var surfacetest=Require("surfacetest");
 
 var devmenu = React.createClass({
   getInitialState: function() {
@@ -19,6 +19,9 @@ var devmenu = React.createClass({
   openFiles:function() { //platform dependent
 
   },
+  surfacetest:function() {
+    React.renderComponent(surfacetest(),document.getElementById("main"));
+  },
   moveWindow:function() {
     //if (!this.new_win) return;
     var gui = nodeRequire('nw.gui');
@@ -37,6 +40,7 @@ var devmenu = React.createClass({
     return (
       <div>
         <button onClick={this.moveWindow}>move window</button>
+        <button onClick={this.surfacetest}>surface test</button>
       </div>
     );
   }

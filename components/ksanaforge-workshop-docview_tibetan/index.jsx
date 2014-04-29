@@ -62,11 +62,6 @@ var docview_tibetan = React.createClass({
     if (!this.state.doc) return null;
     return this.state.doc.getPage(this.state.pageid);
   },
-  onSelection:function(api,start,len) {
-    if (len==0) { 
-     // api("toggleMarkup",start,len,{type:"fullstop"});  
-    } 
-  },
   imagefilename:function() {
     var page=this.page();
     if (!page)return ""

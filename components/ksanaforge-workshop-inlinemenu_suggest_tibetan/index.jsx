@@ -8,6 +8,9 @@ var inlinemenu_suggest_tibetan = React.createClass({
     this.markup().insert=this.refs.cbinsert.getDOMNode().checked && this.markup().text.length;
     this.props.action("markupupdate");
   },
+  change:function(e) {
+    if (e.keyCode==13)  this.apply(e);
+  },
   clear:function() {
     var n=this.refs.inputtext.getDOMNode();
     n.focus();
@@ -25,12 +28,12 @@ var inlinemenu_suggest_tibetan = React.createClass({
         <span>{this.props.text}</span>
         <span className="input-group input-group-lg">
           <span className="input-group-addon" onClick={this.clear}>{"\u2573"}</span>
-          <input ref="inputtext"  onMouseOver={this.movemove} className="focus form-control" defaultValue={this.markup().text}></input>
+          <input ref="inputtext"  onMouseOver={this.movemove} className="focus form-control" onKeyPress={this.change} defaultValue={this.markup().text}></input>
           <span className="input-group-addon"><input onChange={this.apply} ref="cbinsert" defaultChecked={this.markup().insert} type="checkbox"/></span>
         </span>
         <span className="input-group input-group-lg">
           <span className="input-group-addon">Reason</span>
-          <textarea rows="5" ref="reason" className="form-control" defaultValue={this.markup().reason}></textarea>
+          <textarea rows="5" ref="reason" className="form-control" onKeyPress={this.change} defaultValue={this.markup().reason}></textarea>
         </span>
         <span className="row">
           <span className="col-sm-4">
@@ -48,7 +51,7 @@ var inlinemenu_suggest_tibetan = React.createClass({
     if (this.refs.inputtext) this.refs.inputtext.getDOMNode().focus();
   },
   componentDidMount:function() {
-    setTimeout(  this.focus.bind(this),300);
+    setTimeout(  this.focus,300);
   },
 });
 module.exports=inlinemenu_suggest_tibetan;

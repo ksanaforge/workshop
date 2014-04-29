@@ -45,11 +45,6 @@ var main = React.createClass({
     var auxs=this.defaultAuxTabs();
     return {tabs:tabs, auxs:auxs,pageid:1};
   },
-  onSelection:function(api,start,len) {
-    if (len==0) { 
-      api("toggleMarkup",start,len,{type:"fullstop"});  
-    } 
-  },
   componentDidMount:function() {
     this.$ksana("getUserSettings").done(function(data){
       this.setState(data);

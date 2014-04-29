@@ -15,10 +15,13 @@ var contextmenu = React.createClass({
   },
   markup:function(e) {
     var type=(typeof e =="string")?e:e.target.attributes["data-markup"].value;
-    this.props.onPageAction("addMarkup",this.state.selstart,this.state.sellength,{type:type,author:this.props.user.name})
+    this.props.action("addmarkup",{type:type});
+  },
+  deleteText:function(e) {
+    this.props.action("strikeout");
   },
   clearMarkup:function() { 
-    this.props.onPageAction("clearMarkups",this.state.selstart,this.state.sellength);
+    this.props.action("clearmarkup");
   },
   render: function() {
     return ( 
@@ -29,6 +32,7 @@ var contextmenu = React.createClass({
       </button>
       <ul className="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="suggest">Suggest</a></li>
+        <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.deleteText}>Delete</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.clearMarkup}>Clear Markup</a></li>
         <li className="divider"></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.copy} data-text={this.state.text}>Copy</a></li>
