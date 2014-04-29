@@ -1,4 +1,4 @@
-dhammagear-workshop
+ksanaforge-workshop
 ===================
 
-prototype to show how to make use of dhammagear library
+prototype to show how to make use of ksanaforge libraries
