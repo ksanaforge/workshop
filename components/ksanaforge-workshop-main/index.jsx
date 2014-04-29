@@ -25,6 +25,7 @@ var main = React.createClass({
     }  catch (e) {
       this.user={name:"",admin:false};
     }
+    if (!this.user) this.user={name:"",admin:false};
     return [
     {"id":"tuser","caption":this.user.name||"Guest","content":userlogin,"active":true,
         "notclosable":true,"params":{"action":this.action,"user":this.user}},
