@@ -1,7 +1,6 @@
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other"); 
-var contextmenu=Require("contextmenu");
 var styles=Require("styles")[0].markups;
 var docview=Require("docview");
 var contentnavigator=Require("contentnavigator");
@@ -75,6 +74,9 @@ var docview_tibetan = React.createClass({
   },
   componentDidUpdate:function() {
     this.props.action("openimage",this.imagefilename(),this.props.project);
+  },
+  componentWillUnmount:function() {
+    this.saveMarkup();
   },
   render: function() {
     localStorage.setItem(this.storekey(),this.state.pageid);
