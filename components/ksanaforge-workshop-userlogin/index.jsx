@@ -13,7 +13,7 @@ var userlogin = React.createClass({
   logout:function() {
     this.props.action("logout");
   },
-  start:function() {
+  startwork:function() {
     this.props.action("start");
   },
   isAdmin:function() {
@@ -33,7 +33,7 @@ var userlogin = React.createClass({
         </div>
       </div>
       <hr size="1"/>
-      <button className="btn btn-lg btn-success btn-block" onClick={this.start}>Start</button>
+      <button className="btn btn-lg btn-success btn-block" onClick={this.startwork}>Start Work</button>
       </div>
     </div>
     );
