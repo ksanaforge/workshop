@@ -11,7 +11,7 @@ var surfacetest = React.createClass({
     page:page,selstart:0,sellength:0};
   }, 
   action:function() { 
-
+    
   },
   onSelection:function(start,len,x,y,e) {
     this.setState({selstart:start,sellength:len});

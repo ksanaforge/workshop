@@ -41,7 +41,7 @@ var inlinemenu_applychange = React.createClass({
         insert:accepted.insert ,text:accepted.text, 
         contributor:accepted.author};
     var m=this.props.markup;
-    this.props.action("addmarkup",m.start,m.len,payload);
+    this.props.action("addmarkupat",m.start,m.len,payload);
   },
   myanwser:function() {
     var insert=this.refs.cbinsert.getDOMNode().checked;

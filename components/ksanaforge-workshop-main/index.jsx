@@ -43,12 +43,12 @@ var main = React.createClass({
 //    var doc=persistent.open("../node_modules/ksana-document/test/daodejin.kd")
     var tabs=this.defaultMainTabs();
     var auxs=this.defaultAuxTabs();
-    return {tabs:tabs, auxs:auxs,pageid:1};
+    return {settings:{},tabs:tabs, auxs:auxs,pageid:1};
   },
   componentDidMount:function() {
     this.$ksana("getUserSettings").done(function(data){
-      this.setState(data);
-      window.document.title=data.title;
+      this.setState({settings:data});
+      window.document.title=data.title + ', build '+data.buildDateTime;
     });
   },
   action:function() {
@@ -120,7 +120,9 @@ var main = React.createClass({
   },
    //<button onClick={this.newtab}>newtab</button>
   showdevmenu:function() {
-    if (this.state.developer)return <devmenu action={this.action}/>;
+    if (this.state.settings.developer) {
+      return <devmenu action={this.action}/>;
+    }
     else return null;
   },
   makescrollable:function() {
