@@ -5,6 +5,7 @@ var styles=Require("styles")[0].markups;
 var docview=Require("docview");
 var contentnavigator=Require("contentnavigator");
 var imageview=Require("imageview");
+var D=Require("ksana-document").document;
 var docview_tibetan = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
@@ -43,7 +44,8 @@ var docview_tibetan = React.createClass({
       this.state.doc.markDirty();
       save=false;
     } else if (type=="addmarkup") {
-      this.page().addMarkup(args[0],args[1],args[2]);
+      console.trace();
+      console.error("cannot call addmarkup here")
       save=false;
     } else if (type=="removemarkup") {
       var markup=args[0];
@@ -53,9 +55,17 @@ var docview_tibetan = React.createClass({
     }
     if (save) this.saveMarkup();
   },
+  loadDocument:function(fromserver) {
+    var kd,kdm=[];
+    kd=JSON.parse(fromserver.kd);
+    if (fromserver.kdm) kdm=JSON.parse(fromserver.kdm)
+    return D.createDocument(kd,kdm);
+  },
   componentDidMount:function() {
-    this.$yase("openDocument",this.props.file.filename).done(function(data){
-      this.setState({doc:data});
+    this.$ksana("openDocument",this.props.file.filename).done(function(data){
+      var doc=this.loadDocument(data);
+      doc.meta.filename=this.props.file.filename;
+      this.setState({doc:doc,pageid:1});
     });
   },
   page:function() {

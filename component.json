@@ -8,6 +8,7 @@
     "ksana/document": "*",
     "ksanaforge/boot": "*",
     "ksanaforge/tabui": "*",
+    "socketio/socketio":"*",
     "brighthas/bootstrap": "*",
     "component/jquery": "*",
     "ksanaforge/docview": "*",

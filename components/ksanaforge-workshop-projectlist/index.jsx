@@ -27,14 +27,14 @@ var projectlist = React.createClass({
   renderProject:function(p,i) {
     var d=p.lastModified;
     var cls=(i==this.state.selected)?"success":"";
-    var formatted=d.getDay()+'/'+d.getMonth()+'/'+d.getFullYear();
+   // var formatted=d.getDay()+'/'+d.getMonth()+'/'+d.getFullYear();
     return <tr key={'p'+i} data-i={i} className={cls} 
      onClick={this.selectproject}
      onMouseOver={this.hoverProject}>
       <td>{p.name}</td>
       <td>{p.desc}</td>
       <td>{p.author}</td>
-      <td>{formatted}</td>
+      <td></td>
       <td>0</td>
       <td>
         <span style={{visibility:this.state.hovered==i?"":"hidden"}} >

@@ -17,6 +17,12 @@ var about=Require("about");
 var searchmain=Require("searchmain");
 var userlogin=Require("userlogin"); 
 //sfxdfffasdfff 
+
+//disable system right click menu
+window.document.oncontextmenu = function(e){
+    return false;
+}
+
 var main = React.createClass({ 
   mixins:Require('kse-mixins'),
   defaultMainTabs:function(){
@@ -128,7 +134,7 @@ var main = React.createClass({
   makescrollable:function() {
     var f=this.refs.maintab.getDOMNode();
     //f.style.height='50%';
-    f.style.height=document.body.offsetHeight/2-f.getBoundingClientRect().top;
+    f.style.height=document.body.offsetHeight/2-f.getBoundingClientRect().top+50;
   },
   componentDidUpdate:function() {
     this.makescrollable();
