@@ -20,12 +20,7 @@ var docview_tibetan = React.createClass({
       console.log(data);
     });
   },
-  nextmistake:function() {
 
-  },
-  prevmistake:function() {
-
-  },
   action:function(type) {
     var args = Array.prototype.slice.call(arguments);
     var type=args.shift();

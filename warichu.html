@@ -1,0 +1,95 @@
+<html>
+<style>
+.v {writing-mode: vertical-lr;
+    -webkit-writing-mode: vertical-lr;
+    font-size:40px;
+    font-family: "DFKai-SB";
+    height:100%;
+}
+
+wh {
+	font-size:150%;
+	letter-spacing:0.33em;
+}
+.warichu {
+ position:relative;
+}
+.warichu1::after {content:"　"}
+.warichu2::after {content:"　　"}
+.warichu3::after {content:"　　　"}
+.warichu4::after {content:"　　　　"}
+.warichu5::after {content:"　　　　　"}
+.warichu6::after {content:"　　　　　　"}
+.warichu7::after {content:"　　　　　　　"}
+.warichu8::after {content:"　　　　　　　　"}
+.warichu9::after {content:"　　　　　　　　　"}
+.warichu10::after{content:"　　　　　　　　　　"}
+.warichu11::after{content:"　　　　　　　　　　　"}
+.warichu12::after{content:"　　　　　　　　　　　　"}
+.warichu13::after{content:"　　　　　　　　　　　　　"}
+.warichu14::after{content:"　　　　　　　　　　　　　　"}
+.warichu15::after{content:"　　　　　　　　　　　　　　　"}
+.warichu16::after{content:"　　　　　　　　　　　　　　　　"}
+.warichu17::after{content:"　　　　　　　　　　　　　　　　　"}
+.warichu18::after{content:"　　　　　　　　　　　　　　　　　　"}
+.warichu19::after{content:"　　　　　　　　　　　　　　　　　　　"}
+.warichu20::after{content:"　　　　　　　　　　　　　　　　　　　　"}
+.warichu21::after{content:"　　　　　　　　　　　　　　　　　　　　　"}
+.warichu22::after{content:"　　　　　　　　　　　　　　　　　　　　　　"}
+
+.warichu-left {
+ position:absolute;
+ top:0px;
+ right:0px;
+ left:0px;
+ width:50%;
+ font-size:50%;
+ height:200%;
+ letter-spacing:1em;
+}
+.warichu-right {
+ position:absolute;
+ top:0px;
+ left:50%;
+ width:50%;
+ height:200%;
+ font-size:50%;
+  letter-spacing:1em;
+}
+
+</style>
+<script>
+var processline=function(l) {
+	var out=l.replace(/<z>(.*?)<\/z>/g,function(m,m1){
+		var w=Math.round( (m1.length)/2);
+		return '<span class="warichu warichu'+w+'"><span class="warichu-right">'
+		+m1.substr(0,w)+'</span><span class="warichu-left">'
+		+m1.substr(w)+'</span></span>';
+	});
+	return out;
+}
+
+var layout=function(s) {
+	var arr=s.split('\n'), out=[];
+	for (i=0;i<arr.length;i++) {
+		out.unshift(processline(arr[i]));
+	}
+	return out.join("<br>");
+}
+
+</script>
+<div id="main" class="v" >
+
+</div>
+
+<script>
+var s="<z>古音古義可互求焉</z><wh>弌</wh><x>古文一</x><z>凡言古文者謂倉頡所作古文也此書法後王尊漢制以小篆爲質</z>\n<z>而兼錄古文籒文所謂今敘篆文合以古籒也小篆之於古籒或仍之或省改之仍者十之八九省改者十之一二</z>\n<z>而已仍則小篆皆古籒也故不更出古籒省改則古籒非小篆也故更出之一二三之本古文明矣何以更出弌弍</z>\n<z>弎也葢所謂即古文而異者當謂之古文奇字</z><wh>元</wh><x>始也</x><z>見爾雅釋詁九家易曰元者氣之始也</z><x>从\n一兀聲</x><z>徐氏鍇云不當有聲字以髡从兀聲䡇从元聲例之徐說非古音元兀相爲平入也凡言从某某聲</z>\n<z>者謂於六書爲形聲也凡文字有義有形有音爾雅已下義書也聲類已下音書也說文形書也凡篆一字先訓其</z>\n<z>義若始也顚也是次釋其形若从某某聲是次釋其音若某聲及讀若某是合三者以完一篆故曰形書也愚袁切</z>\n<z>古音第十四部</z><wh>天</wh><x>顚也</x><z>此以同部曡韵爲訓也凡門聞也戸護也尾微也髮拔也皆此例凡言元始也</z>\n<z>天顚也丕大也吏治人者也皆於六書爲轉注而微有差別元始可互言之天顚不可倒言之葢求義則轉移皆是</z>";
+
+  document.getElementById("main").innerHTML=layout(s);
+</script>
+
+	<!--
+    正文<span class="warichu"><span class="warichu-right">天ｂｃｄ</span><span class="warichu-left">喜樂自在</span></span>正文正文<br/>正文正文正文<span class="warichu"><span class="warichu-right">ｉｊｋｌ</span><span class="warichu-left">ｍｎｏｐ</span></span>正文正文<br/>正文正文正文<span class="warichu warichu8"><span class="warichu-right">１２３４５６７８</span><span class="warichu-left">ａｂｃｄｅｆｇｈ</span></span>
+//-->
+</body>
+</html>
