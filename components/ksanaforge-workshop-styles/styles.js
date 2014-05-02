@@ -2,14 +2,14 @@ var styles = [
   {
     "name":"part of speech",
     "markups": {
-      "suggest":  {'border-bottom': '1px solid orange'},
-      "revision":  {'border-bottom': '1px solid green'},
+      "suggest":  {'border-bottom': '1px solid orange','cursor': 'pointer'},
+      "revision":  {'border-bottom': '1px solid green','cursor': 'pointer'},
       "verb":  {"background-image":"url('svg/overline.svg')" },
       "verb_b":  {"background-image":"url('svg/overline_b.svg')" },
       "verb_e":  {"background-image":"url('svg/overline_e.svg')" },
       
       "suggests":  {
-          'border-bottom': '3px solid red'
+          'border-bottom': '3px solid red','cursor': 'pointer'
       },
       //"changes":  {"background-image":"url('svg/overline.svg')" },
       //"changes_b":  {"background-image":"url('svg/overline_b.svg')" },

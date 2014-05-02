@@ -5,6 +5,10 @@ var inlinemenu_accept_tibetan = React.createClass({
   apply:function(e) {
     this.props.action("markupupdate");
   },
+  keyup:function(e) {
+    if (e.keyCode==13)  this.apply(e);
+    else if (e.keyCode==27) this.props.action("markupdate");
+  },
   clear:function() {
     var n=this.refs.inputtext.getDOMNode();
     n.focus();
@@ -26,7 +30,7 @@ var inlinemenu_accept_tibetan = React.createClass({
   },
   render: function() {
     return ( 
-      <div className="inlinemenu well">
+      <div onKeyUp={this.onkeyup} className="inlinemenu well">
         <span>{this.props.text}</span>
         <span className="input-group input-group-md">
           <span className="input-group-addon">New text</span>

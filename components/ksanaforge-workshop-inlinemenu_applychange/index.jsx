@@ -31,6 +31,10 @@ var inlinemenu_applychange = React.createClass({
   getInitialState: function() {
     return {now : new Date()};
   },
+  keyup:function(e) {
+    if (e.keyCode==13)  this.apply(e);
+    else if (e.keyCode==27) this.props.action("markupdate");
+  },
   markup:function() {
     return this.props.markup.payload;
   },
@@ -105,7 +109,7 @@ var inlinemenu_applychange = React.createClass({
   },
   render: function() {
     return (
-      <div className="inlinemenu well"> 
+      <div onKeyUp={this.keyup} className="inlinemenu well"> 
       <span>{this.props.text}</span><br/>
       {this.choices("radioname")}
       <hr size="1"/>

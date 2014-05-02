@@ -8,8 +8,12 @@ var inlinemenu_suggest_tibetan = React.createClass({
     this.markup().insert=this.refs.cbinsert.getDOMNode().checked && this.markup().text.length;
     this.props.action("markupupdate");
   },
-  change:function(e) {
+  keyup:function(e) {
     if (e.keyCode==13)  this.apply(e);
+    else if (e.keyCode==27) this.props.action("markupdate");
+  },
+  change:function(e) {
+    
   },
   clear:function() {
     var n=this.refs.inputtext.getDOMNode();
@@ -24,16 +28,16 @@ var inlinemenu_suggest_tibetan = React.createClass({
   },
   render: function() {
     return ( 
-      <div className="inlinemenu well">
+      <div onKeyUp={this.keyup} className="inlinemenu well">
         <span>{this.props.text}</span>
         <span className="input-group input-group-lg">
           <span className="input-group-addon" onClick={this.clear}>{"\u2573"}</span>
           <input ref="inputtext"  onMouseOver={this.movemove} className="focus form-control" onKeyPress={this.change} defaultValue={this.markup().text}></input>
-          <span className="input-group-addon"><input onChange={this.apply} ref="cbinsert" defaultChecked={this.markup().insert} type="checkbox"/></span>
+          <span className="input-group-addon"><input ref="cbinsert" defaultChecked={this.markup().insert} type="checkbox"/></span>
         </span>
         <span className="input-group input-group-lg">
           <span className="input-group-addon">Reason</span>
-          <textarea rows="5" ref="reason" className="form-control" onKeyPress={this.change} defaultValue={this.markup().reason}></textarea>
+          <textarea rows="5" ref="reason" className="form-control"  defaultValue={this.markup().reason}></textarea>
         </span>
         <span className="row">
           <span className="col-sm-4">
