@@ -36,7 +36,21 @@ var contentnavigator = React.createClass({
     if (this.refs&&this.refs.pageid) {
       this.refs.pageid.getDOMNode().value=this.pageName();
     }
-  },  
+  }, 
+  nextMistake:function() {
+    this.props.action("nextmistake");
+  },
+  prevMistake:function() {
+    this.props.action("prevmistake");
+  },
+  adminmenu:function() {
+    if (this.props.user.admin) {
+      return (<div>
+              <button className="btn btn-default" onClick={this.nextMistake}>Next mistake</button>
+              </div>);
+    } else return <div></div>;
+
+  } ,
   render: function() {
     if (!this.props.page) return <div></div>
     return (
@@ -53,6 +67,9 @@ var contentnavigator = React.createClass({
               <button className="btn btn-default" onClick={this.lastPage}>Last</button>
             </span>
         </div>
+      </div>
+      <div className="col-md-3">
+        {this.adminmenu()}
       </div>
       </div>
     );

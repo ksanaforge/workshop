@@ -20,39 +20,52 @@ var docview_tibetan = React.createClass({
       console.log(data);
     });
   },
+  nextmistake:function() {
+
+  },
+  prevmistake:function() {
+
+  },
   action:function(type) {
     var args = Array.prototype.slice.call(arguments);
     var type=args.shift();
-    var save=true;
+    var save=false;
 
     var pageid=this.state.pageid;
     if (type=="next") {
       if (pageid+1<this.state.doc.pageCount) this.setState({pageid:pageid+1});
+      save=true;
     } else if (type=="prev") {
       if (pageid>1) this.setState({pageid:pageid-1});
+      save=true;
     } else if (type=="first") {
+      save=true;
       this.setState({pageid:1});
     } else if (type=="last") {
       this.setState({pageid:this.state.doc.pageCount-1});
+      save=true;
     } else if (type=="gopage") {
       var page=this.state.doc.pageByName(args[0])
       if (page) {
         this.setState({pageid:page.id});
+        save=true;
         //this.forceUpdate();
       }
     } else if (type=="markupupdate") {
       this.state.doc.markDirty();
-      save=false;
     } else if (type=="addmarkup") {
       console.trace();
-      console.error("cannot call addmarkup here")
-      save=false;
+      console.error("cannot call addmarkup here")      
     } else if (type=="removemarkup") {
       var markup=args[0];
       this.page().clearMarkups(markup.start,markup.len,this.props.user.name);
       this.forceUpdate();
-      save=false;
+    } else if (type=="prevmistake") {
+      this.refs.docview.goPrevMistake();
+    } else if (type=="nextmistake") {
+      this.refs.docview.goNextMistake();
     }
+
     if (save) this.saveMarkup();
   },
   loadDocument:function(fromserver) {
@@ -87,8 +100,8 @@ var docview_tibetan = React.createClass({
     localStorage.setItem(this.storekey(),this.state.pageid);
     return (
       <div>
-        <contentnavigator page={this.page()} action={this.action}/>
-        <docview 
+        <contentnavigator user={this.props.user} page={this.page()} action={this.action}/>
+        <docview ref="docview"
             page={this.page()} 
             user={this.props.user}
             template={this.props.project.tmpl}
