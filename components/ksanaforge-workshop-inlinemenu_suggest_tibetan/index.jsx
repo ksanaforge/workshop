@@ -11,10 +11,7 @@ var inlinemenu_suggest_tibetan = React.createClass({
   keyup:function(e) {
     if (e.keyCode==13)  this.apply(e);
     else if (e.keyCode==27) this.props.action("markupdate");
-  },
-  change:function(e) {
-    
-  },
+  }, 
   clear:function() {
     var n=this.refs.inputtext.getDOMNode();
     n.focus();

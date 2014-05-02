@@ -34,7 +34,6 @@ var projectlist = React.createClass({
       <td>{p.name}</td>
       <td>{p.desc}</td>
       <td>{p.author}</td>
-      <td></td>
       <td>0</td>
       <td>
         <span style={{visibility:this.state.hovered==i?"":"hidden"}} >
@@ -86,7 +85,6 @@ var projectlist = React.createClass({
         <th data-field="name">Name</th>
         <th data-field="desc">Description</th>
         <th data-field="author">Author</th>
-        <th data-field="lastmodified">last modified</th>
         <th data-field="hits">Hits</th>
         <th></th>
         </tr>

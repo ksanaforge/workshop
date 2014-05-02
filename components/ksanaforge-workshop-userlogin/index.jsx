@@ -24,7 +24,7 @@ var userlogin = React.createClass({
   renderLogout:function() {
     return (
       <div className="container row">
-      <div className="col-md-5 col-md-offset-5">
+      <div className="col-md-5">
       <h3>Welcome Back, {this.props.user.name}  {this.isAdmin()} </h3>
       
       <div className="row">

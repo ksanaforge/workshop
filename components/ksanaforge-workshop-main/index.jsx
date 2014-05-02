@@ -71,8 +71,8 @@ var main = React.createClass({
       var obj={"id":"p_"+proj.shortname,"caption":proj.name,
         "content":projectview,"active":true,
         "params":{"action":this.action, "project":proj}};
-
-      this.refs.maintab.newTab(obj);
+      this.setState({"layout":proj.tmpl.layout});
+      this.refs.maintab.newTab(obj); 
     } else if (type=="openfile") {
       var file=args[0];
       var proj=args[1];
@@ -101,7 +101,7 @@ var main = React.createClass({
       this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()});
     } else if (type=="start") {
       this.refs.maintab.goTab("projects");
-    } 
+    }
   },
   page:function() {
     return this.state.doc.getPage(this.state.pageid);
@@ -133,14 +133,27 @@ var main = React.createClass({
   },
   makescrollable:function() {
     var f=this.refs.maintab.getDOMNode();
+    var aux=this.refs.auxtab.getDOMNode();
     //f.style.height='50%';
-    f.style.height=document.body.offsetHeight/2-f.getBoundingClientRect().top+50;
+    if (this.state.layout=="vertical") {
+      f.style.width='50%';
+      f.style.float='left';
+      aux.style.float='right';
+      aux.style.width='50%';
+    } else {
+      f.style.width='100%';
+      f.style.float='none';
+      aux.style.width='100%';
+      aux.style.float='none';
+      f.style.height=document.body.offsetHeight/2-f.getBoundingClientRect().top+50;  
+    }
+    
   },
   componentDidUpdate:function() {
     this.makescrollable();
   },
   render:function() {
-    return <div>
+    return <div style={{"width":"100%"}}>
     {this.showdevmenu()}
     <tabui ref="maintab" tabs={this.state.tabs}/>
     <tabui ref="auxtab" tabs={this.state.auxs}/>

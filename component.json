@@ -8,7 +8,7 @@
     "ksana/document": "*",
     "ksanaforge/boot": "*",
     "ksanaforge/tabui": "*",
-    "socketio/socketio":"*",
+    "socketio/socketio": "*",
     "brighthas/bootstrap": "*",
     "component/jquery": "*",
     "ksanaforge/docview": "*",
@@ -39,7 +39,8 @@
     "ksanaforge-workshop/searchmain": "*",
     "ksanaforge-workshop/userlogin": "*",
     "ksanaforge-workshop/inlinemenu_accept_tibetan": "*",
-    "ksanaforge-workshop/surfacetest": "*"
+    "ksanaforge-workshop/surfacetest": "*",
+    "ksanaforge-workshop/docview_classical": "*"
   },
   "development": {},
   "paths": [
