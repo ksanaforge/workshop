@@ -6,6 +6,7 @@ var docview=Require("docview");
 var contentnavigator=Require("contentnavigator");
 var imageview=Require("imageview");
 var D=Require("ksana-document").document;
+var M=Require("ksana-document").markups;
 var docview_tibetan = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
@@ -59,6 +60,10 @@ var docview_tibetan = React.createClass({
       this.refs.docview.goPrevMistake();
     } else if (type=="nextmistake") {
       this.refs.docview.goNextMistake();
+    } else if (type=="preview") {
+      this.setState({preview:true});
+    } else if (type=="endpreview") {
+      this.setState({preview:false});
     }
 
     if (save) this.saveMarkup();
@@ -79,7 +84,17 @@ var docview_tibetan = React.createClass({
   },
   page:function() {
     if (!this.state.doc) return null;
-    return this.state.doc.getPage(this.state.pageid);
+    var page=this.state.doc.getPage(this.state.pageid);
+    var user=this.props.user.name;
+    if (this.state.preview) {
+      var suggestions=page.filterMarkup(function(m){
+        var p=m.payload;
+        return (p.author==user && (p.type=="suggest" || p.type=="revision"));
+      });
+      return page.preview({suggestions:suggestions});
+    } else {
+      return page;
+    }
   },
   imagefilename:function() {
     var page=this.page();
@@ -99,7 +114,7 @@ var docview_tibetan = React.createClass({
     localStorage.setItem(this.storekey(),this.state.pageid);
     return (
       <div>
-        <contentnavigator user={this.props.user} page={this.page()} action={this.action}/>
+        <contentnavigator preview={this.state.preview} user={this.props.user} page={this.page()} action={this.action}/>
         <docview ref="docview"
             page={this.page()} 
             user={this.props.user}

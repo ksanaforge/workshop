@@ -42,11 +42,25 @@ var contentnavigator = React.createClass({
   prevMistake:function() {
     this.props.action("prevmistake");
   },
+  preview:function() {
+    this.props.action("preview");
+  },
+  endpreview:function() {
+    this.props.action("endpreview");
+  },
+  previewmenu:function() {
+
+    if (this.props.preview) {
+      return <button className="btn btn-warning" onClick={this.endpreview}>End Preview</button>
+    } else {
+      return <button className="btn btn-success" onClick={this.preview}>Preview</button>
+    }
+  },
   adminmenu:function() {
     if (this.props.user.admin) {
-      return (<div>
+      return (
               <button className="btn btn-default" onClick={this.nextMistake}>Next mistake</button>
-              </div>);
+              );
     } else return <div></div>;
 
   } ,
@@ -54,7 +68,7 @@ var contentnavigator = React.createClass({
     if (!this.props.page) return <div></div>
     return (
       <div className="row">
-      <div className="col-md-6">
+      <div className="col-md-4">
         <div className="input-group">
              <span className="input-group-btn">
               <button className="btn btn-default" onClick={this.firstPage}>First</button>
@@ -67,8 +81,10 @@ var contentnavigator = React.createClass({
             </span>
         </div>
       </div>
-      <div className="col-md-3">
+
+      <div className="col-md-5">
         {this.adminmenu()}
+        {this.previewmenu()}
       </div>
       </div>
     );
