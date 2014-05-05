@@ -10,7 +10,8 @@ var projectlist = React.createClass({
   componentDidMount:function() {
     this.$ksana('enumProject').done(function(res){
       this.setState({projects:res});
-    })
+    });
+    if (this.props.tab ) this.props.tab.instance=this; // for tabui 
   },
   selectproject:function(e) {
     if (!e.target.parentElement.attributes['data-i']) return;
@@ -59,6 +60,11 @@ var projectlist = React.createClass({
     if (!p) return;
     this.props.action("openproject",p);
     //open recently edited file automatically
+  },
+  onShow:function(params) {
+    if (!params || !this.state.projects)return;
+    var match=this.state.projects.filter( function(p) {return p.showname==params.project });
+    if(match.length) this.props.action("openproject",match[0],params.autoopen);
   },
   editproject:function() {
     //dialog

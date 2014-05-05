@@ -9,7 +9,6 @@ var contentnavigator = React.createClass({
   pageName:function() {
     return  this.props.page?this.props.page.name:"";
   },
-
   setPageId:function() {
     var pagename=this.refs.pageid.getDOMNode().value;
     this.setState({pagename:pagename});
@@ -55,7 +54,7 @@ var contentnavigator = React.createClass({
     if (!this.props.page) return <div></div>
     return (
       <div className="row">
-      <div className="col-md-3">
+      <div className="col-md-6">
         <div className="input-group">
              <span className="input-group-btn">
               <button className="btn btn-default" onClick={this.firstPage}>First</button>

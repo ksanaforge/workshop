@@ -26,12 +26,6 @@ window.document.oncontextmenu = function(e){
 var main = React.createClass({ 
   mixins:Require('kse-mixins'),
   defaultMainTabs:function(){
-    try {
-      this.user=JSON.parse(localStorage.getItem("user"));
-    }  catch (e) {
-      this.user={name:"",admin:false};
-    }
-    if (!this.user) this.user={name:"",admin:false};
     return [
     {"id":"tuser","caption":this.user.name||"Guest","content":userlogin,"active":true,
         "notclosable":true,"params":{"action":this.action,"user":this.user}},
@@ -46,9 +40,16 @@ var main = React.createClass({
     ]
   },
   getInitialState: function() {
-//    var doc=persistent.open("../node_modules/ksana-document/test/daodejin.kd")
+    try {
+      this.user=JSON.parse(localStorage.getItem("user"));      
+    }  catch (e) {
+      this.user={name:"",admin:false};
+    }
+    if (!this.user) this.user={name:"",admin:false};
+
     var tabs=this.defaultMainTabs();
     var auxs=this.defaultAuxTabs();
+
     return {settings:{},tabs:tabs, auxs:auxs,pageid:1};
   },
   componentDidMount:function() {
@@ -67,10 +68,11 @@ var main = React.createClass({
       this.setState({projectview:true});
     } else if (type=="openproject") {
       var proj=args[0];
+      var autoopen=args[1];
       project.openProject(proj);
       var obj={"id":"p_"+proj.shortname,"caption":proj.name,
         "content":projectview,"active":true,
-        "params":{"action":this.action, "project":proj}};
+        "params":{"action":this.action, "project":proj, "autoopen":autoopen }};
       this.setState({"layout":proj.tmpl.layout});
       this.refs.maintab.newTab(obj); 
     } else if (type=="openfile") {
@@ -100,7 +102,11 @@ var main = React.createClass({
       localStorage.setItem("user","{}");
       this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()});
     } else if (type=="start") {
-      this.refs.maintab.goTab("projects");
+      var lastfile=localStorage.getItem(this.user.name+".lastfile");
+      if (lastfile) lastfile=JSON.parse(lastfile);
+      else lastfile={file:"",project:""};
+
+      this.refs.maintab.goTab("projects",{autoopen:lastfile});  
     }
   },
   page:function() {
@@ -155,7 +161,7 @@ var main = React.createClass({
   render:function() {
     return <div style={{"width":"100%"}}>
     {this.showdevmenu()}
-    <tabui ref="maintab" tabs={this.state.tabs}/>
+    <tabui ref="maintab" lastfile={this.state.lastfile} tabs={this.state.tabs}/>
     <tabui ref="auxtab" tabs={this.state.auxs}/>
     </div>
   }

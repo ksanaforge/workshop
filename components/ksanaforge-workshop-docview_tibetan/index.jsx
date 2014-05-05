@@ -75,6 +75,7 @@ var docview_tibetan = React.createClass({
       doc.meta.filename=this.props.file.filename;
       this.setState({doc:doc,pageid:1});
     });
+    if (this.props.tab ) this.props.tab.instance=this; // for tabui 
   },
   page:function() {
     if (!this.state.doc) return null;
@@ -89,6 +90,9 @@ var docview_tibetan = React.createClass({
     this.props.action("openimage",this.imagefilename(),this.props.project);
   },
   componentWillUnmount:function() {
+    var lastfile={project:this.props.project.shortname,
+      file:this.props.file.withfoldername};
+    localStorage.setItem(this.props.user.name+".lastfile",JSON.stringify(lastfile));
     this.saveMarkup();
   },
   render: function() {

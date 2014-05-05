@@ -96,17 +96,40 @@ var projectview = React.createClass({
     return {bar: "world",folders:[],files:[]};
   },
   componentDidMount:function() {
-    this.$ksana("getProjectFolders",this.props.project).done(function(data){
-      this.setState({folders:data});
-      if (data.length) {
+    this.$ksana("getProjectFolders",this.props.project).done(function(folders){
+      this.setState({folders:folders});
+
+      if (this.props.autoopen && this.props.autoopen.file) {
+        var folder=this.props.autoopen.file;
+        folder=folder.substring(0,folder.lastIndexOf('/'));
+        for(var i=0;i<folders.length;i++) {
+          if (folders[i].shortname==folder) {
+            this.selectFolder(i);
+            break;
+          }
+        }
+      } else {
         this.selectFolder( 0 );
       }
     });
+    if (this.props.tab ) this.props.tab.instance=this; // for tabui 
+
+
   },
   selectFolder:function(i) {
     var f=this.state.folders[i];
-    this.$ksana("getProjectFiles",f).done(function(data){
-      this.setState({files:data});
+    this.$ksana("getProjectFiles",f).done(function(files){
+      this.setState({files:files});
+
+      if (this.props.autoopen && this.props.autoopen.file) {
+        for(var i=0;i<files.length;i++) {
+          if (files[i].withfoldername==this.props.autoopen.file) {
+            this.selectFile(i);
+            this.props.autoopen.file=""; //prevent from click on folder autoopen
+            break;
+          }
+        }
+      }
     })
   },
   selectFile:function(i) {

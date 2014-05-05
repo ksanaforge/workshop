@@ -2,7 +2,7 @@
 var styles=Require("styles")[0].markups;
 var docview=Require("docview");
 var D=Require("ksana-document").document;
-
+var contentnavigator=Require("contentnavigator");
 var docview_classical = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
@@ -33,6 +33,7 @@ var docview_classical = React.createClass({
     localStorage.setItem(this.storekey(),this.state.pageid);
     return ( 
       <div>
+        <contentnavigator user={this.props.user} page={this.page()} action={this.action}/>
         <docview ref="docview"
             page={this.page()} 
             user={this.props.user}
