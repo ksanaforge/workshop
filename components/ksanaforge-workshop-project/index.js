@@ -8,7 +8,8 @@ var tibetan={
 		"suggests":Require("inlinemenu_applychange")
 	},
 	"contextmenu" : Require("contextmenu_tibetan"),
-	"layout":"horizontal"
+	"layout":"horizontal",
+	"navigator":"nav_tibetan"
 }
 var chinese={
 	"docview":"docview_chinese",
@@ -17,7 +18,8 @@ var chinese={
 var classical={
 	"docview":"docview_classical",
 	"tokenize":Require('ksana-document').tokenizers.simple,
-	"layout":"vertical"
+	"layout":"vertical",
+	"navigator":"nav_classical"
 }
 templates={tibetan:tibetan,chinese:chinese,classical:classical};
 var openProject=function(proj) {

@@ -40,7 +40,9 @@
     "ksanaforge-workshop/userlogin": "*",
     "ksanaforge-workshop/inlinemenu_accept_tibetan": "*",
     "ksanaforge-workshop/surfacetest": "*",
-    "ksanaforge-workshop/docview_classical": "*"
+    "ksanaforge-workshop/docview_classical": "*",
+    "ksanaforge-workshop/nav_tibetan": "*",
+    "ksanaforge-workshop/nav_classical": "*"
   },
   "development": {},
   "paths": [

@@ -63,8 +63,8 @@ var projectlist = React.createClass({
   },
   onShow:function(params) {
     if (!params || !this.state.projects)return;
-    var match=this.state.projects.filter( function(p) {return p.showname==params.project });
-    if(match.length) this.props.action("openproject",match[0],params.autoopen);
+    var match=this.state.projects.filter( function(p) {return p.shortname==params.project });
+    if(match.length) this.props.action("openproject",match[0],params);
   },
   editproject:function() {
     //dialog

@@ -2,7 +2,7 @@
 
 //var othercomponent=Require("other"); 
 
-var contentnavigator = React.createClass({
+var nav_tibetan = React.createClass({
   getInitialState: function() {
     return {pagename:this.pageName()};
   },
@@ -93,6 +93,7 @@ var contentnavigator = React.createClass({
       </div>
 
       <div className="col-md-5">
+      TIBETAN
         {this.adminmenu()}
         {this.previewmenu()}
         {this.renderStatus()}
@@ -102,4 +103,4 @@ var contentnavigator = React.createClass({
   }
 });
 
-module.exports=contentnavigator;
+module.exports=nav_tibetan;

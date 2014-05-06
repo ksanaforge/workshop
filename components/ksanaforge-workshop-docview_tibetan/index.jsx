@@ -112,15 +112,16 @@ var docview_tibetan = React.createClass({
     localStorage.setItem(this.props.user.name+".lastfile",JSON.stringify(lastfile));
     this.saveMarkup();
   },
+  nav:function() {
+    var params={ref:"navigator" ,user:this.props.user, preview:this.state.preview,
+      page:this.page(), action:this.action,selecting:this.state.selecting};
+    return Require(this.props.project.tmpl.navigator)(params);
+  },
   render: function() {
     localStorage.setItem(this.storekey(),this.state.pageid);
     return (
       <div>
-        <contentnavigator ref="navigator" 
-        preview={this.state.preview} user={this.props.user} 
-        selecting={this.state.selecting}
-        page={this.page()} action={this.action}/>
-
+        {this.nav()}
         <docview ref="docview"
             page={this.page()}
             pageid={this.state.pageid}

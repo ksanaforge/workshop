@@ -108,7 +108,7 @@ var main = React.createClass({
       if (lastfile) lastfile=JSON.parse(lastfile);
       else lastfile={file:"",project:""};
 
-      this.refs.maintab.goTab("projects",{autoopen:lastfile});  
+      this.refs.maintab.goTab("projects",lastfile);  
     }
   },
   page:function() {

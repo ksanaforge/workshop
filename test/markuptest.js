@@ -1,13 +1,15 @@
+var ReactTestUtils = React.addons.TestUtils;
 var nw=debuggee.nw;
 var d=debuggee.nw.window.document;
 
-var activeSurface=function() {
-	return $(d).find('[data-id="C-f_lj0001_001.kd"] .surface');
+var activeDocview=function() {
+	return ReactTestUtils.findRenderedDOMComponentWithClass(debuggee.react,"docview")._owner;
 }
 
 QUnit.asyncTest('make selection',function() {
-	var surface=activeSurface();
-	console.log(surface)
+	var dv=activeDocview();
+	console.log(dv)
+	dv.makeSelection(22,31);
 	equal(true,true)
 	start();
 });

@@ -22,18 +22,30 @@ var docview_classical = React.createClass({
     if (fromserver.kdm) kdm=JSON.parse(fromserver.kdm)
     return D.createDocument(kd,kdm);
   },
+  componentWillUnmount:function() {
+    var lastfile={project:this.props.project.shortname,
+      file:this.props.file.withfoldername};
+    localStorage.setItem(this.props.user.name+".lastfile",JSON.stringify(lastfile));
+  },
   componentDidMount:function() {
     this.$ksana("openDocument",this.props.file.filename).done(function(data){
       var doc=this.loadDocument(data);
       doc.meta.filename=this.props.file.filename;
       this.setState({doc:doc,pageid:1});
-    }); 
+    });
+  },
+  nav:function() {
+    var params={ref:"navigator" ,user:this.props.user, page:this.page(), action:this.action};
+    return Require(this.props.project.tmpl.navigator)(params);
+  },
+  action:function() {
+
   },
   render: function() {
     localStorage.setItem(this.storekey(),this.state.pageid);
     return ( 
       <div>
-        <contentnavigator user={this.props.user} page={this.page()} action={this.action}/>
+        {this.nav()}
         <docview ref="docview"
             page={this.page()} 
             user={this.props.user}
