@@ -71,13 +71,13 @@ var contentnavigator = React.createClass({
       <div className="col-md-4">
         <div className="input-group">
              <span className="input-group-btn">
-              <button className="btn btn-default" onClick={this.firstPage}>First</button>
+              <button id="btnfirstpage" className="btn btn-default" onClick={this.firstPage}>First</button>
               <button className="btn btn-default" onClick={this.prevPage}>Prev</button>
              </span>
-            <input ref="pageid" defaultValue={this.pageName()} onChange={this.pageIdChange} className="form-control" ></input>
+            <input id="pageid" ref="pageid" defaultValue={this.pageName()} onChange={this.pageIdChange} className="form-control" ></input>
             <span className="input-group-btn">
               <button className="btn btn-default" onClick={this.nextPage}>Next</button>
-              <button className="btn btn-default" onClick={this.lastPage}>Last</button>
+              <button id="btnlastpage" className="btn btn-default" onClick={this.lastPage}>Last</button>
             </span>
         </div>
       </div>

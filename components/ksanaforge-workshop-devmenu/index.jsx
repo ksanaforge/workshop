@@ -19,6 +19,24 @@ var devmenu = React.createClass({
   openFiles:function() { //platform dependent
 
   },
+  maintest:function() {
+    var gui = nodeRequire('nw.gui');
+    if (this.tester) this.tester.close(true);
+
+    var tester = gui.Window.get(
+      window.open('../test.html')
+    );
+
+    tester.on("loaded",function(){
+      var res=tester.window.startdebugger(
+        "ksanaforge-workshop", { nw: gui.Window.get() , react:ksana.mainComponent});
+
+      tester.moveTo(1920,-350);
+      tester.resizeTo(550,950);
+    })
+    this.tester=tester;
+    
+  },
   surfacetest:function() {
     React.renderComponent(surfacetest(),document.getElementById("main"));
   },
@@ -30,7 +48,7 @@ var devmenu = React.createClass({
     win.moveTo(1920,-500);
      win.resizeTo(1080,500);
     //office
-    win.moveTo(2420,-350)
+    win.moveTo(2460,-350)
     win.resizeTo(1380,900);
     //this.new_win.resizeTo();
     //var d=this.new_win.window.document;
@@ -41,6 +59,7 @@ var devmenu = React.createClass({
       <div>
         <button onClick={this.moveWindow}>move window</button>
         <button onClick={this.surfacetest}>surface test</button>
+        <button onClick={this.maintest}>main test</button>
       </div>
     );
   }

@@ -97,9 +97,11 @@ var main = React.createClass({
     } else if (type=="login") {
       var user=args[0];
       localStorage.setItem("user",JSON.stringify(user));
+      this.user=JSON.parse(localStorage.getItem("user"));  
       this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()});
     } else if (type=="logout") {
       localStorage.setItem("user","{}");
+      this.user=JSON.parse(localStorage.getItem("user"));  
       this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()});
     } else if (type=="start") {
       var lastfile=localStorage.getItem(this.user.name+".lastfile");

@@ -29,11 +29,11 @@ var userlogin = React.createClass({
       
       <div className="row">
         <div className="col-md-4 pull-right">
-        <button className="btn btn-lg btn-warning btn-block" onClick={this.logout}>Sign out</button>
+        <button id="btnlogout" className="btn btn-lg btn-warning btn-block" onClick={this.logout}>Sign out</button>
         </div>
       </div>
       <hr size="1"/>
-      <button className="btn btn-lg btn-success btn-block" onClick={this.startwork}>Start Work</button>
+      <button id="btnstart" className="btn btn-lg btn-success btn-block" onClick={this.startwork}>Start Work</button>
       </div>
     </div>
     );
@@ -44,12 +44,12 @@ var userlogin = React.createClass({
       <div className="col-md-5 col-md-offset-5">
       <form className="form-signin" role="form">
         <h2 className="form-signin-heading">Please sign in</h2>
-        <input ref="username" defaultValue={this.props.user.name} className="form-control" placeholder="username" required="true" autofocus="true"></input>
+        <input id="loginname" ref="username" defaultValue={this.props.user.name} className="form-control" placeholder="username" required="true" autofocus="true"></input>
         <input type="password" className="form-control" placeholder="Password"></input>
         <label className="checkbox">
-          <input type="checkbox" ref="admin" defaultChecked={this.props.user.admin}></input>Database Administrator
+          <input id="cbadmin" type="checkbox" ref="admin" defaultChecked={this.props.user.admin}></input>Database Administrator
         </label>
-        <button className="btn btn-lg btn-primary btn-block" onClick={this.login}>Sign in</button>
+        <button id="btnlogin" className="btn btn-lg btn-primary btn-block" onClick={this.login}>Sign in</button>
       </form>
       </div>
     </div>
