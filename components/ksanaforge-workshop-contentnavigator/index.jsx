@@ -64,6 +64,16 @@ var contentnavigator = React.createClass({
     } else return <div></div>;
 
   } ,
+  renderStatus:function() {
+    if (!this.props.selecting)return;
+    var out=[];
+    out.push(<span className="label label-default">{this.props.selecting.start}</span>);
+    if (this.props.selecting.end!=this.props.selecting.start) {
+      out.push(<span className="label label-default">{this.props.selecting.end}</span>);
+    }
+      
+    return out;      
+  },
   render: function() {
     if (!this.props.page) return <div></div>
     return (
@@ -83,6 +93,7 @@ var contentnavigator = React.createClass({
       </div>
 
       <div className="col-md-5">
+        {this.renderStatus()}
         {this.adminmenu()}
         {this.previewmenu()}
       </div>

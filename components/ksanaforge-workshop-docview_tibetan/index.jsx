@@ -64,6 +64,8 @@ var docview_tibetan = React.createClass({
       this.setState({preview:true});
     } else if (type=="endpreview") {
       this.setState({preview:false});
+    } else if (type=="makingselection") {
+      this.setState({selecting: {start:args[0],end: args[1]}});
     }
 
     if (save) this.saveMarkup();
@@ -114,14 +116,18 @@ var docview_tibetan = React.createClass({
     localStorage.setItem(this.storekey(),this.state.pageid);
     return (
       <div>
-        <contentnavigator preview={this.state.preview} user={this.props.user} page={this.page()} action={this.action}/>
+        <contentnavigator ref="navigator" 
+        preview={this.state.preview} user={this.props.user} 
+        selecting={this.state.selecting}
+        page={this.page()} action={this.action}/>
+
         <docview ref="docview"
-            page={this.page()} 
+            page={this.page()}
+            pageid={this.state.pageid}
             user={this.props.user}
             template={this.props.project.tmpl}
             styles={styles}
             action={this.action}
-            onSelection={this.onSelection}
           ></docview>
       </div>
     );

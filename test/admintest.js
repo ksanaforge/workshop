@@ -43,3 +43,11 @@ QUnit.asyncTest("last page",function(){
   },200);
 
 })
+
+QUnit.test("markuptest",function(){
+	setTimeout(function(){
+		Require("test/markuptest.js")	
+	},100);
+	equal(true,true)
+
+})
