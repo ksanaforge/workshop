@@ -6,7 +6,7 @@ var contextmenu = React.createClass({
   },  
   onPopup:function(context) {
     this.setState(context);
-  },  
+  },   
   markup:function(e) {
     var type=(typeof e =="string")?e:e.target.attributes["data-markup"].value;
     this.props.action("addMarkup",{type:type})

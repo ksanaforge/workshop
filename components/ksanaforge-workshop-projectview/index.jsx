@@ -96,7 +96,7 @@ var projectview = React.createClass({
     return {bar: "world",folders:[],files:[]};
   },
   autoopen:function() {
-    if (!this.props.autoopen || !this.props.autoopen.file) return;
+    //if (!this.props.autoopen || !this.props.autoopen.file) return;
     var folders=this.state.folders;
     if (this.props.autoopen && this.props.autoopen.file) {
         var folder=this.props.autoopen.file;
@@ -108,7 +108,8 @@ var projectview = React.createClass({
           }
         }
     } else {
-        this.selectFolder( 0 );
+      if (!this.folderopen) this.selectFolder( 0 ); 
+      this.folderopen=true;
     }
   },
   componentDidMount:function() {
@@ -117,11 +118,10 @@ var projectview = React.createClass({
       this.autoopen();
     });
     if (this.props.tab ) this.props.tab.instance=this; // for tabui 
-
-
   },
   selectFolder:function(i) {
     var f=this.state.folders[i];
+
     this.$ksana("getProjectFiles",f).done(function(files){
       this.setState({files:files});
 

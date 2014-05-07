@@ -13,12 +13,17 @@ var tibetan={
 }
 var chinese={
 	"docview":"docview_chinese",
-	"tokenize":Require('ksana-document').tokenizers.simple
+	"tokenize":Require('ksana-document').tokenizers.simple,
 }
 var classical={
 	"docview":"docview_classical",
 	"tokenize":Require('ksana-document').tokenizers.simple,
+	"inlinemenu": {
+		"suggest":Require("inlinemenu_suggest_tibetan")
+	},
+	"contextmenu" : Require("contextmenu_tibetan"),
 	"layout":"vertical",
+	"typeset":Require('ksana-document').typeset.classical,
 	"navigator":"nav_classical"
 }
 templates={tibetan:tibetan,chinese:chinese,classical:classical};
