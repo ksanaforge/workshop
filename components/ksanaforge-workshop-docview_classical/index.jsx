@@ -49,6 +49,11 @@ var docview_classical = React.createClass({
     preview:this.state.preview,action:this.action};
     return Require(this.props.project.tmpl.navigator)(params);
   },
+  saveMarkup:function() {//this should pass to 
+    this.$ksana("saveMarkup",{doc:this.state.doc},function(data){
+      console.log(data);
+    });
+  },
   action:function() {
     var args = Array.prototype.slice.call(arguments);
     var type=args.shift();
@@ -89,6 +94,7 @@ var docview_classical = React.createClass({
     } else if (type=="makingselection") {
       this.setState({selecting: {start:args[0],end: args[1]}});
     }
+    if (save) this.saveMarkup();
   },
   render: function() {
     localStorage.setItem(this.storekey(),this.state.pageid);
