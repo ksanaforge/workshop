@@ -21,7 +21,7 @@ var classical={
 	"inlinemenu": {
 		"suggest":Require("inlinemenu_suggest_tibetan")
 	},
-	"contextmenu" : Require("contextmenu_tibetan"),
+	"contextmenu" : Require("contextmenu_classical"),
 	"layout":"vertical",
 	"typeset":Require('ksana-document').typeset.classical,
 	"navigator":"nav_classical"
