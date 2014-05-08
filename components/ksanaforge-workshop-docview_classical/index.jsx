@@ -11,7 +11,7 @@ var docview_classical = React.createClass({
   }, 
   storekey:function() {
     return this.props.project.shortname+'.pageid';
-  }, 
+  },
   page:function() {
     if (!this.state.doc) return null;
     var page=this.state.doc.getPage(this.state.pageid);
@@ -49,10 +49,15 @@ var docview_classical = React.createClass({
     preview:this.state.preview,action:this.action};
     return Require(this.props.project.tmpl.navigator)(params);
   },
-  saveMarkup:function() {//this should pass to 
-    this.$ksana("saveMarkup",{doc:this.state.doc},function(data){
-      console.log(data);
-    });
+  saveMarkup:function() {//this should pass to
+    var doc=this.state.doc;
+    if (!doc.dirty) return;
+    var filename=this.state.doc.meta.filename; 
+    var username=this.props.user.name;
+    var markups=this.page().filterMarkup(function(m){return m.payload.author==username});
+    this.$ksana("saveMarkup",{markups:markups,filename:filename,i:this.state.pageid } ,function(data){
+      doc.markClean();
+    }); 
   },
   action:function() {
     var args = Array.prototype.slice.call(arguments);

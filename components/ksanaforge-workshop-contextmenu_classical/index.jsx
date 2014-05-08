@@ -11,8 +11,8 @@ var contextmenu_classical = React.createClass({
     var gui = nodeRequire('nw.gui');
     var clipboard = gui.Clipboard.get();
     var text=e.target.attributes['data-text'].value;
-    clipboard.set(text);
-  },
+    clipboard.set(text); 
+  },  
   markup:function(e) {
     var type=(typeof e =="string")?e:e.target.attributes["data-markup"].value;
     this.props.action("addmarkup",{type:type});

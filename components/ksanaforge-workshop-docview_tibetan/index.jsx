@@ -17,9 +17,14 @@ var docview_tibetan = React.createClass({
     return this.props.project.shortname+'.pageid';
   },
   saveMarkup:function() {
-    this.$ksana("saveMarkup",{doc:this.state.doc},function(data){
-      console.log(data);
-    });
+    var doc=this.state.doc;
+    if (!doc.dirty) return;
+    var filename=this.state.doc.meta.filename; 
+    var username=this.props.user.name;
+    var markups=this.page().filterMarkup(function(m){return m.payload.author==username});
+    this.$ksana("saveMarkup",{markups:markups,filename:filename,i:this.state.pageid } ,function(data){
+      doc.markClean();
+    }); 
   },
 
   action:function(type) {
