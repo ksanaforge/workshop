@@ -24,7 +24,8 @@ var classical={
 	"contextmenu" : Require("contextmenu_classical"),
 	"layout":"vertical",
 	"typeset":Require('ksana-document').typeset.classical,
-	"navigator":"nav_classical"
+	"navigator":"nav_classical",
+	"linebreak":"※"
 }
 templates={tibetan:tibetan,chinese:chinese,classical:classical};
 var openProject=function(proj) {

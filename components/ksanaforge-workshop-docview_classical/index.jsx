@@ -93,6 +93,21 @@ var docview_classical = React.createClass({
       this.setState({preview:false});
     } else if (type=="makingselection") {
       this.setState({selecting: {start:args[0],end: args[1]}});
+    } else if (type=="enter") {
+      var len=args[1],start=args[0];
+      if (len>0) {
+        start-=(len-1);
+      } else {
+        start--;
+      }
+      var linebreak=this.props.project.tmpl.linebreak;
+      var payload={type:"suggest",
+                  author:this.props.user.name,
+                  text:linebreak,insert:true
+                };
+      var page=this.page();
+      page.clearMarkups(start,len,this.props.user.name);
+      page.addMarkup(start,1,payload);
     }
     if (save) this.saveMarkup();
   },
