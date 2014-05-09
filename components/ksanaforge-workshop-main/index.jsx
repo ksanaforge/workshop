@@ -29,12 +29,15 @@ window.onbeforeunload = function(event){
 var main = React.createClass({ 
   mixins:Require('kse-mixins'),
   defaultMainTabs:function(){
-    return [
+    var tabs=[
     {"id":"tuser","caption":this.user.name||"Guest","content":userlogin,"active":true,
         "notclosable":true,"params":{"action":this.action,"user":this.user,"getError":this.getError}},
-    {"id":"projects","caption":"Projects","content":projectlist,"notclosable":true,
-        "params":{"action":this.action}},
     ];
+    if (this.user.name) {
+      tabs.push({"id":"projects","caption":"Projects","content":projectlist,"notclosable":true,
+        "params":{"action":this.action}});
+    }
+    return tabs;
   },  
   getError:function() {
     return this.state.error;
@@ -59,10 +62,12 @@ var main = React.createClass({
     return {settings:{},tabs:tabs, auxs:auxs,pageid:1,error:""};
   },
   componentDidMount:function() {
-    this.$ksana("getUserSettings").done(function(data){
-      //this.setState({settings:data});
-      //window.document.title=data.title + ', build '+data.buildDateTime;
-    });
+    if (!this.state.settings) {
+      this.$ksana("getUserSettings").done(function(data){
+        this.setState({settings:data});
+        window.document.title=data.title + ', build '+data.buildDateTime;
+      });      
+    }
   },
   action:function() {
     var args = Array.prototype.slice.call(arguments);
@@ -113,7 +118,7 @@ var main = React.createClass({
       });
     } else if (type=="logout") {
       localStorage.setItem("user","{}");
-      this.user=JSON.parse(localStorage.getItem("user"));  
+      this.user=JSON.parse(localStorage.getItem("user")); 
       this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()});
     } else if (type=="start") {
       var lastfile=localStorage.getItem(this.user.name+".lastfile");
