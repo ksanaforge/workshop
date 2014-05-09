@@ -103,13 +103,21 @@ var docview_tibetan = React.createClass({
       return page;
     }
   },
+  getPageName:function() {
+    var n=this.page();
+    if (!n)return ""
+    return n.name;
+  },
   imagefilename:function() {
-    var page=this.page();
-    if (!page)return ""
-    return this.page().name;
+    var pagename=this.getPageName();
+    if (!this.props.project.setting) return pagename;
+    return this.props.project.setting.getImage(pagename);
+  },
+  imagefilename:function() {
+    return this.getPageName();
   },
   componentDidUpdate:function() {
-    this.props.action("openimage",this.imagefilename(),this.props.project);
+    this.props.action("openimage",this.imagefilename(),this.getPageName(),this.props.project);
   },
   componentWillUnmount:function() {
     var lastfile={project:this.props.project.shortname,

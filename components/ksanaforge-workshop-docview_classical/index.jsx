@@ -32,6 +32,19 @@ var docview_classical = React.createClass({
     if (fromserver.kdm) kdm=JSON.parse(fromserver.kdm)
     return D.createDocument(kd,kdm);
   },
+  getPageName:function() {
+    var n=this.page();
+    if (!n)return ""
+    return n.name;
+  },
+  imagefilename:function() {
+    var pagename=this.getPageName();
+    if (!this.props.project.setting) return pagename; //as it is
+    return this.props.project.setting.getImage(pagename);
+  },
+  componentDidUpdate:function() {
+    this.props.action("openimage",this.imagefilename(),this.getPageName(),this.props.project);
+  },  
   componentWillUnmount:function() {
     var lastfile={project:this.props.project.shortname,
       file:this.props.file.withfoldername};

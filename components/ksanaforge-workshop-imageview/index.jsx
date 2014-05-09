@@ -6,6 +6,7 @@ var imageview = React.createClass({
     return {bar: "world"};
   },
   expandFileName:function(src) {
+    if (src.substring(0,4)=="http") return src;
     var s=src.split('.');
     var folder=s[0];
     var filename=s[1];
@@ -16,12 +17,26 @@ var imageview = React.createClass({
 
     return this.props.project.filename+'.images/'
     +folder+'/'+folder+'-'+filename+".jpg";
-  },
+  }, 
+  adjustImage:function() {
+    //this.refs.imagediv.getDOMNode().style.height="740";
+    var maxwidth=document.offsetWidth/2;
+    if (!this.props.project.setting) return ;
+    var adjustImage=this.props.project.setting.adjustImage;
+    var img=this.refs.image.getDOMNode();
+    var container=img.parentElement.parentElement;
+    if (adjustImage) adjustImage(img,this.props.pagename,container);
+  }, 
+  componentDidMount:function() {
+    this.adjustImage(); 
+  }, 
+  componentDidUpdate:function() {
+    this.adjustImage();
+  },   
   render: function() {
     return (
-      <div>
-        
-        <img className="sourceimage" src={this.expandFileName(this.props.src)}/>
+      <div ref="imagediv" id="imagediv"> 
+        <img ref="image" className="sourceimage" src={this.expandFileName(this.props.src)}/>
       </div>
     );
   }

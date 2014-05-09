@@ -1,1 +1,2 @@
-.sourceimage {width:100%;}
+#imagediv {position:relative;}
+.sourceimage {position:relative;width:100%;}

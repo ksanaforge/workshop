@@ -1,3 +1,4 @@
+var project_settings={"swjz":require("./swjz.js")};
 var tibetan={
 	"docview":"docview_tibetan",
 
@@ -30,7 +31,9 @@ var classical={
 templates={tibetan:tibetan,chinese:chinese,classical:classical};
 var openProject=function(proj) {
 	proj.tmpl=templates[proj.template];
+	proj.setting=project_settings[proj.name];
 	if (!proj.tmpl) throw "template not found:"+template;
 	return proj; 
 }
+
 module.exports={openProject:openProject,templates:templates};

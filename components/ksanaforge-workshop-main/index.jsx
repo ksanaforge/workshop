@@ -99,11 +99,13 @@ var main = React.createClass({
         this.refs.maintab.newTab(obj);
     } else if (type=="openimage") {
       var file=args[0];
-      var proj=args[1];
+      var pagename=args[1];
+      var proj=args[2];
       var obj={"id":"sourceimage",
         "caption":'source',
         "content":imageview,"active":true,
-        "params":{"action":this.action, src:file, project:proj,user:this.user}};
+        "params":{"action":this.action, src:file,
+         project:proj,user:this.user,pagename:pagename}};
         this.refs.auxtab.newTab(obj);
     } else if (type=="login") {
       var name=args[0];
@@ -160,19 +162,26 @@ var main = React.createClass({
     var f=this.refs.maintab.getDOMNode();
     var aux=this.refs.auxtab.getDOMNode();
     //f.style.height='50%';
+    var contenttop=f.querySelector(".tab-content").offsetTop;
     if (this.state.layout=="vertical") {
       f.style.width='50%';
       f.style.float='left';
+      f.style.height=document.body.offsetHeight-contenttop;
       aux.style.float='right';
       aux.style.width='50%';
+      aux.style.height=document.body.offsetHeight-contenttop;
     } else {
       f.style.width='100%';
       f.style.float='none';
       aux.style.width='100%';
       aux.style.float='none';
-      f.style.height=document.body.offsetHeight/2-f.getBoundingClientRect().top+50;  
+      f.style.height='47%';
+      aux.style.height='47%';
     }
     
+  },
+  componentDidMount:function() {
+    this.makescrollable();
   },
   componentDidUpdate:function() {
     this.makescrollable();
