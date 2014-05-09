@@ -1,5 +1,6 @@
 {
 	"files":["ksanaforge-workshop/settings.json",
+		 "ksanaforge-workshop/passwd.json",
 		 "ksanaforge-workshop/dhammagear.png",
 		 "ksanaforge-workshop/svg"
 	],

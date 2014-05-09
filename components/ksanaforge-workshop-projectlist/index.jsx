@@ -31,6 +31,7 @@ var projectlist = React.createClass({
    // var formatted=d.getDay()+'/'+d.getMonth()+'/'+d.getFullYear();
     return <tr key={'p'+i} data-i={i} className={cls} 
      onClick={this.selectproject}
+     onDoubleClick={this.openproject}
      onMouseOver={this.hoverProject}>
       <td>{p.name}</td>
       <td>{p.desc}</td>
@@ -38,7 +39,6 @@ var projectlist = React.createClass({
       <td>0</td>
       <td>
         <span style={{visibility:this.state.hovered==i?"":"hidden"}} >
-          <button onClick={this.editproject} className="btn btn-default">Edit</button>
           <button onClick={this.openproject} className="btn btn-success">Open</button>
         </span>
       </td>

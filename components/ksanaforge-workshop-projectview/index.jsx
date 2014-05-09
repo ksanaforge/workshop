@@ -68,9 +68,9 @@ var fileList = React.createClass({
       out.push(<tr key={'f'+i} onClick={this.select} 
            onMouseEnter={this.hoverFile} onMouseLeave={this.leave}
            className={cls} data-i={i}>
-        <td>{f.shortname.substring(0,f.shortname.length-3)}
+        <td onDoubleClick={this.openfile}>{f.shortname.substring(0,f.shortname.length-3)}
         <span className="pull-right" style={{visibility:this.state.hovered==i?"":"hidden"}}>
-        <button className="btn btn-success" onClick={this.openfile}>Open</button>
+        <button className="btn btn-success"  onClick={this.openfile}>Open</button>
         </span>
         </td>
         </tr>);

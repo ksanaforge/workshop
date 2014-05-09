@@ -41,8 +41,7 @@ var inlinemenu_applychange = React.createClass({
   select:function(e) {
     var selected=parseInt(e.target.attributes['data-choice'].value);
     var accepted=this.markup().choices[selected];
-    var payload={type:"revision",author:this.props.user.name, 
-        insert:accepted.insert ,text:accepted.text, 
+    var payload={type:"revision",insert:accepted.insert ,text:accepted.text, 
         contributor:accepted.author};
     var m=this.props.markup;
     this.props.action("addmarkupat",m.start,m.len,payload);
@@ -50,10 +49,9 @@ var inlinemenu_applychange = React.createClass({
   myanwser:function() {
     var insert=this.refs.cbinsert.getDOMNode().checked;
     var inputtext=this.refs.inputtext.getDOMNode().value;
-    var payload={type:"revision",author:this.props.user.name, 
-        insert:insert ,text:inputtext};
+    var payload={type:"revision",insert:insert ,text:inputtext};
     var m=this.props.markup;
-    this.props.action("addmarkup",m.start,m.len,payload);
+    this.props.action("addmarkup",payload,true);
 
   },
   choices:function(name) {

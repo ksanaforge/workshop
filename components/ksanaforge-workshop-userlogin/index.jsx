@@ -1,14 +1,14 @@
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other"); 
+var crypto=Require('ksana-document').crypto;
 var userlogin = React.createClass({
   getInitialState: function() {
     return {bar: "world"};
   },
   login:function() {
     var user=this.refs.username.getDOMNode().value;
-    var admin=this.refs.admin.getDOMNode().checked;
-    this.props.action("login",{name:user,admin:admin});
+    this.props.action("login",user,this.encryptedpassword());
   },
   logout:function() {
     this.props.action("logout");
@@ -38,19 +38,27 @@ var userlogin = React.createClass({
     </div>
     );
   },
+  passwordchange:function() {
+    this.forceUpdate(); 
+  },
+  encryptedpassword:function() {
+    if (!this.refs.password) return "";
+    var password=this.refs.password.getDOMNode().value;
+ //   return password+"!"
+    return crypto.SHA1(password).toString();
+  },
   renderLogin:function() {
     return (
     <div className="container row">
       <div className="col-md-5 col-md-offset-5">
-      <form className="form-signin" role="form">
         <h2 className="form-signin-heading">Please sign in</h2>
         <input id="loginname" ref="username" defaultValue={this.props.user.name} className="form-control" placeholder="username" required="true" autofocus="true"></input>
-        <input type="password" className="form-control" placeholder="Password"></input>
-        <label className="checkbox">
-          <input id="cbadmin" type="checkbox" ref="admin" defaultChecked={this.props.user.admin}></input>Database Administrator
-        </label>
-        <button id="btnlogin" className="btn btn-lg btn-primary btn-block" onClick={this.login}>Sign in</button>
-      </form>
+        <input ref="password" type="password" onChange={this.passwordchange}  className="form-control" placeholder="Password"></input>
+        <button ref="encrypted" id="btnlogin" className="btn btn-lg btn-primary btn-block" onClick={this.login}>Sign in</button>
+        <h2 className="pull-right label label-danger">{this.props.getError()}</h2>
+        <hr/>
+        <span>Following Encrypted Password send via network</span><br/>
+        <span>{this.encryptedpassword()}</span>
       </div>
     </div>
     );

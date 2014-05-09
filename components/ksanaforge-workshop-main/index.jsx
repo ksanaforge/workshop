@@ -22,17 +22,23 @@ var userlogin=Require("userlogin");
 window.document.oncontextmenu = function(e){
     return false;
 }
+window.onbeforeunload = function(event){
+        return console.trace("reload")
+};
 
 var main = React.createClass({ 
   mixins:Require('kse-mixins'),
   defaultMainTabs:function(){
     return [
     {"id":"tuser","caption":this.user.name||"Guest","content":userlogin,"active":true,
-        "notclosable":true,"params":{"action":this.action,"user":this.user}},
+        "notclosable":true,"params":{"action":this.action,"user":this.user,"getError":this.getError}},
     {"id":"projects","caption":"Projects","content":projectlist,"notclosable":true,
         "params":{"action":this.action}},
     ];
   },  
+  getError:function() {
+    return this.state.error;
+  },
   defaultAuxTabs:function(){
     return [
       {"id":"searchtab","caption":"search","content":searchmain,
@@ -50,12 +56,12 @@ var main = React.createClass({
     var tabs=this.defaultMainTabs();
     var auxs=this.defaultAuxTabs();
 
-    return {settings:{},tabs:tabs, auxs:auxs,pageid:1};
+    return {settings:{},tabs:tabs, auxs:auxs,pageid:1,error:""};
   },
   componentDidMount:function() {
     this.$ksana("getUserSettings").done(function(data){
-      this.setState({settings:data});
-      window.document.title=data.title + ', build '+data.buildDateTime;
+      //this.setState({settings:data});
+      //window.document.title=data.title + ', build '+data.buildDateTime;
     });
   },
   action:function() {
@@ -95,10 +101,16 @@ var main = React.createClass({
         "params":{"action":this.action, src:file, project:proj,user:this.user}};
         this.refs.auxtab.newTab(obj);
     } else if (type=="login") {
-      var user=args[0];
-      localStorage.setItem("user",JSON.stringify(user));
-      this.user=JSON.parse(localStorage.getItem("user"));  
-      this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()});
+      var name=args[0];
+      var encrypted=args[1];
+      this.$ksana("login",{name:name,pw:encrypted}).done(function(res) {
+        if (res.error=="") {
+          localStorage.setItem("user",JSON.stringify(res));
+          this.user=JSON.parse(localStorage.getItem("user"));  
+          this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()});          
+        }
+        this.setState({error:res.error});
+      });
     } else if (type=="logout") {
       localStorage.setItem("user","{}");
       this.user=JSON.parse(localStorage.getItem("user"));  
