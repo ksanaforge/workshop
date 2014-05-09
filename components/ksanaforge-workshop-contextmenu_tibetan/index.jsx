@@ -1,5 +1,5 @@
 /** @jsx React.DOM */
-var contextmenu = React.createClass({
+var contextmenu_tibetan = React.createClass({
   getInitialState: function() {
     return {selectedText:"",bar: "world"};
   },  
@@ -14,8 +14,9 @@ var contextmenu = React.createClass({
     clipboard.set(text);
   },
   markup:function(e) {
+    var text=this.props.text;
     var type=(typeof e =="string")?e:e.target.attributes["data-markup"].value;
-    this.props.action("addmarkup",{type:type});
+    this.props.action("addmarkup",{type:type,text:text});
   },
   deleteText:function(e) {
     this.props.action("strikeout");
@@ -41,4 +42,4 @@ var contextmenu = React.createClass({
     );
   }
 });
-module.exports=contextmenu;
+module.exports=contextmenu_tibetan;

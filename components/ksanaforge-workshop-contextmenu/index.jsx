@@ -24,7 +24,7 @@ var contextmenu = React.createClass({
       <ul className="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.changeText}>Change Text</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="suggest">Suggest</a></li>
-        <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="noun">Noun</a></li>
+        <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="noun">break</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="verb">Verb</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.clearMarkup}>Clear Markup</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#">Copy {this.state.text}</a></li>

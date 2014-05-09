@@ -32,12 +32,12 @@ var inlinemenu_suggest_tibetan = React.createClass({
     return this.props.markup.payload;
   },
   render: function() {
-    return ( 
+    return (
       <div onKeyUp={this.keyup} className="inlinemenu well">
         <span>{this.props.text}</span>
         <span className="input-group input-group-lg">
           <span className="input-group-addon" onClick={this.clear}>{"\u2573"}</span>
-          <input ref="inputtext"  onMouseOver={this.movemove} className="focus form-control" onKeyPress={this.change} defaultValue={this.markup().text}></input>
+          <input ref="inputtext" type="text" onMouseOver={this.movemove} className="input-lg focus form-control " onKeyPress={this.change} defaultValue={this.markup().text}></input>
           <span className="input-group-addon"><input ref="cbinsert" defaultChecked={this.markup().insert} type="checkbox"/></span>
         </span>
         <span className="input-group input-group-lg">
