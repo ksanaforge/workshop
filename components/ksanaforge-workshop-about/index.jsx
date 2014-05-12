@@ -8,7 +8,7 @@ var about = React.createClass({
   render: function() {
     return (
       <div>
-        Hello,{this.state.bar}
+        ABOUT KETAKA
       </div>
     );
   }

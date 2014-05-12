@@ -74,17 +74,15 @@ var projectlist = React.createClass({
   },
   render: function() {
     return ( 
-      <div>
+      <div className="projectlist">
         <div className="row">
         <div className="col-md-8">
           <button onClick={this.newproject} className="btn btn-default">Create New Project</button>
         </div>
-
         <div className="col-md-4">
         </div>
-
         </div>
-
+        <div className="projects">
         <table className="table table-bordered table-hover">
       <thead onClick={this.sortHeader}>
         <tr className="">
@@ -99,6 +97,7 @@ var projectlist = React.createClass({
         {this.state.projects.map(this.renderProject)}
         </tbody>
         </table>
+        </div>
       </div>
     );
   }

@@ -30,23 +30,30 @@ var main = React.createClass({
   mixins:Require('kse-mixins'),
   defaultMainTabs:function(){
     var tabs=[
-    {"id":"tuser","caption":this.user.name||"Guest","content":userlogin,"active":true,
-        "notclosable":true,"params":{"action":this.action,"user":this.user,"getError":this.getError}},
+      {"id":"tuser","caption":this.user.name||"Guest","content":userlogin,"active":true,
+        "notclosable":true,"params":{"action":this.action,"user":this.user,"getError":this.getError}}
     ];
     if (this.user.name) {
       tabs.push({"id":"projects","caption":"Projects","content":projectlist,"notclosable":true,
         "params":{"action":this.action}});
     }
     return tabs;
-  },  
+  },
   getError:function() {
     return this.state.error;
   },
   defaultAuxTabs:function(){
-    return [
-      {"id":"searchtab","caption":"search","content":searchmain,
-      "active":true,"notclosable":true},
-    ]
+    var auxs=[
+      {"id":"about","caption":"About", "content":about,
+      "active":true,"notclosable":true,"param":{"action":this.action,"user":this.user}}
+      ];
+    if (this.user.name) {
+      auxs.push(
+      {"id":"searchtab","caption":"Search","content":searchmain,
+      "active":true,"notclosable":true}
+      )
+    }
+    return auxs;
   },
   getInitialState: function() {
     try {

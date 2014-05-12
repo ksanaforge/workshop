@@ -171,7 +171,7 @@ var projectview = React.createClass({
         </div>
         </div>
       </div>
-    );
+    );   
   }
 });
 module.exports=projectview;

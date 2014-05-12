@@ -74,7 +74,7 @@ var docview_tibetan = React.createClass({
     }
 
     if (save) this.saveMarkup();
-  },
+  }, 
   loadDocument:function(fromserver) {
     var kd,kdm=[];
     kd=JSON.parse(fromserver.kd);
@@ -132,8 +132,8 @@ var docview_tibetan = React.createClass({
   },
   render: function() {
     localStorage.setItem(this.storekey(),this.state.pageid);
-    return (
-      <div>
+    return ( 
+      <div className="docview_tibetan">
         {this.nav()}
         <docview ref="docview"
             page={this.page()}
