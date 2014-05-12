@@ -1,7 +1,6 @@
 /** @jsx React.DOM */
 
 
-
 var projectlist = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
@@ -25,6 +24,11 @@ var projectlist = React.createClass({
 
     this.setState({hovered:hovered});
   },
+  buildindex:function() {
+    var p=this.state.projects[this.state.hovered];
+    if (!p) return;
+    this.props.action("buildindex",p);
+  },
   renderProject:function(p,i) {
     var d=p.lastModified;
     var cls=(i==this.state.selected)?"success":"";
@@ -39,6 +43,7 @@ var projectlist = React.createClass({
       <td>0</td>
       <td>
         <span style={{visibility:this.state.hovered==i?"":"hidden"}} >
+        <button onClick={this.buildindex} className="btn btn-warning">Build Index</button>
           <button onClick={this.openproject} className="btn btn-success">Open</button>
         </span>
       </td>

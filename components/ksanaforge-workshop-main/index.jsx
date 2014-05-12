@@ -16,6 +16,7 @@ var project=Require("project");
 var about=Require("about");
 var searchmain=Require("searchmain");
 var userlogin=Require("userlogin"); 
+var buildindex=Require("buildindex");
 //sfxdfffasdfff 
 
 //disable system right click menu
@@ -133,8 +134,9 @@ var main = React.createClass({
       var lastfile=localStorage.getItem(this.user.name+".lastfile");
       if (lastfile) lastfile=JSON.parse(lastfile);
       else lastfile={file:"",project:""};
-
       this.refs.maintab.goTab("projects",lastfile);  
+    } else if (type=="buildindex") {
+      this.refs.builddialog.start(args[0].shortname);
     }
   },
   page:function() {
@@ -198,6 +200,7 @@ var main = React.createClass({
     {this.showdevmenu()}
     <tabui ref="maintab" lastfile={this.state.lastfile} tabs={this.state.tabs}/>
     <tabui ref="auxtab" tabs={this.state.auxs}/>
+    <buildindex ref="builddialog"/>
     </div>
   }
 });

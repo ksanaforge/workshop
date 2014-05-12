@@ -43,7 +43,8 @@
     "ksanaforge-workshop/docview_classical": "*",
     "ksanaforge-workshop/nav_tibetan": "*",
     "ksanaforge-workshop/nav_classical": "*",
-    "ksanaforge-workshop/contextmenu_classical": "*"
+    "ksanaforge-workshop/contextmenu_classical": "*",
+    "ksanaforge-workshop/buildindex": "*"
   },
   "development": {},
   "paths": [
