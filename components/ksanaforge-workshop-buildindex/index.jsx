@@ -20,7 +20,7 @@ var buildindex = React.createClass({
     if (this.buildtimer) return;//cannot start another instance
     this.$ksana('buildIndex',proj).done(function(session){
       this.state.session=session;
-      $(this.refs.dialog.getDOMNode()).modal('show');
+      $(this.refs.dialog.getDOMNode()).modal({backdrop:'static'}).modal('show');
       this.buildtimer=setInterval( this.status,30);
     });
   },
@@ -57,10 +57,10 @@ var buildindex = React.createClass({
     return (
     <div ref="dialog" className="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
       <div className="modal-dialog modal-sm">
-        <div className="modal-content">
+        <div className="modal-content well">
         <h3>Building Index for {proj}</h3>
-        <div className="progress">
-          <div className="progress-bar" role="progressbar" aria-valuenow={p} aria-valuemin="0" aria-valuemax="100" style={{"width": p+"%"}}>
+        <div className="progress progress-striped">
+          <div className="progress-bar progress-bar-warning"  role="progressbar" aria-valuenow={p} aria-valuemin="0" aria-valuemax="100" style={{"width": p+"%"}}>
             <span className="sr-only">{p}% Complete</span>
           </div>
         </div>
