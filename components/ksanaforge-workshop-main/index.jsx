@@ -49,10 +49,7 @@ var main = React.createClass({
       "active":true,"notclosable":true,"param":{"action":this.action,"user":this.user}}
       ];
     if (this.user.name) {
-      auxs.push(
-      {"id":"searchtab","caption":"Search","content":searchmain,
-      "active":true,"notclosable":true}
-      )
+      auxs.push({"id":"searchtab","caption":"Search","content":searchmain,"active":true,"notclosable":true});
     }
     return auxs;
   },

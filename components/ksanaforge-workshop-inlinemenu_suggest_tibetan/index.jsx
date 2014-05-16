@@ -50,7 +50,7 @@ var inlinemenu_suggest_tibetan = React.createClass({
             <button className="form-control btn btn-danger" onClick={this.remove}>Remove</button>
           </span>
           <span className="col-sm-8">
-            <button className="pull-right form-control btn btn-success" onClick={this.apply}>Apply</button>
+            <button className="pull-right form-control btn btn-success" onClick={this.apply}>Ok</button>
           </span>
         </span>
 
