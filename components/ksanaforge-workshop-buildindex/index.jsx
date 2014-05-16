@@ -1,39 +1,41 @@
 /** @jsx React.DOM */
 
 if (typeof $ =='undefined') $=Require('jquery');
+var emptystatus={done:false,progress:0,message:""};
 var buildindex = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
-    return {session:{done:false,progress:0,message:""}};
+    return {status:emptystatus};
   },
   stoptimer:function() {
     clearInterval(this.buildtimer);
     this.buildtimer=0;
   },
-  status:function() {
-    this.$ksana('buildStatus',this.state.session).done(function(session){
-      if (session.done) this.stoptimer();
-      this.setState({session:session});
+  getstatus:function() {
+    this.$ksana('buildStatus',this.state.status).done(function(status){
+      if (status.done) this.stoptimer();
+      this.setState({status:status});
     });
   },
   start:function(proj) {
     if (this.buildtimer) return;//cannot start another instance
-    this.$ksana('buildIndex',proj).done(function(session){
-      this.state.session=session;
+    this.setState({status:emptystatus});
+    this.$ksana('buildIndex',proj).done(function(status){
+      this.state.status=status;
       $(this.refs.dialog.getDOMNode()).modal({backdrop:'static'}).modal('show');
-      this.buildtimer=setInterval( this.status,1000);
+      this.buildtimer=setInterval( this.getstatus,1000);
     });
   },
   close:function() {
     $(this.refs.dialog.getDOMNode()).modal('hide');
   },
   stop:function() {
-    this.$ksana('stopIndex',this.state.session).done(function(s){
-      this.setState({session:s});
+    this.$ksana('stopIndex',this.state.status).done(function(s){
+      this.setState({status:s});
     });
   }, 
   buttons:function() {
-    if (this.state.session.done) {
+    if (this.state.status.done) {
       return (
         <div>
         <button ref="btnclose" onClick={this.close} className="btn btn-success">Close</button>
@@ -51,9 +53,9 @@ var buildindex = React.createClass({
     clearInterval(this.buildtimer);
   },
   render: function() {
-    var p=this.state.session.progress;
-    var msg=this.state.session.message;
-    var proj=this.state.session.projectname;
+    var p=Math.floor(this.state.status.progress * 100);
+    var msg=this.state.status.message;
+    var proj=this.state.status.projectname;
     return (
     <div ref="dialog" className="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
       <div className="modal-dialog modal-sm">
@@ -65,7 +67,9 @@ var buildindex = React.createClass({
           </div>
         </div>
         <span>{msg}</span>
+        <div className="pull-right">
         {this.buttons()}
+        </div>
       </div>
     </div>
   </div>
