@@ -13,10 +13,12 @@ var contextmenu_tibetan = React.createClass({
     var text=e.target.attributes['data-text'].value;
     clipboard.set(text);
   },
+  addSuggestion:function(e){
+    this.props.action("addsuggestion");
+  },
   markup:function(e) {
-    var text=this.props.text;
     var type=(typeof e =="string")?e:e.target.attributes["data-markup"].value;
-    this.props.action("addmarkup",{type:type,text:text});
+    this.props.action("addmarkup",{type:type});
   },
   deleteText:function(e) {
     this.props.action("strikeout");
@@ -25,6 +27,7 @@ var contextmenu_tibetan = React.createClass({
     this.props.action("clearmarkup");
   },
   render: function() {
+    var disabled=(this.props.len>1)?"disabled":"";
     return ( 
     <div className="dropdown">
       <button className="btn dropdown-toggle sr-only" type="button" id="dropdownMenu1" data-toggle="dropdown">
@@ -32,7 +35,8 @@ var contextmenu_tibetan = React.createClass({
         <span className="caret"></span>
       </button>
       <ul className="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-        <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="suggest">Suggest</a></li>
+        <li className={disabled}><a role="menuitem" tabIndex="-1" href="#" onClick={this.addSuggestion}>Suggest</a></li>
+        <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.markup} data-markup="comment">Comment</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.deleteText}>Delete</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.clearMarkup}>Clear Markup</a></li>
         <li className="divider"></li>

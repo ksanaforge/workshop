@@ -11,6 +11,6 @@ var about = React.createClass({
         ABOUT KETAKA
       </div>
     );
-  }
+  } 
 });
 module.exports=about;

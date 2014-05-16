@@ -10,15 +10,9 @@ var Change=React.createClass({
       "name":this.props.name,
       "onClick":this.props.select
     }
-    var isInsert=function(m) {
-      if (m.insert)
-        return <span><input type="checkbox" checked="true"></input></span>
-      else return "";
-    }
     return (
       <span data-date={this.props.now}>
         <span className="label label-info">{this.props.m.author}</span>
-         {isInsert(this.props.m)}
         <span>{this.props.m.text}</span>
        
         {React.DOM.button(opts,"Accept")}
@@ -32,7 +26,7 @@ var inlinemenu_applychange = React.createClass({
     return {now : new Date()};
   },
   keyup:function(e) {
-    if (e.keyCode==13)  this.apply(e);
+    if (e.keyCode==13)  this.myanwser(e);
     else if (e.keyCode==27) this.props.action("markupdate");
   },
   markup:function() {
@@ -41,18 +35,18 @@ var inlinemenu_applychange = React.createClass({
   select:function(e) {
     var selected=parseInt(e.target.attributes['data-choice'].value);
     var accepted=this.markup().choices[selected];
-    var payload={type:"revision",insert:accepted.insert ,text:accepted.text, 
+    var payload={type:"revision" ,text:accepted.text, 
         contributor:accepted.author};
     var m=this.props.markup;
     this.props.action("addmarkupat",m.start,m.len,payload);
+    this.props.action("nextmistake");
   },
   myanwser:function() {
-    var insert=this.refs.cbinsert.getDOMNode().checked;
     var inputtext=this.refs.inputtext.getDOMNode().value;
-    var payload={type:"revision",insert:insert ,text:inputtext};
+    var payload={type:"revision" ,text:inputtext};
     var m=this.props.markup;
     this.props.action("addmarkup",payload,true);
-
+    this.props.action("nextmistake");
   },
   choices:function(name) {
     var out=[];
@@ -97,7 +91,6 @@ var inlinemenu_applychange = React.createClass({
         <span className="input-group input-group-lg">
           <span className="input-group-addon" onClick={this.clear}>{"\u2573"}</span>
           <input ref="inputtext"  onMouseOver={this.movemove} className="focus form-control" defaultValue={this.markup().text}></input>
-          <span className="input-group-addon"><input onChange={this.apply} ref="cbinsert" defaultChecked={this.markup().insert} type="checkbox"/></span>
         </span>
 
         <button className="btn btn-warning" onClick={this.close}>Decide later</button>

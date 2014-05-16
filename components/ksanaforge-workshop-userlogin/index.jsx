@@ -41,6 +41,14 @@ var userlogin = React.createClass({
   passwordchange:function() {
     this.forceUpdate(); 
   },
+  enterusername:function(e) {
+    if (e.charCode==13) {
+      this.refs.password.getDOMNode().focus();
+    }
+  },
+  enterpassword:function(e) {
+    if (e.charCode==13) this.login();
+  },
   encryptedpassword:function() {
     if (!this.refs.password) return "";
     var password=this.refs.password.getDOMNode().value;
@@ -52,12 +60,12 @@ var userlogin = React.createClass({
     <div className="container row">
       <div className="col-md-5 col-md-offset-5">
         <h2 className="form-signin-heading">Please sign in</h2>
-        <input id="loginname" ref="username" defaultValue={this.props.user.name} className="form-control" placeholder="username" required="true" autofocus="true"></input>
-        <input ref="password" type="password" onChange={this.passwordchange}  className="form-control" placeholder="Password"></input>
+        <input onKeyPress={this.enterusername} id="loginname" ref="username" defaultValue={this.props.user.name} className="form-control" placeholder="username" required="true" autofocus="true"></input>
+        <input onKeyPress={this.enterpassword} ref="password" type="password" onChange={this.passwordchange}  className="form-control" placeholder="Password"></input>
         <button ref="encrypted" id="btnlogin" className="btn btn-lg btn-primary btn-block" onClick={this.login}>Sign in</button>
         <h2 className="pull-right label label-danger">{this.props.getError()}</h2>
         <hr/>
-        <span>Following Encrypted Password send via network</span><br/>
+        <span>Encrypted Password:</span><br/>
         <span>{this.encryptedpassword()}</span>
       </div>
     </div>

@@ -35,12 +35,6 @@ var nav_tibetan = React.createClass({
     if (this.refs&&this.refs.pageid) {
       this.refs.pageid.getDOMNode().value=this.pageName();
     }
-  }, 
-  nextMistake:function() {
-    this.props.action("nextmistake");
-  },
-  prevMistake:function() {
-    this.props.action("prevmistake");
   },
   preview:function() {
     this.props.action("preview");
@@ -56,14 +50,6 @@ var nav_tibetan = React.createClass({
       return <button className="btn btn-success" onClick={this.preview}>Preview</button>
     }
   },
-  adminmenu:function() {
-    if (this.props.user.admin) {
-      return (
-              <button className="btn btn-default" onClick={this.nextMistake}>Next mistake</button>
-              );
-    } else return <div></div>;
-
-  } ,
   renderStatus:function() {
     if (!this.props.selecting)return;
     var out=[];
@@ -93,8 +79,6 @@ var nav_tibetan = React.createClass({
       </div>
 
       <div className="col-md-5">
-      TIBETAN
-        {this.adminmenu()}
         {this.previewmenu()}
         {this.renderStatus()}
       </div>

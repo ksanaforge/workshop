@@ -8,7 +8,7 @@ var imageview=Require("imageview");
 var D=Require("ksana-document").document;
 var M=Require("ksana-document").markups;
 var docview_tibetan = React.createClass({
-  mixins: Require('kse-mixins'),
+  mixins: Require('kse-mixins'), 
   getInitialState: function() {
     var pageid=parseInt(localStorage.getItem(this.storekey()))||1;
     return {doc:null,pageid:pageid};
@@ -76,13 +76,10 @@ var docview_tibetan = React.createClass({
     if (save) this.saveMarkup();
   }, 
   loadDocument:function(fromserver) {
-    var kd,kdm=[];
-    kd=JSON.parse(fromserver.kd);
-    if (fromserver.kdm) kdm=JSON.parse(fromserver.kdm)
-    return D.createDocument(kd,kdm);
+    return D.createDocument(fromserver.kd,fromserver.kdm);
   },
   componentDidMount:function() {
-    this.$ksana("openDocument",this.props.file.filename).done(function(data){
+    this.$ksana("loadDocumentJSON",this.props.file.filename).done(function(data){
       var doc=this.loadDocument(data);
       doc.meta.filename=this.props.file.filename;
       this.setState({doc:doc,pageid:1});

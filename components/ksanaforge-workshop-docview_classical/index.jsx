@@ -27,10 +27,7 @@ var docview_classical = React.createClass({
     }
   },
   loadDocument:function(fromserver) {
-    var kd,kdm=[];
-    kd=JSON.parse(fromserver.kd);
-    if (fromserver.kdm) kdm=JSON.parse(fromserver.kdm)
-    return D.createDocument(kd,kdm);
+    return D.createDocument(fromserver.kd,fromserver.kdm);
   },
   getPageName:function() {
     var n=this.page();
@@ -51,7 +48,7 @@ var docview_classical = React.createClass({
     localStorage.setItem(this.props.user.name+".lastfile",JSON.stringify(lastfile));
   },
   componentDidMount:function() {
-    this.$ksana("openDocument",this.props.file.filename).done(function(data){
+    this.$ksana("loadDocumentJSON",this.props.file.filename).done(function(data){
       var doc=this.loadDocument(data);
       doc.meta.filename=this.props.file.filename;
       this.setState({doc:doc,pageid:1});

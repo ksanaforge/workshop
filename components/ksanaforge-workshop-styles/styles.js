@@ -3,6 +3,8 @@ var styles = [
     "name":"part of speech",
     "markups": {
       "suggest":  {'border-bottom': '1px solid orange','cursor': 'pointer'},
+      "comment":  {'border-bottom': '1px solid purple','cursor': 'pointer'},
+
       "revision":  {'border-bottom': '1px solid green','cursor': 'pointer'},
       "verb":  {"background-image":"url('svg/overline.svg')" },
       "verb_b":  {"background-image":"url('svg/overline_b.svg')" },

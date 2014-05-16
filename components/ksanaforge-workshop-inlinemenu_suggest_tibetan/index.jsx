@@ -2,22 +2,24 @@
 
 //var othercomponent=Require("other"); 
 var inlinemenu_suggest_tibetan = React.createClass({
-  apply:function(e) {
-    this.markup().reason=this.refs.reason.getDOMNode().value;
-    this.markup().text=this.refs.inputtext.getDOMNode().value;
-    this.markup().insert=this.refs.cbinsert.getDOMNode().checked && this.markup().text.length;
+  apply:function() {    
+    var text=this.refs.inputtext.getDOMNode().value;
+    if (this.props.text==text) {
+      this.remove(); //no chances
+    } else {
+      this.markup().text=text;  
+      this.markup().reason=this.refs.reason.getDOMNode().value;
+    }
     this.props.action("markupupdate");
   },
   keyup:function(e) {
     if (e.keyCode==13)  this.apply(e);
     else if (e.keyCode==27) {
-      if (this.refs.inputtext.getDOMNode().value=="" && 
-          this.refs.cbinsert.getDOMNode().checked ) {
-          this.props.action("removemarkup",this.props.markup);
+      if (this.refs.inputtext.getDOMNode().value==this.props.text) {
+        this.props.action("removemarkup",this.props.markup);
       } else {
-        this.props.action("markupdate");  
+        this.props.action("markupdate");  //cancel
       }
-      
     }
   }, 
   clear:function() {
@@ -38,7 +40,6 @@ var inlinemenu_suggest_tibetan = React.createClass({
         <span className="input-group input-group-lg">
           <span className="input-group-addon" onClick={this.clear}>{"\u2573"}</span>
           <input ref="inputtext" type="text" onMouseOver={this.movemove} className="input-lg focus form-control " onKeyPress={this.change} defaultValue={this.markup().text}></input>
-          <span className="input-group-addon"><input ref="cbinsert" defaultChecked={this.markup().insert} type="checkbox"/></span>
         </span>
         <span className="input-group input-group-lg">
           <span className="input-group-addon">Reason</span>

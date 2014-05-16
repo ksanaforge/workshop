@@ -14,14 +14,14 @@ var buildindex = React.createClass({
     this.$ksana('buildStatus',this.state.session).done(function(session){
       if (session.done) this.stoptimer();
       this.setState({session:session});
-    })
+    });
   },
   start:function(proj) {
     if (this.buildtimer) return;//cannot start another instance
     this.$ksana('buildIndex',proj).done(function(session){
       this.state.session=session;
       $(this.refs.dialog.getDOMNode()).modal({backdrop:'static'}).modal('show');
-      this.buildtimer=setInterval( this.status,30);
+      this.buildtimer=setInterval( this.status,1000);
     });
   },
   close:function() {

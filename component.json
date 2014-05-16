@@ -44,7 +44,8 @@
     "ksanaforge-workshop/nav_tibetan": "*",
     "ksanaforge-workshop/nav_classical": "*",
     "ksanaforge-workshop/contextmenu_classical": "*",
-    "ksanaforge-workshop/buildindex": "*"
+    "ksanaforge-workshop/buildindex": "*",
+    "ksanaforge-workshop/inlinemenu_comment_tibetan": "*"
   },
   "development": {},
   "paths": [
