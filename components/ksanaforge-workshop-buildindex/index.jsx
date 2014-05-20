@@ -13,13 +13,14 @@ var buildindex = React.createClass({
   },
   getstatus:function() {
     this.$ksana('buildStatus',this.state.status).done(function(status){
+      var elapsed=Math.floor((new Date()-this.state.starttime)/1000);
       if (status.done) this.stoptimer();
-      this.setState({status:status});
+      this.setState({status:status, elapsed:elapsed});
     });
   },
   start:function(proj) {
     if (this.buildtimer) return;//cannot start another instance
-    this.setState({status:emptystatus});
+    this.setState({status:emptystatus,starttime:new Date(),elapsed:0});
     this.$ksana('buildIndex',proj).done(function(status){
       this.state.status=status;
       $(this.refs.dialog.getDOMNode()).modal({backdrop:'static'}).modal('show');
@@ -54,13 +55,15 @@ var buildindex = React.createClass({
   },
   render: function() {
     var p=Math.floor(this.state.status.progress * 100);
+    var pp=Math.floor(this.state.status.progress * 1000) / 10;
     var msg=this.state.status.message;
     var proj=this.state.status.projectname;
     return (
     <div ref="dialog" className="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
       <div className="modal-dialog modal-sm">
         <div className="modal-content well">
-        <h3>Building Index for {proj}</h3>
+        <h3>Building Index for {proj} {pp}%</h3>
+        <h4>time elapsed {this.state.elapsed} seconds</h4>
         <div className="progress progress-striped">
           <div className="progress-bar progress-bar-warning"  role="progressbar" aria-valuenow={p} aria-valuemin="0" aria-valuemax="100" style={{"width": p+"%"}}>
             <span className="sr-only">{p}% Complete</span>

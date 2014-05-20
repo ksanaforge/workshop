@@ -1,5 +1,6 @@
 /** @jsx React.DOM */
 
+var kse=Require("ksana-document").kse; 
 var kde=Require("ksana-document").kde; 
 var searchmain = React.createClass({
   mixins: Require('kse-mixins'), 
@@ -11,7 +12,11 @@ var searchmain = React.createClass({
     return {bar: "world", output:""};
   },
   dosearch:function() {
-    this.db.get(["tokens","君"],function(data){
+    this.db.get([["fileNames"],["fileOffsets"]],true,function(res) {
+      console.log(res)
+    });
+    return;
+    kse.search(this.db,this.refs.tofind.getDOMNode().value,{},function(data){
       this.setState({output:data});  
     });
   },
