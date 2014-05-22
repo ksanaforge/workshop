@@ -17,6 +17,7 @@ var about=Require("about");
 var searchmain=Require("searchmain");
 var userlogin=Require("userlogin"); 
 var buildindex=Require("buildindex");
+var Kde=Require("ksana-document").kde;
 //sfxdfffasdfff 
 
 //disable system right click menu
@@ -29,6 +30,7 @@ window.onbeforeunload = function(event){
 
 var main = React.createClass({ 
   mixins:Require('kse-mixins'),
+  searchtab:0,
   defaultMainTabs:function(){
     var tabs=[
       {"id":"tuser","caption":this.user.name||"Guest","content":userlogin,"active":true,
@@ -43,14 +45,11 @@ var main = React.createClass({
   getError:function() {
     return this.state.error;
   },
-  defaultAuxTabs:function(){
+  defaultAuxTabs:function(db){
     var auxs=[
       {"id":"about","caption":"About", "content":about,
       "active":true,"notclosable":true,"param":{"action":this.action,"user":this.user}}
       ];
-    if (this.user.name) {
-      auxs.push({"id":"searchtab","caption":"Search","content":searchmain,"active":true,"notclosable":true});
-    }
     return auxs;
   },
   getInitialState: function() {
@@ -64,7 +63,7 @@ var main = React.createClass({
     var tabs=this.defaultMainTabs();
     var auxs=this.defaultAuxTabs();
 
-    return {settings:{},tabs:tabs, auxs:auxs,pageid:1,error:""};
+    return {settings:{},tabs:tabs, auxs:auxs,pageid:1,error:"",db:null};
   },
   componentDidMount:function() {
     if (!this.state.settings) {
@@ -73,6 +72,23 @@ var main = React.createClass({
         window.document.title=data.title + ', build '+data.buildDateTime;
       });      
     }
+  },
+  newsearchtab:function(proj) {
+      var auxs=this.state.auxs;
+      for (var i=0;i<auxs.length;i++) {
+        if (auxs[i].dbid==proj.name) return;
+      }
+      auxs.push({"id":"searchtab"+(this.searchtab++),"caption":"Search "+proj.shortname, 
+        "content":searchmain,"active":true,dbid:proj.shortname
+        , "params":{"action":this.action, "project":proj, "db":proj.shortname }});
+
+      this.setState({"layout":proj.tmpl.layout,"db":proj.shortname,"auxs":auxs});
+  },
+  notifyDb:function(dbid,type) {
+    var tab=this.refs.maintab.tabById("p_"+dbid);
+    if (!tab)return;
+    var args = Array.prototype.slice.call(arguments,1);
+    if (tab.action) tab.action.apply(tab,args);
   },
   action:function() {
     var args = Array.prototype.slice.call(arguments);
@@ -86,11 +102,16 @@ var main = React.createClass({
       var proj=args[0];
       var autoopen=args[1];
       project.openProject(proj);
-      var obj={"id":"p_"+proj.shortname,"caption":proj.name,
+      var kde=Kde.open(proj.shortname);
+      var obj={"id":"p_"+proj.shortname,"caption":proj.name,dbid:proj.shortname,
         "content":projectview,"active":true,
-        "params":{"action":this.action, "project":proj, "autoopen":autoopen }};
-      this.setState({"layout":proj.tmpl.layout});
+        "params":{"action":this.action, "project":proj, "autoopen":autoopen, "kde":kde }};
+      this.newsearchtab(proj);
       this.refs.maintab.newTab(obj); 
+    } else if (type=="newquery") {
+      var dbid=args[0];
+      var query=args[1];
+      this.notifyDb(dbid,"newquery",query);
     } else if (type=="openfile") {
       var file=args[0];
       var proj=args[1];

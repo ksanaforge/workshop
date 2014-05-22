@@ -157,7 +157,15 @@ var projectview = React.createClass({
     this.makescrollable();
     this.autoopen();
   },
-  
+  action:function() {
+    var args = Array.prototype.slice.call(arguments);
+    var type=args.shift();
+ 
+    if (type==="newquery") {
+      var query=args[0];
+      console.log("newquery",query)
+    }
+  },
   render: function() {
     return (
       <div className="projectview">
