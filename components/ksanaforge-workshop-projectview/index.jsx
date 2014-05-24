@@ -12,18 +12,21 @@ var folderList = React.createClass({
   getInitialState:function() {
     return {selected:0};
   },
+
   select:function(e) {
     var i=e.target.parentElement.attributes['data-i'].value;
     this.setState({selected:i});
     this.props.onSelectFolder(i);
   },
-  renderFolders:function() {
+  renderFolders:function() { 
     var cls="",out=[];
     for (var i=0;i<this.props.folders.length;i++) {
       var f=this.props.folders[i];
       if (i==this.state.selected) cls="success"; else cls="";
       out.push(<tr key={'d'+i} className={cls} onClick={this.select} data-i={i}>
-        <td>{f.shortname}</td>
+        <td>{f}
+        <span className="label label-info">{(this.props.hits[i]?this.props.hits[i]:"")}</span>
+        </td>
         </tr>);
     };
     return out;
@@ -61,14 +64,18 @@ var fileList = React.createClass({
     this.props.onSelectFile(i);
   },
   renderFiles:function() {
-    var cls="",out=[];
+    var cls="",out=[], filestart=this.props.start;
     for (var i=0;i<this.props.files.length;i++) {
       var f=this.props.files[i];
+      var hit=this.props.hits[filestart+i]?this.props.hits[filestart+i].length:"";
+      if (!hit) hit="";
       if (i==this.state.selected) cls="success"; else cls="";
       out.push(<tr key={'f'+i} onClick={this.select} 
            onMouseEnter={this.hoverFile} onMouseLeave={this.leave}
            className={cls} data-i={i}>
-        <td onDoubleClick={this.openfile}>{f.shortname.substring(0,f.shortname.length-3)}
+        <td onDoubleClick={this.openfile}>{f.substring(0,f.length-3)}
+        
+        <span className="label label-info">{hit}</span>
         <span className="pull-right" style={{visibility:this.state.hovered==i?"":"hidden"}}>
         <button className="btn btn-success"  onClick={this.openfile}>Open</button>
         </span>
@@ -95,6 +102,11 @@ var projectview = React.createClass({
   getInitialState: function() {
     return {bar: "world",folders:[],files:[]};
   },
+  shouldComponentUpdate:function(nextProps,nextState) {
+    return (nextProps.kde.activeQuery!=this.activeQuery || typeof this.activeQuery=="undefined"
+      || nextState.files!=this.state.files);
+  },
+
   autoopen:function() {
     //if (!this.props.autoopen || !this.props.autoopen.file) return;
     var folders=this.state.folders;
@@ -113,28 +125,38 @@ var projectview = React.createClass({
     }
   },
   componentDidMount:function() {
-    this.$ksana("getProjectFolders",this.props.project).done(function(folders){
-      this.setState({folders:folders});
-      this.autoopen();
-    });
+    var folders={};
+    var filenames=this.props.kde.get("fileNames");
+    filenames.map(function(f) { folders[f.substring(0,f.indexOf('/'))]=true});
+
+    this.setState({folders:Object.keys(folders)});
+    this.autoopen();
     if (this.props.tab ) this.props.tab.instance=this; // for tabui 
+    this.activeQuery=this.props.kde.activeQuery;
   },
   selectFolder:function(i) {
-    var f=this.state.folders[i];
+    var folder=this.state.folders[i];
+    var filenames=this.props.kde.get("fileNames");
 
-    this.$ksana("getProjectFiles",f).done(function(files){
-      this.setState({files:files});
+    var files=[],start;
+    filenames.map(function(f,idx) {
+      if(f.substring(0,folder.length)==folder) {
+        if (!files.length) start=idx;
+        files.push(f.substring(folder.length+1));
+      }
+    });
 
-      if (this.props.autoopen && this.props.autoopen.file) {
-        for(var i=0;i<files.length;i++) {
-          if (files[i].withfoldername==this.props.autoopen.file) {
-            this.selectFile(i);
-            this.props.autoopen.file=""; //prevent from click on folder autoopen
-            break;
-          }
+    this.setState({files:files, filestart:start});
+
+    if (this.props.autoopen && this.props.autoopen.file) {
+      for(var i=0;i<files.length;i++) {
+        if (files[i].withfoldername==this.props.autoopen.file) {
+          this.selectFile(i);
+          this.props.autoopen.file=""; //prevent from click on folder autoopen
+          break;
         }
       }
-    })
+    }
   },
   selectFile:function(i) {
     var f=this.state.files[i];
@@ -154,28 +176,28 @@ var projectview = React.createClass({
     f.style.height='90%';//f.style.height=tabheight- f.getBoundingClientRect().top;
   },
   componentDidUpdate:function() {
+    this.activeQuery=this.props.kde.activeQuery;
     this.makescrollable();
-    this.autoopen();
+    //this.autoopen();
   },
-  action:function() {
-    var args = Array.prototype.slice.call(arguments);
-    var type=args.shift();
- 
-    if (type==="newquery") {
-      var query=args[0];
-      console.log("newquery",query)
-    }
+  getFolderHits:function() {
+    if (!this.props.kde.activeQuery) return [];
+    return this.props.kde.activeQuery.byFolder;
+  },
+  getFileHits:function() {
+    if (!this.props.kde.activeQuery) return [];
+    return this.props.kde.activeQuery.byFile;
   },
   render: function() {
     return (
       <div className="projectview">
         <div className="row">
         <div className="col-md-3">
-        <folderList ref="folderList" folders={this.state.folders} onSelectFolder={this.selectFolder} />
+        <folderList ref="folderList" folders={this.state.folders} onSelectFolder={this.selectFolder} hits={this.getFolderHits()} />
         </div>
         <div className="col-md-9">
         <fileControls/>
-        <fileList ref="fileList" className="fileList" files={this.state.files} onSelectFile={this.selectFile} />
+        <fileList ref="fileList" className="fileList" files={this.state.files} onSelectFile={this.selectFile} start={this.state.filestart} hits={this.getFileHits()}/>
         </div>
         </div>
       </div>

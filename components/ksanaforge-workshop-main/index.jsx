@@ -84,34 +84,30 @@ var main = React.createClass({
 
       this.setState({"layout":proj.tmpl.layout,"db":proj.shortname,"auxs":auxs});
   },
-  notifyDb:function(dbid,type) {
-    var tab=this.refs.maintab.tabById("p_"+dbid);
-    if (!tab)return;
-    var args = Array.prototype.slice.call(arguments,1);
-    if (tab.action) tab.action.apply(tab,args);
-  },
   action:function() {
     var args = Array.prototype.slice.call(arguments);
     var type=args.shift();
-
+    
     if (type==="setdoc") {
       this.setState({doc:args[0]});
-    } else if (type=="projectview") {
-      this.setState({projectview:true});
     } else if (type=="openproject") {
       var proj=args[0];
       var autoopen=args[1];
       project.openProject(proj);
-      var kde=Kde.open(proj.shortname);
-      var obj={"id":"p_"+proj.shortname,"caption":proj.name,dbid:proj.shortname,
-        "content":projectview,"active":true,
-        "params":{"action":this.action, "project":proj, "autoopen":autoopen, "kde":kde }};
-      this.newsearchtab(proj);
-      this.refs.maintab.newTab(obj); 
+      var that=this;
+      Kde.open(proj.shortname,function(kde){
+        var obj={"id":"p_"+proj.shortname,"caption":proj.name,dbid:proj.shortname,
+          "content":projectview,"active":true,
+          "params":{"action":that.action, "project":proj, "autoopen":autoopen, "kde":kde }};
+        kde.setContext(that);
+        that.newsearchtab(proj);
+        that.refs.maintab.newTab(obj); 
+      });
     } else if (type=="newquery") {
-      var dbid=args[0];
-      var query=args[1];
-      this.notifyDb(dbid,"newquery",query);
+      //var dbid=args[0];
+      //var query=args[1];
+      this.forceUpdate();
+      //this.setState({});//this.notifyDb(dbid,"newquery",query);
     } else if (type=="openfile") {
       var file=args[0];
       var proj=args[1];
@@ -129,7 +125,7 @@ var main = React.createClass({
       var proj=args[2];
       var obj={"id":"sourceimage",
         "caption":'source',
-        "content":imageview,"active":true,
+        "content":imageview,"active":false,
         "params":{"action":this.action, src:file,
          project:proj,user:this.user,pagename:pagename}};
         this.refs.auxtab.newTab(obj);
@@ -160,19 +156,7 @@ var main = React.createClass({
   page:function() {
     return this.state.doc.getPage(this.state.pageid);
   },
-  projectview:function() {
-    if (this.state.projectview) {
-      return <div>
-          <projectview ref="projectview"/>
-        </div>
-    } else {
-      return null;
-    }
-  },
   componentDidUpdate:function() {
-    if (this.state.projectview) {
-      $(this.refs.projectview.getDOMNode()).modal();
-    }
   },
   newtab:function() {
     this.state.tabs.push( {"id":"t5","caption":"About","content":about,"notclosable":true})

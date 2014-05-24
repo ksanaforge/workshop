@@ -17,9 +17,9 @@ var searchmain = React.createClass({
     this.db.get([["fileNames"],["fileOffsets"]],true,function(res) {
       console.log(res)
     });
-
     kse.search(this.db,this.refs.tofind.getDOMNode().value,{},function(data){
       this.setState({output:data}); 
+      this.db.activeQuery=data;
       this.props.action("newquery",this.props.db,data);
     });
   },
