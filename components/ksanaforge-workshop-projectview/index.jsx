@@ -12,7 +12,11 @@ var folderList = React.createClass({
   getInitialState:function() {
     return {selected:0};
   },
+  shouldComponentUpdate:function(nextProps,nextState) {
 
+    return (nextProps.folders!=this.props.folders ||
+      this.state.selected!=nextState.selected || this.props.hits != nextProps.hits);
+  },
   select:function(e) {
     var i=e.target.parentElement.attributes['data-i'].value;
     this.setState({selected:i});
@@ -47,7 +51,21 @@ var fileList = React.createClass({
   select:function(e) {
     var ee=e.target.parentElement.attributes['data-i'];
     if (!ee) return;
-    this.setState({selected:parseInt(ee.value)});
+    var selected=parseInt(ee.value);
+    this.setState({selected:selected});
+    this.props.onSelectFile(selected);
+  },
+  shouldComponentUpdate:function(nextProps,nextState) {
+
+    var shouldUpdate= (nextState.hovered != this.state.hovered || this.state.hovered==-1
+      ||nextState.selected!=this.state.selected || this.props.files!=nextProps.files);
+
+    if (this.props.files!=nextProps.files) {
+      if (nextProps.selected!=this.state.selected) {
+        nextState.selected=nextProps.selected;
+      }
+    }
+    return shouldUpdate;
   },
   leave:function(e) {
     this.setState({hovered:-1});
@@ -61,7 +79,7 @@ var fileList = React.createClass({
       } else e=e.parentElement;
     }
     this.setState({selected:i});
-    this.props.onSelectFile(i);
+    this.props.onOpenFile(i);
   },
   renderFiles:function() {
     var cls="",out=[], filestart=this.props.start;
@@ -100,13 +118,12 @@ var fileList = React.createClass({
 var projectview = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
-    return {bar: "world",folders:[],files:[]};
+    return {bar: "world",folders:[],files:[],selectedFile:0};
   },
   shouldComponentUpdate:function(nextProps,nextState) {
     return (nextProps.kde.activeQuery!=this.activeQuery || typeof this.activeQuery=="undefined"
       || nextState.files!=this.state.files);
   },
-
   autoopen:function() {
     //if (!this.props.autoopen || !this.props.autoopen.file) return;
     var folders=this.state.folders;
@@ -146,11 +163,11 @@ var projectview = React.createClass({
       }
     });
 
-    this.setState({files:files, filestart:start});
+    this.setState({files:files, filestart:start, folder:folder,selectedFile:0});
 
     if (this.props.autoopen && this.props.autoopen.file) {
       for(var i=0;i<files.length;i++) {
-        if (files[i].withfoldername==this.props.autoopen.file) {
+        if (files[i]==this.props.autoopen.file) {
           this.selectFile(i);
           this.props.autoopen.file=""; //prevent from click on folder autoopen
           break;
@@ -159,7 +176,13 @@ var projectview = React.createClass({
     }
   },
   selectFile:function(i) {
-    var f=this.state.files[i];
+    var f=this.state.folder+'/'+this.state.files[i];
+    this.props.kde.activeFile=f;
+    this.props.action("selectfile",this.props.kde,f);
+  },
+  openFile:function(i) {
+    var f=this.state.folder+'/'+this.state.files[i];
+
     this.props.action("openfile",f,this.props.project,
       this.props.project.tmpl.docview||"docview_default");
 
@@ -178,7 +201,12 @@ var projectview = React.createClass({
   componentDidUpdate:function() {
     this.activeQuery=this.props.kde.activeQuery;
     this.makescrollable();
-    //this.autoopen();
+    var that=this;
+    if  (typeof this.state.folder=="undefined") {
+        setTimeout(function(){
+          that.selectFolder(0);
+       },100);
+    }
   },
   getFolderHits:function() {
     if (!this.props.kde.activeQuery) return [];
@@ -197,7 +225,10 @@ var projectview = React.createClass({
         </div>
         <div className="col-md-9">
         <fileControls/>
-        <fileList ref="fileList" className="fileList" files={this.state.files} onSelectFile={this.selectFile} start={this.state.filestart} hits={this.getFileHits()}/>
+        <fileList ref="fileList" className="fileList" 
+           selected={this.state.selectedFile} 
+            files={this.state.files} 
+            onSelectFile={this.selectFile} onOpenFile={this.openFile} start={this.state.filestart} hits={this.getFileHits()}/>
         </div>
         </div>
       </div>

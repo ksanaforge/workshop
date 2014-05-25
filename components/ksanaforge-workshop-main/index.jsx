@@ -87,7 +87,7 @@ var main = React.createClass({
   action:function() {
     var args = Array.prototype.slice.call(arguments);
     var type=args.shift();
-    
+
     if (type==="setdoc") {
       this.setState({doc:args[0]});
     } else if (type=="openproject") {
@@ -104,10 +104,7 @@ var main = React.createClass({
         that.refs.maintab.newTab(obj); 
       });
     } else if (type=="newquery") {
-      //var dbid=args[0];
-      //var query=args[1];
       this.forceUpdate();
-      //this.setState({});//this.notifyDb(dbid,"newquery",query);
     } else if (type=="openfile") {
       var file=args[0];
       var proj=args[1];
@@ -115,10 +112,12 @@ var main = React.createClass({
       var docview=Require(template);
  
       var obj={"id":"f_"+file.shortname,
-        "caption":proj.shortname+'/'+file.withfoldername,
+        "caption":proj.shortname+'/'+file,
         "content":docview,"active":true,
         "params":{"action":this.action, file:file, project:proj,user:this.user}};
         this.refs.maintab.newTab(obj);
+    } else if (type=="selectfile") {
+      this.forceUpdate();
     } else if (type=="openimage") {
       var file=args[0];
       var pagename=args[1];

@@ -46,11 +46,11 @@ var docview_classical = React.createClass({
     var lastfile={project:this.props.project.shortname,
       file:this.props.file.withfoldername};
     localStorage.setItem(this.props.user.name+".lastfile",JSON.stringify(lastfile));
-  },
+  }, 
   componentDidMount:function() {
-    this.$ksana("loadDocumentJSON",this.props.file.filename).done(function(data){
+    this.$ksana("loadDocumentJSON",{project:this.props.project,file:this.props.file}).done(function(data){
       var doc=this.loadDocument(data);
-      doc.meta.filename=this.props.file.filename;
+      doc.meta.filename=this.props.file;
       this.setState({doc:doc,pageid:1});
     });
   },
