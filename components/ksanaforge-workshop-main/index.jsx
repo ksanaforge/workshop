@@ -111,22 +111,24 @@ var main = React.createClass({
       var template=args[2] || "docview_default";
       var docview=Require(template);
  
-      var obj={"id":"f_"+file.shortname,
-        "caption":proj.shortname+'/'+file,
-        "content":docview,"active":true,
-        "params":{"action":this.action, file:file, project:proj,user:this.user}};
+      var obj={"id":"f_"+file.shortname
+        ,"caption":proj.shortname+'/'+file
+        ,"content":docview,"active":true
+        ,"params":{"action":this.action, file:file, project:proj,user:this.user}};
         this.refs.maintab.newTab(obj);
-    } else if (type=="selectfile") {
+    } else if (type=="selectfile" || type=="selectfolder") {
       this.forceUpdate();
     } else if (type=="openimage") {
       var file=args[0];
       var pagename=args[1];
       var proj=args[2];
-      var obj={"id":"sourceimage",
-        "caption":'source',
-        "content":imageview,"active":false,
-        "params":{"action":this.action, src:file,
-         project:proj,user:this.user,pagename:pagename}};
+      var obj={"id":"sourceimage"
+        ,"caption":'source'
+        ,"content":imageview
+        ,"active":false
+        ,"params":
+          {"action":this.action, src:file
+            ,project:proj,user:this.user,pagename:pagename}};
         this.refs.auxtab.newTab(obj);
     } else if (type=="login") {
       var name=args[0];

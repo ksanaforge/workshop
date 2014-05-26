@@ -174,6 +174,8 @@ var projectview = React.createClass({
         }
       }
     }
+    this.props.kde.activeFolder=folder;
+    this.props.action("selectfile",this.props.kde,folder);
   },
   selectFile:function(i) {
     var f=this.state.folder+'/'+this.state.files[i];
