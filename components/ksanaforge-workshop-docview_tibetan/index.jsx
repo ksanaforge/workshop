@@ -10,11 +10,13 @@ var M=Require("ksana-document").markups;
 var docview_tibetan = React.createClass({
   mixins: Require('kse-mixins'), 
   getInitialState: function() {
-    var pageid=parseInt(localStorage.getItem(this.storekey()))||1;
-    return {doc:null,pageid:pageid};
+    return {doc:null,pageid:this.props.pageid};
   },
-  storekey:function() {
-    return this.props.project.shortname+'.pageid';
+  shouldComponentUpdate:function(nextProps,nextState) {
+      if (nextProps.pageid!=this.props.pageid) {
+        nextState.pageid=nextProps.pageid;
+      }
+      return true;
   },
   saveMarkup:function() {
     var doc=this.state.doc;
@@ -79,10 +81,10 @@ var docview_tibetan = React.createClass({
     return D.createDocument(fromserver.kd,fromserver.kdm);
   },
   componentDidMount:function() {
-    this.$ksana("loadDocumentJSON",{project:this.props.project,file:this.props.file}).done(function(data){
+    this.$ksana("loadDocumentJSON",{project:this.props.project,file:this.props.filename}).done(function(data){
       var doc=this.loadDocument(data);
-      doc.meta.filename=this.props.file;
-      this.setState({doc:doc,pageid:1});
+      doc.meta.filename=this.props.filename;
+      this.setState({doc:doc});
     });
     if (this.props.tab ) this.props.tab.instance=this; // for tabui 
   },
@@ -118,7 +120,7 @@ var docview_tibetan = React.createClass({
   },
   componentWillUnmount:function() {
     var lastfile={project:this.props.project.shortname,
-      file:this.props.file};
+      file:this.props.filename};
     localStorage.setItem(this.props.user.name+".lastfile",JSON.stringify(lastfile));
     this.saveMarkup();
   },
@@ -128,7 +130,6 @@ var docview_tibetan = React.createClass({
     return Require(this.props.project.tmpl.navigator)(params);
   },
   render: function() {
-    localStorage.setItem(this.storekey(),this.state.pageid);
     return ( 
       <div className="docview_tibetan">
         {this.nav()}

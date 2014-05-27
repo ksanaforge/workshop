@@ -39,11 +39,12 @@ var searchmain = React.createClass({
             that.props.action("newquery",this.props.db,data);
       }
     });
-  }, 
+  },
   openpage:function(e) {
     var i=parseInt(e.target.attributes['data-i'].value);
     var excerpt=this.state.output.excerpt[i];
-    console.log(excerpt);
+    var fileNames=this.db.get("fileNames");
+    this.props.action("openfile",fileNames[excerpt.file],this.props.db, excerpt.page+1 );
   },
   renderExcerpt:function(excerpt,i) {
     return <div>

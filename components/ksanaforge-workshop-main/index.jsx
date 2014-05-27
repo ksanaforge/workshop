@@ -31,6 +31,9 @@ window.onbeforeunload = function(event){
 var main = React.createClass({ 
   mixins:Require('kse-mixins'),
   searchtab:0,
+  getProjects:function() {
+    return this.state.projects?this.state.projects:[];
+  },
   defaultMainTabs:function(){
     var tabs=[
       {"id":"tuser","caption":this.user.name||"Guest","content":userlogin,"active":true,
@@ -38,7 +41,7 @@ var main = React.createClass({
     ];
     if (this.user.name) {
       tabs.push({"id":"projects","caption":"Projects","content":projectlist,"notclosable":true,
-        "params":{"action":this.action}});
+        "params":{"action":this.action, "projects":this.getProjects}});
     }
     return tabs;
   },
@@ -63,13 +66,16 @@ var main = React.createClass({
     var tabs=this.defaultMainTabs();
     var auxs=this.defaultAuxTabs();
 
-    return {settings:{},tabs:tabs, auxs:auxs,pageid:1,error:"",db:null};
+    return {settings:null,tabs:tabs, auxs:auxs,pageid:1,error:"",db:null,projects:null};
   },
   componentDidMount:function() {
+    this.makescrollable();
     if (!this.state.settings) {
-      this.$ksana("getUserSettings").done(function(data){
-        this.setState({settings:data});
-        window.document.title=data.title + ', build '+data.buildDateTime;
+      this.$ksana("getUserSettings").done(function(settings){
+        window.document.title=settings.title + ', build '+settings.buildDateTime;
+        this.$ksana('enumProject').done(function(projects){
+          this.setState({projects:projects,settings:settings});
+        });
       });      
     }
   },
@@ -83,6 +89,10 @@ var main = React.createClass({
         , "params":{"action":this.action, "project":proj, "db":proj.shortname }});
 
       this.setState({"layout":proj.tmpl.layout,"db":proj.shortname,"auxs":auxs});
+  },
+  getProjectByName:function(projname) {
+    var projects=this.state.projects.filter(function(p){return p.shortname==projname});
+    return projects[0];
   },
   action:function() {
     var args = Array.prototype.slice.call(arguments);
@@ -106,15 +116,20 @@ var main = React.createClass({
     } else if (type=="newquery") {
       this.forceUpdate();
     } else if (type=="openfile") {
-      var file=args[0];
+      var filename=args[0];
       var proj=args[1];
-      var template=args[2] || "docview_default";
+      if (typeof proj=="string") {
+        proj=this.getProjectByName(proj);
+      }
+      var pageid=args[2]||1;
+      var template=args[3] || proj.tmpl.docview || "docview_default";
       var docview=Require(template);
  
-      var obj={"id":"f_"+file.shortname
-        ,"caption":proj.shortname+'/'+file
+      var obj={"id":"f_"+filename
+        ,"caption":proj.shortname+'/'+filename
         ,"content":docview,"active":true
-        ,"params":{"action":this.action, file:file, project:proj,user:this.user}};
+        ,"params":{"action":this.action, filename:filename, project:proj
+                          ,user:this.user, pageid: pageid}};
         this.refs.maintab.newTab(obj);
     } else if (type=="selectfile" || type=="selectfolder") {
       this.forceUpdate();
@@ -157,15 +172,13 @@ var main = React.createClass({
   page:function() {
     return this.state.doc.getPage(this.state.pageid);
   },
-  componentDidUpdate:function() {
-  },
   newtab:function() {
     this.state.tabs.push( {"id":"t5","caption":"About","content":about,"notclosable":true})
     this.forceUpdate();
   },
    //<button onClick={this.newtab}>newtab</button>
   showdevmenu:function() {
-    if (this.state.settings.developer) {
+    if (this.state.settings && this.state.settings.developer) {
       return <devmenu action={this.action}/>;
     }
     else return null;
@@ -191,9 +204,6 @@ var main = React.createClass({
       aux.style.height='47%';
     }
     
-  },
-  componentDidMount:function() {
-    this.makescrollable();
   },
   componentDidUpdate:function() {
     this.makescrollable();

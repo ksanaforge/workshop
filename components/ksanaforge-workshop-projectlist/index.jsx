@@ -4,12 +4,9 @@
 var projectlist = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
-    return {bar: "world",projects:[],hovered:-1,selected:-1};
+    return {bar: "world",hovered:-1,selected:-1};
   },
   componentDidMount:function() {
-    this.$ksana('enumProject').done(function(res){
-      this.setState({projects:res});
-    });
     if (this.props.tab ) this.props.tab.instance=this; // for tabui 
   },
   selectproject:function(e) {
@@ -25,7 +22,7 @@ var projectlist = React.createClass({
     this.setState({hovered:hovered});
   },
   buildindex:function() {
-    var p=this.state.projects[this.state.hovered];
+    var p=this.props.projects()[this.state.hovered];
     if (!p) return;
     this.props.action("buildindex",p);
   },
@@ -53,7 +50,7 @@ var projectlist = React.createClass({
   sortHeader:function(e) {
     var field=e.target.attributes['data-field'];
     field=field?field.value: e.target.innerText;
-    this.state.projects.sort(function(a,b){
+    this.props.projects().sort(function(a,b){
       if (a[field]==b[field]) return 0;
       if (a[field]>b[field]) return 1;
       else return -1
@@ -61,14 +58,14 @@ var projectlist = React.createClass({
     this.forceUpdate();
   },
   openproject:function() {
-    var p=this.state.projects[this.state.hovered];
+    var p=this.props.projects()[this.state.hovered];
     if (!p) return;
     this.props.action("openproject",p);
     //open recently edited file automatically
   },
   onShow:function(params) {
-    if (!params || !this.state.projects)return;
-    var match=this.state.projects.filter( function(p) {return p.shortname==params.project });
+    if (!params || !this.props.projects())return;
+    var match=this.props.projects().filter( function(p) {return p.shortname==params.project });
     if(match.length) this.props.action("openproject",match[0],params);
   },
   editproject:function() {
@@ -99,7 +96,7 @@ var projectlist = React.createClass({
         </tr>
       </thead>
         <tbody>
-        {this.state.projects.map(this.renderProject)}
+        {this.props.projects().map(this.renderProject)}
         </tbody>
         </table>
         </div>
