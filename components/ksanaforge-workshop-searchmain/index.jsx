@@ -35,13 +35,21 @@ var searchmain = React.createClass({
       setTimeout(function(){  
         that.setState({output:data}); 
       },100); 
-      if (e) { 
+      if (e) {
             that.props.action("newquery",this.props.db,data);
       }
     });
+  }, 
+  openpage:function(e) {
+    var i=parseInt(e.target.attributes['data-i'].value);
+    var excerpt=this.state.output.excerpt[i];
+    console.log(excerpt);
   },
-  renderExcerpt:function(excerpt) {
-    return <div>{excerpt}</div>;
+  renderExcerpt:function(excerpt,i) {
+    return <div>
+      <a data-i={i} onClick={this.openpage} className="btn btn-link">{"["+excerpt.pagename+"]"}</a>
+      <span className="excerpt" dangerouslySetInnerHTML={{__html: excerpt.text}} ></span>
+    </div>;
   }, 
   renderExcerpts:function() {
     var output=this.state.output;
@@ -51,8 +59,8 @@ var searchmain = React.createClass({
   render: function() {
     return (
       <div>
-        <input ref="tofind" defaultValue="ཕྱག་"></input>
-        <button onClick={this.dosearch}>Search</button>
+        <input className="text" ref="tofind" defaultValue="ཕྱག་"></input>
+        <button className="btn btn-primary" onClick={this.dosearch}>Search</button>
         <div>{this.renderExcerpts()}</div>
       </div>
     );
