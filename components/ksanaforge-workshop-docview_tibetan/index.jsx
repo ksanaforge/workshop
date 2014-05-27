@@ -138,7 +138,9 @@ var docview_tibetan = React.createClass({
             pageid={this.state.pageid}
             user={this.props.user}
             template={this.props.project.tmpl}
+            customfunc={this.props.kde.customfunc}
             styles={styles}
+            hits={this.props.hits}
             action={this.action}
           ></docview>
       </div>

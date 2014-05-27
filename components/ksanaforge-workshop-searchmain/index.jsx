@@ -10,11 +10,6 @@ var searchmain = React.createClass({
     }
     return (nextState.output!=this.state.output );
   },
-  componentDidMount:function() {
-    if (!this.props.db) return;
-    this.db=kde.open(this.props.db);
-    this.db.setContext(this);
-  },
   getInitialState: function() {
     return {bar: "world", output:""};
   },
@@ -44,25 +39,37 @@ var searchmain = React.createClass({
     var i=parseInt(e.target.attributes['data-i'].value);
     var excerpt=this.state.output.excerpt[i];
     var fileNames=this.db.get("fileNames");
-    this.props.action("openfile",fileNames[excerpt.file],this.props.db, excerpt.page+1 );
+    this.props.action("openfile",fileNames[excerpt.file],this.props.db, excerpt.page+1,excerpt.hits );
   },
   renderExcerpt:function(excerpt,i) {
     return <div>
       <a data-i={i} onClick={this.openpage} className="btn btn-link">{"["+excerpt.pagename+"]"}</a>
       <span className="excerpt" dangerouslySetInnerHTML={{__html: excerpt.text}} ></span>
-    </div>;
+    </div>; 
   }, 
   renderExcerpts:function() {
     var output=this.state.output;
     if (!output.excerpt) return null;
     return output.excerpt.map(this.renderExcerpt);
-  },  
+  },
+  componentDidMount:function() {
+    if (!this.props.db) return;
+    this.db=kde.open(this.props.db);
+    this.db.setContext(this);
+  },
+  componentDidUpdate:function() {
+    if (!this.db)return;
+    this.refs.excerpts.getDOMNode().style.height=
+       this.getDOMNode().offsetHeight - this.refs.controls.getDOMNode().offsetHeight ;
+  },
   render: function() {
     return (
-      <div>
-        <input className="text" ref="tofind" defaultValue="ཕྱག་"></input>
+      <div className="searchmain">
+        <div ref="controls">
+        <input className="tofind" ref="tofind" defaultValue="ཕྱག་"></input>
         <button className="btn btn-primary" onClick={this.dosearch}>Search</button>
-        <div>{this.renderExcerpts()}</div>
+        </div> 
+        <div ref="excerpts" className="excerpts">{this.renderExcerpts()}</div> 
       </div>
     );
   }

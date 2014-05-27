@@ -137,7 +137,7 @@ var projectview = React.createClass({
           }
         }
     } else {
-      if (!this.folderopen) this.selectFolder( 0 ); 
+      if (!this.folderopen && this.state.folders.length) this.selectFolder( 0 ); 
       this.folderopen=true;
     }
   },
@@ -184,10 +184,7 @@ var projectview = React.createClass({
   },
   openFile:function(i) {
     var f=this.state.folder+'/'+this.state.files[i];
-
-    this.props.action("openfile",f,this.props.project,0,
-      this.props.project.tmpl.docview||"docview_default");
-
+    this.props.action("openfile",f,this.props.project);
     this.setState({selectedFile:i});
   },
   

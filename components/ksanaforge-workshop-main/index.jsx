@@ -118,18 +118,20 @@ var main = React.createClass({
     } else if (type=="openfile") {
       var filename=args[0];
       var proj=args[1];
+      var kde=Kde.open(proj); //already open
       if (typeof proj=="string") {
         proj=this.getProjectByName(proj);
-      }
+      } 
       var pageid=args[2]||1;
-      var template=args[3] || proj.tmpl.docview || "docview_default";
+      var hits=args[3]||[];
+      var template=args[4] || proj.tmpl.docview || "docview_default";
       var docview=Require(template);
- 
+
       var obj={"id":"f_"+filename
         ,"caption":proj.shortname+'/'+filename
         ,"content":docview,"active":true
         ,"params":{"action":this.action, filename:filename, project:proj
-                          ,user:this.user, pageid: pageid}};
+                          ,user:this.user, pageid: pageid, hits:hits, kde:kde }};
         this.refs.maintab.newTab(obj);
     } else if (type=="selectfile" || type=="selectfolder") {
       this.forceUpdate();
