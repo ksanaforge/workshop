@@ -29,9 +29,15 @@ var searchmain = React.createClass({
       range=this.db.fileOffset(this.db.activeFile);
       this.activeFile=this.db.activeFile;
     }
-    this.tofind=this.db.activeTofind; 
-    if (this.tofind && this.refs.tofind) this.refs.tofind.getDOMNode().value=this.tofind;
-    kse.search(this.db,this.refs.tofind.getDOMNode().value,{range:range},function(data){
+    if (this.tofind!=this.db.activeTofind) {
+      this.tofind=this.db.activeTofind;   
+      if (this.tofind && this.refs.tofind) this.refs.tofind.getDOMNode().value=this.tofind;
+    } else {
+      this.db.activeTofind=this.tofind=this.refs.tofind.getDOMNode().value;
+    }
+    
+    
+    kse.search(this.db,this.tofind,{range:range},function(data){
       this.db.activeQuery=data;
       var that=this;
       setTimeout(function(){  
