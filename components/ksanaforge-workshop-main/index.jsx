@@ -84,9 +84,11 @@ var main = React.createClass({
       for (var i=0;i<auxs.length;i++) {
         if (auxs[i].dbid==proj.name) return;
       }
+
       auxs.push({"id":"searchtab"+(this.searchtab++),"caption":"Search "+proj.shortname, 
         "content":searchmain,"active":true,dbid:proj.shortname
-        , "params":{"action":this.action, "project":proj, "db":proj.shortname }});
+        , "params":{"action":this.action, "project":proj, "db":proj.shortname,
+                            }});
 
       this.setState({"layout":proj.tmpl.layout,"db":proj.shortname,"auxs":auxs});
   },
@@ -98,13 +100,13 @@ var main = React.createClass({
     var args = Array.prototype.slice.call(arguments);
     var type=args.shift();
 
-    if (type==="setdoc") {
+    if (type==="setdoc") { 
       this.setState({doc:args[0]});
     } else if (type=="openproject") {
       var proj=args[0];
       var autoopen=args[1];
       project.openProject(proj);
-      var that=this;
+      var that=this;  
       Kde.open(proj.shortname,function(kde){
         var obj={"id":"p_"+proj.shortname,"caption":proj.name,dbid:proj.shortname,
           "content":projectview,"active":true,
@@ -168,6 +170,11 @@ var main = React.createClass({
       this.refs.maintab.goTab("projects",lastfile);  
     } else if (type=="buildindex") {
       this.refs.builddialog.start(args[0].shortname);
+    } else if (type=="searchkeyword") {
+      var kde= Kde.open(args[1]);
+      if (!kde) return;
+      kde.activeTofind=args[0];
+      this.forceUpdate();
     }
   },
   page:function() {

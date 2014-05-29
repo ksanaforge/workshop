@@ -26,10 +26,12 @@ var folderList = React.createClass({
     var cls="",out=[];
     for (var i=0;i<this.props.folders.length;i++) {
       var f=this.props.folders[i];
+      var hit="";
+      if (this.props.hits&&this.props.hits[i]) hit=this.props.hits[i];
       if (i==this.state.selected) cls="success"; else cls="";
       out.push(<tr key={'d'+i} className={cls} onClick={this.select} data-i={i}>
         <td>{f}
-        <span className="label label-info">{(this.props.hits[i]?this.props.hits[i]:"")}</span>
+        <span className="label label-info">{hit}</span>
         </td>
         </tr>);
     };
@@ -84,8 +86,8 @@ var fileList = React.createClass({
   renderFiles:function() {
     var cls="",out=[], filestart=this.props.start;
     for (var i=0;i<this.props.files.length;i++) {
-      var f=this.props.files[i];
-      var hit=this.props.hits[filestart+i]?this.props.hits[filestart+i].length:"";
+      var f=this.props.files[i],hit="";
+      if (this.props.hits) hit=this.props.hits[filestart+i]?this.props.hits[filestart+i].length:"";
       if (!hit) hit="";
       if (i==this.state.selected) cls="success"; else cls="";
       out.push(<tr key={'f'+i} onClick={this.select} 

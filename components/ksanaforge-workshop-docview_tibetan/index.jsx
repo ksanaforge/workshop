@@ -86,6 +86,10 @@ var docview_tibetan = React.createClass({
       this.setState({preview:false});
     } else if (type=="makingselection") {
       this.setState({selecting: {start:args[0],end: args[1]}});
+    } else if (type=="searchkeyword") {
+      this.props.action("searchkeyword",args[0],this.props.kde.kdbid);
+    } else {
+      return this.props.action.apply(this,arguments);
     }
 
     if (save) this.saveMarkup();
