@@ -7,8 +7,9 @@ var contentnavigator=Require("contentnavigator");
 var imageview=Require("imageview");
 var D=Require("ksana-document").document;
 var M=Require("ksana-document").markups;
+var excerpt=Require("ksana-document").kse.excerpt;
 var docview_tibetan = React.createClass({
-  mixins: Require('kse-mixins'), 
+  mixins: Require('kse-mixins'),
   getInitialState: function() {
     return {doc:null,pageid:this.props.pageid};
   },
@@ -28,7 +29,19 @@ var docview_tibetan = React.createClass({
       doc.markClean();
     }); 
   },
+  getActiveHits:function() { // get hits in this page and send to docsurface 
+    if (!this.props.kde.activeQuery) return;
 
+    var po=this.props.kde.pageOffset(this.props.filename , this.getPageName());
+    if (!po) return [];
+
+    var Q=this.props.kde.activeQuery;
+    var absolute_hits=excerpt.hitInRange(Q,po.start,po.end);
+    var hits=absolute_hits.map(function(h){
+      return [ h[0]-po.start,h[1],h[2]];
+    });
+    return hits;
+  },
   action:function(type) {
     var args = Array.prototype.slice.call(arguments);
     var type=args.shift();
@@ -140,7 +153,7 @@ var docview_tibetan = React.createClass({
             template={this.props.project.tmpl}
             customfunc={this.props.kde.customfunc}
             styles={styles}
-            hits={this.props.hits}
+            hits={this.getActiveHits()}
             action={this.action}
           ></docview>
       </div>

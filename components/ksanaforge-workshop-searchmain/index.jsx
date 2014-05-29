@@ -39,7 +39,7 @@ var searchmain = React.createClass({
     var i=parseInt(e.target.attributes['data-i'].value);
     var excerpt=this.state.output.excerpt[i];
     var fileNames=this.db.get("fileNames");
-    this.props.action("openfile",fileNames[excerpt.file],this.props.db, excerpt.page+1,excerpt.hits );
+    this.props.action("openfile",fileNames[excerpt.file],this.props.db, excerpt.page+1 );
   },
   renderExcerpt:function(excerpt,i) {
     return <div>

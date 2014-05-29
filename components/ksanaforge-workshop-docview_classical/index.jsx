@@ -69,6 +69,19 @@ var docview_classical = React.createClass({
       doc.markClean();
     }); 
   },
+  getActiveHits:function() {
+    if (!this.props.kde.activeQuery) return;
+
+    var po=this.props.kde.pageOffset(this.props.filename , this.getPageName());
+    if (!po) return [];
+
+    var Q=this.props.kde.activeQuery;
+    var absolute_hits=excerpt.hitInRange(Q,po.start,po.end);
+    var hits=absolute_hits.map(function(h){
+      return [ h[0]-po.start,h[1],h[2]];
+    });
+    return hits;
+  },
   action:function() {
     var args = Array.prototype.slice.call(arguments);
     var type=args.shift();
@@ -133,12 +146,14 @@ var docview_classical = React.createClass({
         {this.nav()}
         <docview ref="docview"
             page={this.page()} 
+            pageid={this.state.pageid}
             preview={this.state.preview}
             user={this.props.user}
             template={this.props.project.tmpl}
             styles={styles}
             action={this.action}
             onSelection={this.onSelection}
+            hits={this.getActiveHits()}
           ></docview>
       </div>
     );
