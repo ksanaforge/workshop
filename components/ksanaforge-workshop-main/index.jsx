@@ -123,7 +123,6 @@ var main = React.createClass({
         proj=this.getProjectByName(proj);
       } 
       var pageid=args[2]||1;
-      var hits=args[3]||[];
       var template=args[4] || proj.tmpl.docview || "docview_default";
       var docview=Require(template);
 
@@ -131,7 +130,7 @@ var main = React.createClass({
         ,"caption":proj.shortname+'/'+filename
         ,"content":docview,"active":true
         ,"params":{"action":this.action, filename:filename, project:proj
-                          ,user:this.user, pageid: pageid, hits:hits, kde:kde }};
+                          ,user:this.user, pageid: pageid, kde:kde }};
         this.refs.maintab.newTab(obj);
     } else if (type=="selectfile" || type=="selectfolder") {
       this.forceUpdate();
