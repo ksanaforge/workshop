@@ -124,7 +124,7 @@ var projectview = React.createClass({
   },
   shouldComponentUpdate:function(nextProps,nextState) {
     return (nextProps.kde.activeQuery!=this.activeQuery || typeof this.activeQuery=="undefined"
-      || nextState.files!=this.state.files);
+      || nextState.files!=this.state.files|| nextState.folders!=this.state.folders);
   },
   autoopen:function() {
     //if (!this.props.autoopen || !this.props.autoopen.file) return;
@@ -216,6 +216,9 @@ var projectview = React.createClass({
   getFileHits:function() {
     if (!this.props.kde.activeQuery) return [];
     return this.props.kde.activeQuery.byFile;
+  },
+  componentWillUnmount:function() {
+    this.props.action("closedb",this.props.kde.kdbid);
   },
   render: function() {
     return (

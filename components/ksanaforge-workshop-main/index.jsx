@@ -131,6 +131,7 @@ var main = React.createClass({
       var obj={"id":"f_"+filename
         ,"caption":proj.shortname+'/'+filename
         ,"content":docview,"active":true
+        ,"dbid":proj.shortname
         ,"params":{"action":this.action, filename:filename, project:proj
                           ,user:this.user, pageid: pageid, kde:kde }};
         this.refs.maintab.newTab(obj);
@@ -143,6 +144,7 @@ var main = React.createClass({
       var obj={"id":"sourceimage"
         ,"caption":'source'
         ,"content":imageview
+        ,"dbid":proj.shortname
         ,"active":false
         ,"params":
           {"action":this.action, src:file
@@ -174,7 +176,12 @@ var main = React.createClass({
       var kde= Kde.open(args[1]);
       if (!kde) return;
       kde.activeTofind=args[0];
-      this.forceUpdate();
+      this.forceUpdate(); 
+    } else if (type=="closedb") {
+      var dbid=args[0];
+      this.setState({tabs:this.state.tabs.filter(function(t){return !t.dbid || t.dbid!=dbid})});
+      this.setState({auxs:this.state.auxs.filter(function(t){return !t.dbid || t.dbid!=dbid})});
+      Kde.close(dbid);
     }
   },
   page:function() {
