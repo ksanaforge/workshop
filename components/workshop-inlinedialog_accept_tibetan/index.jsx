@@ -1,7 +1,7 @@
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other"); 
-var inlinemenu_accept_tibetan = React.createClass({
+var inlinedialog_accept_tibetan = React.createClass({
   apply:function(e) {
     this.props.action("markupupdate");
   },
@@ -30,7 +30,7 @@ var inlinemenu_accept_tibetan = React.createClass({
   },
   render: function() {
     return ( 
-      <div onKeyUp={this.onkeyup} className="inlinemenu well">
+      <div onKeyUp={this.onkeyup} className="inlinedialog well">
         <span>{this.props.text}</span>
         <span className="input-group input-group-md">
           <span className="input-group-addon">New text</span>
@@ -58,4 +58,4 @@ var inlinemenu_accept_tibetan = React.createClass({
     setTimeout(  this.focus,300);
   },
 });
-module.exports=inlinemenu_accept_tibetan;
+module.exports=inlinedialog_accept_tibetan;

@@ -21,7 +21,7 @@ var Change=React.createClass({
     </span>);
   }
 })
-var inlinemenu_applychange = React.createClass({
+var inlinedialog_applychange = React.createClass({
   getInitialState: function() {
     return {now : new Date()};
   },
@@ -100,7 +100,7 @@ var inlinemenu_applychange = React.createClass({
   },
   render: function() {
     return (
-      <div onKeyUp={this.keyup} className="inlinemenu well"> 
+      <div onKeyUp={this.keyup} className="inlinedialog well"> 
       <span>{this.props.text}</span><br/>
       {this.choices("radioname")}
       <hr size="1"/>
@@ -109,4 +109,4 @@ var inlinemenu_applychange = React.createClass({
     );
   } 
 });
-module.exports=inlinemenu_applychange;
+module.exports=inlinedialog_applychange;

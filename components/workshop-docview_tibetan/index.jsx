@@ -25,7 +25,8 @@ var docview_tibetan = React.createClass({
     var filename=this.state.doc.meta.filename; 
     var username=this.props.user.name;
     var markups=this.page().filterMarkup(function(m){return m.payload.author==username});
-    this.$ksana("saveMarkup",{markups:markups,filename:filename,i:this.state.pageid } ,function(data){
+    var dbid=this.props.kde.kdbid;
+    this.$ksana("saveMarkup",{dbid:dbid,markups:markups,filename:filename,i:this.state.pageid } ,function(data){
       doc.markClean();
     }); 
   },

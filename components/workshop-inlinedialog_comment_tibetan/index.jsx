@@ -1,7 +1,7 @@
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other"); 
-var inlinemenu_comment_tibetan = React.createClass({
+var inlinedialog_comment_tibetan = React.createClass({
   apply:function(e) {
     this.markup().comment=this.refs.comment.getDOMNode().value;
     this.props.action("markupupdate");
@@ -23,7 +23,7 @@ var inlinemenu_comment_tibetan = React.createClass({
   },
   render: function() {
     return (
-      <div onKeyUp={this.keyup} className="inlinemenu well">
+      <div onKeyUp={this.keyup} className="inlinedialog well">
         <span>Comment:</span><span>{this.props.text}</span>
         
         
@@ -48,4 +48,4 @@ var inlinemenu_comment_tibetan = React.createClass({
     setTimeout(  this.focus,300);
   },
 });
-module.exports=inlinemenu_comment_tibetan;
+module.exports=inlinedialog_comment_tibetan;

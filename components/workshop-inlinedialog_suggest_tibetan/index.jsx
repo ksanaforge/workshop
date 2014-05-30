@@ -1,7 +1,7 @@
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other"); 
-var inlinemenu_suggest_tibetan = React.createClass({
+var inlinedialog_suggest_tibetan = React.createClass({
   apply:function() {    
     var text=this.refs.inputtext.getDOMNode().value;
     if (this.props.text==text) {
@@ -35,7 +35,7 @@ var inlinemenu_suggest_tibetan = React.createClass({
   },
   render: function() {
     return (
-      <div onKeyUp={this.keyup} className="inlinemenu well">
+      <div onKeyUp={this.keyup} className="inlinedialog well">
         <span>{this.props.text}</span>
         <span className="input-group input-group-lg">
           <span className="input-group-addon" onClick={this.clear}>{"\u2573"}</span>
@@ -64,4 +64,4 @@ var inlinemenu_suggest_tibetan = React.createClass({
     setTimeout(  this.focus,300);
   },
 });
-module.exports=inlinemenu_suggest_tibetan;
+module.exports=inlinedialog_suggest_tibetan;

@@ -1,7 +1,7 @@
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other"); 
-var inlinemenu_doubt = React.createClass({
+var inlinedialog_doubt = React.createClass({
   getInitialState: function() {
     return {bar: "world"};
   },
@@ -40,4 +40,4 @@ var inlinemenu_doubt = React.createClass({
     this.refs.inputtext.getDOMNode().focus();
   }  
 });
-module.exports=inlinemenu_doubt;
+module.exports=inlinedialog_doubt;
