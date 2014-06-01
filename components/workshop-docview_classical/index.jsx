@@ -3,6 +3,8 @@ var styles=Require("styles")[0].markups;
 var docview=Require("docview");
 var D=Require("ksana-document").document;
 var contentnavigator=Require("contentnavigator");
+var excerpt=Require("ksana-document").kse.excerpt;
+
 var docview_classical = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
@@ -151,6 +153,7 @@ var docview_classical = React.createClass({
             preview={this.state.preview}
             user={this.props.user}
             template={this.props.project.tmpl}
+             customfunc={this.props.kde.customfunc}
             styles={styles}
             action={this.action}
             onSelection={this.onSelection}

@@ -29,11 +29,12 @@ var classical={
 	"navigator":"nav_classical",
 	"linebreak":"※"
 }
+
 templates={tibetan:tibetan,chinese:chinese,classical:classical};
 var openProject=function(proj) {
 	proj.tmpl=templates[proj.template];
 	proj.setting=project_settings[proj.name];
-	if (!proj.tmpl) throw "template not found:"+template;
+	if (!proj.tmpl) throw "template not found:"+proj.template;
 	return proj; 
 }
 
