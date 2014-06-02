@@ -53,7 +53,7 @@ var docview_classical = React.createClass({
     this.$ksana("loadDocumentJSON",{project:this.props.project,file:this.props.filename}).done(function(data){
       var doc=this.loadDocument(data);
       doc.meta.filename=this.props.filename;
-      this.setState({doc:doc,pageid:1});
+      this.setState({doc:doc});
     });
   },
   nav:function() {

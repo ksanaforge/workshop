@@ -133,7 +133,7 @@ var projectview = React.createClass({
         var folder=this.props.autoopen.file;
         folder=folder.substring(0,folder.lastIndexOf('/'));
         for(var i=0;i<folders.length;i++) {
-          if (folders[i].shortname==folder) {
+          if (folders[i]==folder) {
             this.selectFolder(i);
             break;
           }
@@ -149,11 +149,11 @@ var projectview = React.createClass({
     if (!filenames) {
       console.error("kde not loaded yet");
       return;
-    }
+    } 
     filenames.map(function(f) { folders[f.substring(0,f.indexOf('/'))]=true});
-
-    this.setState({folders:Object.keys(folders)});
-    this.autoopen();
+    var _folders=Object.keys(folders);
+    this.setState({folders:_folders});
+    setTimeout( this.autoopen.bind(this),1); 
     if (this.props.tab ) this.props.tab.instance=this; // for tabui 
     this.activeQuery=this.props.kde.activeQuery;
   },
@@ -173,8 +173,8 @@ var projectview = React.createClass({
 
     if (this.props.autoopen && this.props.autoopen.file) {
       for(var i=0;i<files.length;i++) {
-        if (files[i]==this.props.autoopen.file) {
-          this.selectFile(i);
+        if (folder+'/'+files[i]==this.props.autoopen.file) {
+          this.openFile(i);
           this.props.autoopen.file=""; //prevent from click on folder autoopen
           break;
         }

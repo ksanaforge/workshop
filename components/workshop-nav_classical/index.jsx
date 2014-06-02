@@ -55,7 +55,7 @@ var nav_classical = React.createClass({
   },
   componentDidUpdate:function() {
     //don't now why , but defaultValue doesn't work here
-    this.refs.pageid.getDOMNode().value=this.pageName();
+    if (this.refs.pageid) this.refs.pageid.getDOMNode().value=this.pageName();
   },
   render: function() {
     if (!this.props.page) return <div></div>
