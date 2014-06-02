@@ -13,6 +13,10 @@ var contextmenu_classical = React.createClass({
     var text=e.target.attributes['data-text'].value;
     clipboard.set(text); 
   },  
+  searchkeyword:function(e) {
+    this.props.action("searchkeyword",this.state.text);
+  },
+
   markup:function(e) {
     var type=(typeof e =="string")?e:e.target.attributes["data-markup"].value;
     this.props.action("addmarkup",{type:type});
@@ -40,6 +44,7 @@ var contextmenu_classical = React.createClass({
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.clearMarkup}>Clear Markup</a></li>
         <li className="divider"></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.copy} data-text={this.state.text}>Copy</a></li>
+        <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.searchkeyword}>Search</a></li>        
       </ul>
     </div> 
     );

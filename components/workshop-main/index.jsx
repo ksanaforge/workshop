@@ -68,16 +68,18 @@ var main = React.createClass({
 
     return {settings:null,tabs:tabs, auxs:auxs,pageid:1,error:"",db:null,projects:null};
   },
-  componentDidMount:function() {
-    this.makescrollable();
+  componentWillMount:function() {
     if (!this.state.settings) {
       this.$ksana("getUserSettings").done(function(settings){
         window.document.title=settings.title + ', build '+settings.buildDateTime;
         this.$ksana('enumProject').done(function(projects){
           this.setState({projects:projects,settings:settings});
         });
-      });      
+      });    
     }
+  },
+  componentDidMount:function() {
+    this.makescrollable();
   },
   newsearchtab:function(proj) {
       var auxs=this.state.auxs;
@@ -96,6 +98,29 @@ var main = React.createClass({
     var projects=this.state.projects.filter(function(p){return p.shortname==projname});
     return projects[0];
   },
+  projecttab:function(name) {
+    for (var i=0;i<this.state.auxs.length;i++) {
+      var t=this.state.auxs[i];
+      if (t.dbid==name && t.projectmain) return this.refs.auxtab;
+    }
+    return this.refs.maintab;
+  },
+  openfile:function(kde,proj,filename,pageid,template) {
+      var template=template || proj.tmpl.docview || "docview_default";
+      var docview=Require(template);
+      var tab=this.projecttab(proj.shortname);
+      var obj={"id":"f_"+filename
+        ,"caption":proj.shortname+'/'+filename
+        ,"content":docview,"active":true
+        ,"dbid":proj.shortname
+        ,"params":{"action":this.action, filename:filename, project:proj
+                          ,user:this.user, pageid: pageid, kde:kde }};
+        tab.newTab(obj);    
+   },
+   openlink:function(dbid,thelink) {
+     var  proj=this.getProjectByName(dbid);
+     this.action("openproject",proj,thelink,this.refs.auxtab);
+   },
   action:function() {
     var args = Array.prototype.slice.call(arguments);
     var type=args.shift();
@@ -105,36 +130,36 @@ var main = React.createClass({
     } else if (type=="openproject") {
       var proj=args[0];
       var autoopen=args[1];
+      var tab=args[2]||this.refs.maintab;
       project.openProject(proj);
       var that=this;  
       Kde.open(proj.shortname,function(kde){
         var obj={"id":"p_"+proj.shortname,"caption":proj.name,dbid:proj.shortname,
-          "content":projectview,"active":true,
+          "content":projectview,"active":true, "projectmain":true,
           "params":{"action":that.action, "project":proj, "autoopen":autoopen, "kde":kde }};
         kde.setContext(that);
         that.newsearchtab(proj);
-        that.refs.maintab.newTab(obj); 
+        tab.newTab(obj);
       });
     } else if (type=="newquery") {
       this.forceUpdate();
     } else if (type=="openfile") {
-      var filename=args[0];
-      var proj=args[1];
-      var kde=Kde.open(proj); //already open
+      var proj=args[0];
+      var filename=args[1];
+      var pageid=args[2] || 1;
+      var template=args[3];
       if (typeof proj=="string") {
         proj=this.getProjectByName(proj);
       } 
-      var pageid=args[2]||1;
-      var template=args[4] || proj.tmpl.docview || "docview_default";
-      var docview=Require(template);
 
-      var obj={"id":"f_"+filename
-        ,"caption":proj.shortname+'/'+filename
-        ,"content":docview,"active":true
-        ,"dbid":proj.shortname
-        ,"params":{"action":this.action, filename:filename, project:proj
-                          ,user:this.user, pageid: pageid, kde:kde }};
-        this.refs.maintab.newTab(obj);
+      var kde=Kde.open(proj.shortname); //already open
+      if (!kde) {
+        var autoopen={filename:filename,pageid:pageid};
+        this.openproject(proj,autoopen);
+      } else {
+        this.openfile(kde,proj,filename,pageid,template);
+      }
+
     } else if (type=="selectfile" || type=="selectfolder") {
       this.forceUpdate();
     } else if (type=="openimage") {
@@ -182,6 +207,10 @@ var main = React.createClass({
       this.setState({tabs:this.state.tabs.filter(function(t){return !t.dbid || t.dbid!=dbid})});
       this.setState({auxs:this.state.auxs.filter(function(t){return !t.dbid || t.dbid!=dbid})});
       Kde.close(dbid);
+    } else if (type=="openlink") {
+      var payload=args[0];
+      var thelink={file:payload.file,pageid:payload.i,start:payload.start,len:payload.len};
+      this.openlink(payload.db,thelink);
     }
   },
   page:function() {

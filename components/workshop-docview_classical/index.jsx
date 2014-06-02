@@ -11,12 +11,21 @@ var docview_classical = React.createClass({
     var pageid=parseInt(localStorage.getItem(this.storekey()))||1;
     return {doc:null,pageid:pageid};
   }, 
+  shouldComponentUpdate:function(nextProps,nextState) {
+      if (nextProps.pageid!=this.props.pageid) {
+        nextState.pageid=nextProps.pageid;
+      } else if (this.state.doc==nextState.doc && this.state.pageid==nextState.pageid
+      &&this.state.selecting==nextState.selecting) return false;  //this is a work-around ... children under this component is causing recursive update
+      return true;
+  },
   storekey:function() {
     return this.props.project.shortname+'.pageid';
   },
   page:function() {
     if (!this.state.doc) return null;
-    var page=this.state.doc.getPage(this.state.pageid);
+    var pageid=this.state.pageid;
+    if (pageid>=this.state.doc.pageCount) pageid=this.state.doc.pageCount-1;
+    var page=this.state.doc.getPage(pageid);
     var user=this.props.user.name;
     if (this.state.preview) {
       var suggestions=page.filterMarkup(function(m){
@@ -57,9 +66,10 @@ var docview_classical = React.createClass({
     });
   },
   nav:function() {
-    var params={ref:"navigator" ,user:this.props.user, page:this.page(), 
-    preview:this.state.preview,action:this.action};
+    var params={ref:"navigator" ,user:this.props.user, preview:this.state.preview,
+      page:this.page(), action:this.action,selecting:this.state.selecting};
     return Require(this.props.project.tmpl.navigator)(params);
+
   },
   saveMarkup:function() {//this should pass to
     var doc=this.state.doc;
@@ -139,11 +149,26 @@ var docview_classical = React.createClass({
       var page=this.page();
       page.clearMarkups(start,len,this.props.user.name);
       page.addMarkup(start,1,payload);
+    } else if (type=="searchkeyword") {
+      this.props.action("searchkeyword",args[0],this.props.kde.kdbid);
+    } else if (type=="linkby") {
+      var selstart=args[0],len=args[1],cb=args[2];
+     // var po=this.props.kde.pageOffset(this.props.filename , this.getPageName());
+     // var vpos=po.start+selstart; //convert to virtual position
+      this.props.kde.findLinkBy(this.page(),selstart,len,cb);
+    } else if (type=="linkto") { 
+      //find surrounding text
+      //do fuzzy search
+      console.log("linkby")
+    } else {
+      return this.props.action.apply(this,arguments);
     }
+
     if (save) this.saveMarkup();
   },
   render: function() {
     localStorage.setItem(this.storekey(),this.state.pageid);
+    if (!this.state.doc) return <span></span>
     return ( 
       <div>
         {this.nav()}

@@ -16,7 +16,8 @@ var docview_tibetan = React.createClass({
   shouldComponentUpdate:function(nextProps,nextState) {
       if (nextProps.pageid!=this.props.pageid) {
         nextState.pageid=nextProps.pageid;
-      }
+      } else if (this.state.doc==nextState.doc && this.state.pageid==nextState.pageid
+      &&this.state.selecting==nextState.selecting) return false;  //this is a work-around ... children under this component is causing recursive update
       return true;
   },
   saveMarkup:function() {
@@ -157,6 +158,7 @@ var docview_tibetan = React.createClass({
     return Require(this.props.project.tmpl.navigator)(params);
   },
   render: function() {
+    if (!this.state.doc) return <span></span>
     return ( 
       <div className="docview_tibetan">
         {this.nav()}

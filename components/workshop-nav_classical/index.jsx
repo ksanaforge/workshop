@@ -50,7 +50,7 @@ var nav_classical = React.createClass({
     if (this.props.selecting.end!=this.props.selecting.start) {
       out.push(<span className="label label-default">{this.props.selecting.end}</span>);
     }
-      
+    out.push(<span> {this.props.page.id}</span>);
     return out;      
   },
   componentDidUpdate:function() {
