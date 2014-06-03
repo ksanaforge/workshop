@@ -23,7 +23,7 @@ var styles = [
       "fullstop" :  {"background-image":"url('svg/fullstop.svg')"},
       "redstrikeout" :  {"background-image":"url('svg/redstrikeout.svg')"},
       "inserttext" : {"background-image": "url('svg/overline.svg')"},
-      "link" : {"cursor": "pointer", "background-image": "url('svg/underline.svg')"},
+      "linkto" : {"cursor": "pointer", "background-image": "url('svg/underline.svg')"},
 
 
     }

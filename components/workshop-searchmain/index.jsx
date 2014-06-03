@@ -35,7 +35,7 @@ var searchmain = React.createClass({
     } else {
       this.db.activeTofind=this.tofind=this.refs.tofind.getDOMNode().value;
     }
-    
+
     var that=this;
     kse.search(this.db,this.tofind,{range:range},function(data){
       that.db.activeQuery=data;

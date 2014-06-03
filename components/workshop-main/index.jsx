@@ -39,10 +39,7 @@ var main = React.createClass({
       {"id":"tuser","caption":this.user.name||"Guest","content":userlogin,"active":true,
         "notclosable":true,"params":{"action":this.action,"user":this.user,"getError":this.getError}}
     ];
-    if (this.user.name) {
-      tabs.push({"id":"projects","caption":"Projects","content":projectlist,"notclosable":true,
-        "params":{"action":this.action, "projects":this.getProjects}});
-    }
+
     return tabs;
   },
   getError:function() {
@@ -68,17 +65,23 @@ var main = React.createClass({
 
     return {settings:null,tabs:tabs, auxs:auxs,pageid:1,error:"",db:null,projects:null};
   },
-  componentWillMount:function() {
+  addProjectTab:function(projects) {
+      var tabs=this.state.tabs;
+      tabs.push({"id":"projects","caption":"Projects","content":projectlist,"notclosable":true,
+          "params":{"action":this.action, "projects":this.getProjects}});
+      tabs.updated=true;
+      this.setState({projects:projects,tabs:tabs});
+  },
+  componentDidMount:function() {
     if (!this.state.settings) {
       this.$ksana("getUserSettings").done(function(settings){
         window.document.title=settings.title + ', build '+settings.buildDateTime;
         this.$ksana('enumProject').done(function(projects){
-          this.setState({projects:projects,settings:settings});
+          this.setState({settings:settings});
+          this.addProjectTab(projects);
         });
       });    
     }
-  },
-  componentDidMount:function() {
     this.makescrollable();
   },
   newsearchtab:function(proj) {
@@ -103,9 +106,14 @@ var main = React.createClass({
       var t=this.state.auxs[i];
       if (t.dbid==name && t.projectmain) return this.refs.auxtab;
     }
-    return this.refs.maintab;
+    for (var i=0;i<this.state.tabs.length;i++) {
+      var t=this.state.tabs[i];
+      if (t.dbid==name && t.projectmain) return this.refs.maintab;
+    }
+
+    return null;
   },
-  openfile:function(kde,proj,filename,pageid,template) {
+  openfile:function(kde,proj,filename,pageid,template,selection) {
       var template=template || proj.tmpl.docview || "docview_default";
       var docview=Require(template);
       var tab=this.projecttab(proj.shortname);
@@ -114,12 +122,16 @@ var main = React.createClass({
         ,"content":docview,"active":true
         ,"dbid":proj.shortname
         ,"params":{"action":this.action, filename:filename, project:proj
-                          ,user:this.user, pageid: pageid, kde:kde }};
+                          ,user:this.user, pageid: pageid, kde:kde ,selection:selection}};
         tab.newTab(obj);    
    },
    openlink:function(dbid,thelink) {
      var  proj=this.getProjectByName(dbid);
-     this.action("openproject",proj,thelink,this.refs.auxtab);
+     if (this.projecttab(dbid)) {
+       this.action("openfile",proj,thelink.file,thelink.pageid,null,thelink.selection);
+     } else {
+       this.action("openproject",proj,thelink,this.refs.auxtab); 
+     }
    },
   action:function() {
     var args = Array.prototype.slice.call(arguments);
@@ -146,18 +158,19 @@ var main = React.createClass({
     } else if (type=="openfile") {
       var proj=args[0];
       var filename=args[1];
-      var pageid=args[2] || 1;
+      var pageid=args[2] ;
       var template=args[3];
+      var selection=args[4];
       if (typeof proj=="string") {
         proj=this.getProjectByName(proj);
       } 
 
       var kde=Kde.open(proj.shortname); //already open
       if (!kde) {
-        var autoopen={filename:filename,pageid:pageid};
+        var autoopen={filename:filename,pageid:pageid,selection:selection};
         this.openproject(proj,autoopen);
       } else {
-        this.openfile(kde,proj,filename,pageid,template);
+        this.openfile(kde,proj,filename,pageid,template,selection);
       }
 
     } else if (type=="selectfile" || type=="selectfolder") {
@@ -209,7 +222,7 @@ var main = React.createClass({
       Kde.close(dbid);
     } else if (type=="openlink") {
       var payload=args[0];
-      var thelink={file:payload.file,pageid:payload.i,start:payload.start,len:payload.len};
+      var thelink={file:payload.file,pageid:payload.i,selection:{start:payload.start,len:payload.len}};
       this.openlink(payload.db,thelink);
     }
   },

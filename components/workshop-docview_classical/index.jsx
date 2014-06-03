@@ -8,7 +8,7 @@ var excerpt=Require("ksana-document").kse.excerpt;
 var docview_classical = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
-    var pageid=parseInt(localStorage.getItem(this.storekey()))||1;
+    var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
     return {doc:null,pageid:pageid};
   }, 
   shouldComponentUpdate:function(nextProps,nextState) {
@@ -52,6 +52,7 @@ var docview_classical = React.createClass({
   },
   componentDidUpdate:function() {
     this.props.action("openimage",this.imagefilename(),this.getPageName(),this.props.project);
+
   },  
   componentWillUnmount:function() {
     var lastfile={project:this.props.project.shortname,
@@ -94,6 +95,26 @@ var docview_classical = React.createClass({
       return [ h[0]-po.start,h[1],h[2]];
     });
     return hits;
+  },
+  guessQuote:function(s,l) {
+    var inscription=this.page().inscription;
+    var begin=s-50; if (begin<0) begin=0;
+    var end=s+l+50; if (end>=inscription.length) end=inscription.length-1;
+    var leftpart=inscription.substring(begin,s);
+    var rightpart=inscription.substring(s+l,end);
+    var stop=rightpart.indexOf("。");
+    if (stop==-1) stop=rightpart.length;
+    rightpart=rightpart.substring(0,stop );
+
+    var stop=leftpart.lastIndexOf("：");
+    var stop2=leftpart.lastIndexOf("》");
+  
+    if (stop==-1||stop2>stop) stop=stop2;
+    if (stop==-1) stop=0;
+    leftpart=leftpart.substring(stop+1);
+
+    return leftpart+inscription.substr(s,l)+rightpart;
+
   },
   action:function() {
     var args = Array.prototype.slice.call(arguments);
@@ -153,13 +174,13 @@ var docview_classical = React.createClass({
       this.props.action("searchkeyword",args[0],this.props.kde.kdbid);
     } else if (type=="linkby") {
       var selstart=args[0],len=args[1],cb=args[2];
-     // var po=this.props.kde.pageOffset(this.props.filename , this.getPageName());
-     // var vpos=po.start+selstart; //convert to virtual position
       this.props.kde.findLinkBy(this.page(),selstart,len,cb);
     } else if (type=="linkto") { 
+      var start=args[0],len=args[1];
+      var quote=this.guessQuote(start,len);
       //find surrounding text
       //do fuzzy search
-      console.log("linkby")
+      console.log("linkby",quote)
     } else {
       return this.props.action.apply(this,arguments);
     }
@@ -180,9 +201,10 @@ var docview_classical = React.createClass({
             template={this.props.project.tmpl}
              customfunc={this.props.kde.customfunc}
             styles={styles}
+            autoselect={this.props.selection}
             action={this.action}
-            onSelection={this.onSelection}
             hits={this.getActiveHits()}
+
           ></docview>
       </div>
     );

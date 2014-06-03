@@ -170,6 +170,7 @@ var docview_tibetan = React.createClass({
             customfunc={this.props.kde.customfunc}
             styles={styles}
             hits={this.getActiveHits()}
+            autoselect={this.props.selection}
             action={this.action}
           ></docview>
       </div>

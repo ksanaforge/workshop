@@ -6,10 +6,14 @@ var linkbymenu = React.createClass({
     return null;
   },
   golink:function(e) {
-    console.log(e);
+    var target=e.target;
+    if (!e.target.attributes['data-n']) target=target.parentElement;
+    var n=parseInt(e.target.attributes['data-n'].value);
+    var link=this.props.linkby[n];
+    this.props.action("openlink",link.payload); 
   },
-  renderItem:function(item) {
-    return <li className="linkbymenuitem"><a role="menuitem" tabIndex="-1" href="#" onClick={this.golink}>{item.payload.pagename} - {item.payload.db}</a></li>
+  renderItem:function(item,n) {
+    return <li className="linkbymenuitem"><a data-n={n} role="menuitem" tabIndex="-1" href="#" onClick={this.golink}>{item.payload.pagename +"-"+ item.payload.db}</a></li>
   },
   render: function() {
     return ( 
