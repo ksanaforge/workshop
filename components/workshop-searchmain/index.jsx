@@ -9,7 +9,7 @@ var searchmain = React.createClass({
      || this.db.activeFolder!=this.activeFolder 
      || this.tofind != this.db.activeTofind )) {
       this.dosearch(false);
-      return false;
+      return false;  
     }
     return (nextState.output!=this.state.output ||
                this.excerpt!=nextState.output.excerpt );

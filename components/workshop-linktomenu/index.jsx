@@ -1,7 +1,7 @@
 /** @jsx React.DOM */
 
 //var othercomponent=Require("other"); 
-var linkbymenu = React.createClass({
+var linktomenu = React.createClass({
   getInitialState: function() {
     return null;
   },
@@ -10,11 +10,15 @@ var linkbymenu = React.createClass({
     while (!target.attributes['data-n'] && target) target=target.parentElement;
     if (!target) return;
     var n=parseInt(target.attributes['data-n'].value);
-    var link=this.props.linkby[n];
-    this.props.action("openlink",link.payload); 
-  },
+    var link=this.props.linkto[n];
+    this.props.action("openlink",link.payload,this.props.linksource); 
+  }, 
   renderItem:function(item,n) {
-    return <li className="linkbymenuitem"><a data-n={n} role="menuitem" tabIndex="-1" href="#" onClick={this.golink}>{item.payload.pagename +"-"+ item.payload.db}</a></li>
+    return <li className="linktomenuitem"> 
+    <a data-n={n} role="menuitem" tabIndex="-1" href="#" onClick={this.golink}>
+       {item.payload.pagename +"-"+ item.payload.db}
+     <br/><span className="menuitem_excerpt" dangerouslySetInnerHTML={{__html:item.payload.text}}></span></a>
+    </li> 
   },
   render: function() {
     return ( 
@@ -23,11 +27,11 @@ var linkbymenu = React.createClass({
         Dropdown
         <span className="caret"></span>
       </button>
-      <ul className="dropdown-menu" role="menu" aria-labelledby="linkbyMenu1">
-        {this.props.linkby.map(this.renderItem)}        
+      <ul className="dropdown-menu" role="menu" aria-labelledby="linktoMenu1">
+        {this.props.linkto.map(this.renderItem)}        
       </ul>
     </div> 
     );
   }
 });
-module.exports=linkbymenu;
+module.exports=linktomenu;

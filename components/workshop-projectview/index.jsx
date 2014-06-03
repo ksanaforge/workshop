@@ -190,15 +190,16 @@ var projectview = React.createClass({
   },
   openFile:function(i) {
     var f=this.state.folder+'/'+this.state.files[i];
-    var gotopageid,selection;
+    var gotopageid,linktarget,linksource;
     if (this.props.autoopen)  {
       gotopageid=this.props.autoopen.pageid;
-      selection=this.props.autoopen.selection;
+      linktarget=this.props.autoopen.linktarget;
+      linksource=this.props.autoopen.linksource;
     }
-    this.props.action("openfile",this.props.kde.kdbid,f,gotopageid,null,selection);
+    this.props.action("openfile",this.props.kde.kdbid,f,gotopageid,null,linktarget,linksource);
     if (this.props.autoopen) {
       this.props.autoopen.pageid="";
-      this.props.autoopen.selection=null;
+      this.props.autoopen.linktarget=null;
     }
     this.setState({selectedFile:i});
   },

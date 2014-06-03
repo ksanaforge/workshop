@@ -46,7 +46,9 @@
     "workshop/contextmenu_classical": "*",
     "workshop/buildindex": "*",
     "workshop/inlinedialog_comment_tibetan": "*",
-    "workshop/linkbymenu": "*"
+    "workshop/linkbymenu": "*",
+    "workshop/linktomenu": "*",
+    "workshop/inlinedialog_makelink": "*"
   },
   "development": {},
   "paths": [

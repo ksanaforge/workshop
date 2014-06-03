@@ -102,18 +102,18 @@ var docview_classical = React.createClass({
     var end=s+l+50; if (end>=inscription.length) end=inscription.length-1;
     var leftpart=inscription.substring(begin,s);
     var rightpart=inscription.substring(s+l,end);
-    var stop=rightpart.indexOf("。");
-    if (stop==-1) stop=rightpart.length;
-    rightpart=rightpart.substring(0,stop );
+    var quoteend=rightpart.indexOf("。");
+    if (quoteend==-1) quoteend=rightpart.length;
+    rightpart=rightpart.substring(0,quoteend );
 
-    var stop=leftpart.lastIndexOf("：");
-    var stop2=leftpart.lastIndexOf("》");
-  
-    if (stop==-1||stop2>stop) stop=stop2;
-    if (stop==-1) stop=0;
-    leftpart=leftpart.substring(stop+1);
+    var quotestart=leftpart.lastIndexOf("：");
+    var quotestart2=leftpart.lastIndexOf("》");
 
-    return leftpart+inscription.substr(s,l)+rightpart;
+    if (quotestart==-1||quotestart2>quotestart) quotestart=quotestart2;
+    if (quotestart==-1) quotestart=0;
+    leftpart=leftpart.substring(quotestart+1);
+
+    return {text:leftpart+inscription.substr(s,l)+rightpart, start:begin+quotestart+1  , len:s+l+quoteend-begin-quotestart-1};
 
   },
   action:function() {
@@ -166,7 +166,7 @@ var docview_classical = React.createClass({
       var payload={type:"suggest",
                   author:this.props.user.name,
                   text:linebreak,insert:true
-                };
+               };
       var page=this.page();
       page.clearMarkups(start,len,this.props.user.name);
       page.addMarkup(start,1,payload);
@@ -176,11 +176,13 @@ var docview_classical = React.createClass({
       var selstart=args[0],len=args[1],cb=args[2];
       this.props.kde.findLinkBy(this.page(),selstart,len,cb);
     } else if (type=="linkto") { 
-      var start=args[0],len=args[1];
+      var start=args[0],len=args[1],cb=args[2];
       var quote=this.guessQuote(start,len);
-      //find surrounding text
-      //do fuzzy search
-      console.log("linkby",quote)
+      if (this.props.kde.kdbid!="ccc") {
+        this.props.action("searchquote",quote,cb);  
+      } else {
+        cb([]);
+      }
     } else {
       return this.props.action.apply(this,arguments);
     }
@@ -199,11 +201,13 @@ var docview_classical = React.createClass({
             preview={this.state.preview}
             user={this.props.user}
             template={this.props.project.tmpl}
-             customfunc={this.props.kde.customfunc}
+            customfunc={this.props.kde.customfunc}
             styles={styles}
-            autoselect={this.props.selection}
+            linksource={this.props.linksource}
+	      linktarget={this.props.linktarget}
             action={this.action}
             hits={this.getActiveHits()}
+            kde={this.props.kde}
 
           ></docview>
       </div>

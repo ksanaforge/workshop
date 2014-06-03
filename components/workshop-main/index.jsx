@@ -18,6 +18,7 @@ var searchmain=Require("searchmain");
 var userlogin=Require("userlogin"); 
 var buildindex=Require("buildindex");
 var Kde=Require("ksana-document").kde;
+var Kse=Require("ksana-document").kse;
 //sfxdfffasdfff 
 
 //disable system right click menu
@@ -113,7 +114,7 @@ var main = React.createClass({
 
     return null;
   },
-  openfile:function(kde,proj,filename,pageid,template,selection) {
+  openfile:function(kde,proj,filename,pageid,template,linktarget,linksource) {
       var template=template || proj.tmpl.docview || "docview_default";
       var docview=Require(template);
       var tab=this.projecttab(proj.shortname);
@@ -122,17 +123,30 @@ var main = React.createClass({
         ,"content":docview,"active":true
         ,"dbid":proj.shortname
         ,"params":{"action":this.action, filename:filename, project:proj
-                          ,user:this.user, pageid: pageid, kde:kde ,selection:selection}};
+                          ,user:this.user, pageid: pageid, kde:kde ,linktarget:linktarget,linksource:linksource}};
         tab.newTab(obj);    
    },
    openlink:function(dbid,thelink) {
      var  proj=this.getProjectByName(dbid);
      if (this.projecttab(dbid)) {
-       this.action("openfile",proj,thelink.file,thelink.pageid,null,thelink.selection);
+       this.action("openfile",proj,thelink.file,thelink.pageid,null,thelink.linktarget,thelink.linksource);
      } else {
        this.action("openproject",proj,thelink,this.refs.auxtab); 
      }
-   },
+   }, 
+   excerpt2link:function(kde,excerpts,phraselen) {
+     var out=[];
+     var filenames=kde.get("fileNames");
+     var files=kde.get("files");
+     excerpts.map(function(e){
+        var file=files[e.file];
+        var start=e.hits[0][0]-e.start+phraselen*2; //don't know why???
+        var link={payload:{pagename:e.pagename,start:start,len:phraselen,i:e.page+1,
+                      db:"ccc",file: filenames[e.file],text:e.text}};
+        out.push(link)
+     });
+     return out;
+  },
   action:function() {
     var args = Array.prototype.slice.call(arguments);
     var type=args.shift();
@@ -160,17 +174,18 @@ var main = React.createClass({
       var filename=args[1];
       var pageid=args[2] ;
       var template=args[3];
-      var selection=args[4];
+      var linktarget=args[4];
+      var linksource=args[5];
       if (typeof proj=="string") {
         proj=this.getProjectByName(proj);
       } 
 
       var kde=Kde.open(proj.shortname); //already open
       if (!kde) {
-        var autoopen={filename:filename,pageid:pageid,selection:selection};
+        var autoopen={filename:filename,pageid:pageid,linktarget:linktarget,linksource:linksource};
         this.openproject(proj,autoopen);
       } else {
-        this.openfile(kde,proj,filename,pageid,template,selection);
+        this.openfile(kde,proj,filename,pageid,template,linktarget,linksource);
       }
 
     } else if (type=="selectfile" || type=="selectfolder") {
@@ -215,6 +230,17 @@ var main = React.createClass({
       if (!kde) return;
       kde.activeTofind=args[0];
       this.forceUpdate(); 
+    } else if (type=="searchquote") {
+      var quote=args[0],cb=args[1];
+      var that=this;
+      Kde.open("ccc",function(kde){
+        Kse.search(kde,quote.text,{range:{start:0}},function(data){
+          if (data.excerpt && data.excerpt.length) {
+            cb( that.excerpt2link(kde,data.excerpt,quote.text.length),quote);
+          } else cb([]); 0
+        });
+      }); 
+
     } else if (type=="closedb") {
       var dbid=args[0];
       this.setState({tabs:this.state.tabs.filter(function(t){return !t.dbid || t.dbid!=dbid})});
@@ -222,8 +248,13 @@ var main = React.createClass({
       Kde.close(dbid);
     } else if (type=="openlink") {
       var payload=args[0];
-      var thelink={file:payload.file,pageid:payload.i,selection:{start:payload.start,len:payload.len}};
+      var thelink={file:payload.file,pageid:payload.i,
+                         linktarget:payload, linksource:args[1]};
       this.openlink(payload.db,thelink);
+    } else if (type=="makelink") {
+      //save to
+      console.log(args[0],args[1],args[2]);
+      //save link
     }
   },
   page:function() {
