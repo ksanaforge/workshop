@@ -112,8 +112,9 @@ var docview_classical = React.createClass({
     if (quotestart==-1||quotestart2>quotestart) quotestart=quotestart2;
     if (quotestart==-1) quotestart=0;
     leftpart=leftpart.substring(quotestart+1);
-
-    return {text:leftpart+inscription.substr(s,l)+rightpart, start:begin+quotestart+1  , len:s+l+quoteend-begin-quotestart-1};
+    var text=leftpart+inscription.substr(s,l)+rightpart;
+    text=text.replace(",",'');//remove or operator
+    return {text:text , start:begin+quotestart+1 ,len:s+l+quoteend-begin-quotestart-1};
 
   },
   action:function() {

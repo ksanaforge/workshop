@@ -252,8 +252,28 @@ var main = React.createClass({
                          linktarget:payload, linksource:args[1]};
       this.openlink(payload.db,thelink);
     } else if (type=="makelink") {
+      var targetpage=args[0];
+      var linktarget=args[1];
+      var linksource=args[2]; 
+      sourcedb=linksource.db; 
+      var payload=
+      {"type":"linkby","db":linksource.db,"file":linksource.file
+      ,"start":linksource.start,"len":linksource.len,"i":linksource.pageid
+      ,"pagename":linksource.page.name,
+      "author":this.user.name};
+
+      targetpage.addMarkup(linktarget.start, linktarget.len, payload);
+
+      var payload2={
+        "type":"linkto","db":linktarget.db,"file":linktarget.file
+        ,"start":linktarget.start,"len":linktarget.len,"i":linktarget.i
+        ,"author":this.user.name
+      }
+
+      linksource.page.addMarkup(linksource.start,linksource.len, payload2);
+
       //save to
-      console.log(args[0],args[1],args[2]);
+      //console.log(args[0],args[1],args[2]);
       //save link
     }
   },
