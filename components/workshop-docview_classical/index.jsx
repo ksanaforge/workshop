@@ -59,12 +59,13 @@ var docview_classical = React.createClass({
       file:this.props.filename};
     localStorage.setItem(this.props.user.name+".lastfile",JSON.stringify(lastfile));
   }, 
-  componentDidMount:function() {
+  componentDidMount:function() { 
     this.$ksana("loadDocumentJSON",{project:this.props.project,file:this.props.filename}).done(function(data){
       var doc=this.loadDocument(data);
       doc.meta.filename=this.props.filename;
       this.setState({doc:doc});
     });
+    if (this.props.tab ) this.props.tab.instance=this; // for tabui 
   },
   nav:function() {
     var params={ref:"navigator" ,user:this.props.user, preview:this.state.preview,

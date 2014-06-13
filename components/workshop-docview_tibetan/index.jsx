@@ -11,7 +11,8 @@ var excerpt=Require("ksana-document").kse.excerpt;
 var docview_tibetan = React.createClass({
   mixins: Require('kse-mixins'),
   getInitialState: function() {
-    return {doc:null,pageid:this.props.pageid};
+    var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
+    return {doc:null,pageid:pageid};
   },
   shouldComponentUpdate:function(nextProps,nextState) {
       if (nextProps.pageid!=this.props.pageid) {
@@ -19,6 +20,9 @@ var docview_tibetan = React.createClass({
       } else if (this.state.doc==nextState.doc && this.state.pageid==nextState.pageid
       &&this.state.selecting==nextState.selecting) return false;  //this is a work-around ... children under this component is causing recursive update
       return true;
+  },
+  storekey:function() {
+    return this.props.project.shortname+'.pageid';
   },
   saveMarkup:function() {
     var doc=this.state.doc;
@@ -158,6 +162,7 @@ var docview_tibetan = React.createClass({
     return Require(this.props.project.tmpl.navigator)(params);
   },
   render: function() {
+    localStorage.setItem(this.storekey(),this.state.pageid);
     if (!this.state.doc) return <span></span>
     return ( 
       <div className="docview_tibetan">

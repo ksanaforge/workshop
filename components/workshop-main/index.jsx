@@ -237,9 +237,9 @@ var main = React.createClass({
         Kse.search(kde,quote.text,{range:{start:0}},function(data){
           if (data.excerpt && data.excerpt.length) {
             cb( that.excerpt2link(kde,data.excerpt,quote.text.length),quote);
-          } else cb([]); 0
+          } else cb([]);
         });
-      }); 
+      });
 
     } else if (type=="closedb") {
       var dbid=args[0];
