@@ -40,7 +40,7 @@ var main = React.createClass({
       {"id":"tuser","caption":this.user.name||"Guest","content":userlogin,"active":true,
         "notclosable":true,"params":{"action":this.action,"user":this.user,"getError":this.getError}}
     ];
-
+    tabs.updated=true;
     return tabs;
   },
   getError:function() {
@@ -73,14 +73,17 @@ var main = React.createClass({
       tabs.updated=true;
       this.setState({projects:projects,tabs:tabs});
   },
+  enumProjects:function(settings) {
+        this.$ksana('enumProject').done(function(projects){
+          this.setState({settings:settings});
+          this.addProjectTab(projects);
+      });
+  },
   componentDidMount:function() {
     if (!this.state.settings) {
       this.$ksana("getUserSettings").done(function(settings){
         window.document.title=settings.title + ', build '+settings.buildDateTime;
-        this.$ksana('enumProject').done(function(projects){
-          this.setState({settings:settings});
-          this.addProjectTab(projects);
-        });
+        this.enumProjects(settings);
       });    
     }
     this.makescrollable();
@@ -210,7 +213,8 @@ var main = React.createClass({
         if (res.error=="") {
           localStorage.setItem("user",JSON.stringify(res));
           this.user=JSON.parse(localStorage.getItem("user"));  
-          this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()});          
+          this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()}); 
+          this.enumProjects(this.state.settings);
         }
         this.setState({error:res.error});
       });
@@ -243,8 +247,6 @@ var main = React.createClass({
 
     } else if (type=="closedb") {
       var dbid=args[0];
-      this.setState({tabs:this.state.tabs.filter(function(t){return !t.dbid || t.dbid!=dbid})});
-      this.setState({auxs:this.state.auxs.filter(function(t){return !t.dbid || t.dbid!=dbid})});
       Kde.close(dbid);
     } else if (type=="openlink") {
       var payload=args[0];

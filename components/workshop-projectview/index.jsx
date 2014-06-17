@@ -232,6 +232,7 @@ var projectview = React.createClass({
     return this.props.kde.activeQuery.byFile;
   },
   componentWillUnmount:function() {
+    return;
     this.props.action("closedb",this.props.kde.kdbid);
   },
   render: function() {
