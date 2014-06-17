@@ -233,6 +233,7 @@ var main = React.createClass({
       var kde= Kde.open(args[1]);
       if (!kde) return;
       kde.activeTofind=args[0];
+      this.state.auxs.updated=true;
       this.forceUpdate(); 
     } else if (type=="searchquote") {
       var quote=args[0],cb=args[1];
