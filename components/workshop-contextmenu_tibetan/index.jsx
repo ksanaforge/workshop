@@ -7,10 +7,7 @@ var contextmenu_tibetan = React.createClass({
     this.setState(context);
   },  
   copy:function(e) {
-    if (!process) return;
-    var gui = nodeRequire('nw.gui');
-    var clipboard = gui.Clipboard.get();
-    clipboard.set(this.state.text);
+    this.props.action("copy",this.state.text);
   },
   searchkeyword:function(e) {
     this.props.action("searchkeyword",this.state.text);
