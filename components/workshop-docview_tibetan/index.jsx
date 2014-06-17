@@ -18,7 +18,8 @@ var docview_tibetan = React.createClass({
       if (nextProps.pageid!=this.props.pageid) {
         nextState.pageid=nextProps.pageid;
       } else if (this.state.doc==nextState.doc && this.state.pageid==nextState.pageid
-      &&this.state.selecting==nextState.selecting) return false;  //this is a work-around ... children under this component is causing recursive update
+      &&this.state.selecting==nextState.selecting
+      &&this.state.preview==nextState.preview) return false;  //this is a work-around ... children under this component is causing recursive update
       return true;
   },
   storekey:function() {
