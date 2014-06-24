@@ -58,7 +58,11 @@ var inlinedialog_suggest_tibetan = React.createClass({
     );
   },
   focus:function() {
-    if (this.refs.inputtext) this.refs.inputtext.getDOMNode().focus();
+    if (this.refs.inputtext) {
+      var dn=this.refs.inputtext.getDOMNode();
+      dn.focus();
+      dn.selectionStart=dn.selectionEnd;
+    }
   },
   componentDidMount:function() {
     setTimeout(  this.focus,300);
