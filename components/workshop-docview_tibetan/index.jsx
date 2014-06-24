@@ -97,7 +97,7 @@ var docview_tibetan = React.createClass({
       this.props.action("searchkeyword",args[0],this.props.kde.kdbid);
     } else if (type=="linkby") {
       var selstart=args[0],len=args[1],cb=args[2];
-      this.props.kde.findLinkBy(this.page(),selstart,len,cb);
+      //this.props.kde.findLinkBy(this.page(),selstart,len,cb);
     } else if (type=="linkto") {
       //find surrounding text
       //do fuzzy search
