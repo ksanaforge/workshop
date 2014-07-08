@@ -93,7 +93,7 @@ var fileList = React.createClass({
       out.push(<tr key={'f'+i} onClick={this.select} 
            onMouseEnter={this.hoverFile} onMouseLeave={this.leave}
            className={cls} data-i={i}>
-        <td onDoubleClick={this.openfile}>{f.substring(0,f.length-3)}
+        <td onDoubleClick={this.openfile}>{f.substring(0,f.length-4)}
         
         <span className="label label-info">{hit}</span>
         <span className="pull-right" style={{visibility:this.state.hovered==i?"":"hidden"}}>
@@ -125,7 +125,7 @@ var projectview = React.createClass({
   shouldComponentUpdate:function(nextProps,nextState) {
     return (nextProps.kde.activeQuery!=this.activeQuery || typeof this.activeQuery=="undefined"
       || nextState.files!=this.state.files|| nextState.folders!=this.state.folders);
-  },
+  }, 
   autoopen:function() {
     //if (!this.props.autoopen || !this.props.autoopen.file) return;
     var folders=this.state.folders;

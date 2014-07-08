@@ -48,7 +48,8 @@
     "workshop/inlinedialog_comment_tibetan": "*",
     "workshop/linkbymenu": "*",
     "workshop/linktomenu": "*",
-    "workshop/inlinedialog_makelink": "*"
+    "workshop/inlinedialog_makelink": "*",
+    "workshop/filelist": "*"
   },
   "development": {},
   "paths": [

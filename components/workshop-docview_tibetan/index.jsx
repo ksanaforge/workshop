@@ -38,6 +38,7 @@ var docview_tibetan = React.createClass({
   },
   getActiveHits:function() { // get hits in this page and send to docsurface 
     if (!this.props.kde.activeQuery) return;
+    return [];
 
     var po=this.props.kde.pageOffset(this.props.filename , this.getPageName());
     if (!po) return [];
@@ -112,11 +113,24 @@ var docview_tibetan = React.createClass({
     return D.createDocument(fromserver.kd,fromserver.kdm);
   },
   componentDidMount:function() {
+    var fn=this.props.filename;
+    var that=this;
+    this.props.kde.getDocument(fn,function(doc){
+      doc.meta.filename=fn;
+      that.$ksana("loadDocumentJSON",{project:that.props.project,file:that.props.filename}).done(function(data){
+        doc.addMarkups(data.kdm);
+        doc.meta.filename=this.props.filename;
+        that.setState({doc:doc});
+    });
+
+    })
+    /*
     this.$ksana("loadDocumentJSON",{project:this.props.project,file:this.props.filename}).done(function(data){
       var doc=this.loadDocument(data);
       doc.meta.filename=this.props.filename;
       this.setState({doc:doc});
     });
+*/
     if (this.props.tab ) this.props.tab.instance=this; // for tabui 
   },
   page:function() {

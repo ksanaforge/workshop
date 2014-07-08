@@ -12,6 +12,7 @@ var devmenu=Require("devmenu");
 var reference=Require("referenceview"); 
 var projectlist=Require("projectlist"); 
 var projectview=Require("projectview");
+var filelist=Require("filelist");
 var project=Require("project");
 var about=Require("about");
 var searchmain=Require("searchmain");
