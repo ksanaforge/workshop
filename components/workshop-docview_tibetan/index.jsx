@@ -15,11 +15,26 @@ var docview_tibetan = React.createClass({
     return {doc:null,pageid:pageid};
   },
   shouldComponentUpdate:function(nextProps,nextState) {
+      var samehit=JSON.stringify(this.state.activeHits)==JSON.stringify(nextState.activeHits);
+
       if (nextProps.pageid!=this.props.pageid) {
         nextState.pageid=nextProps.pageid;
-      } else if (this.state.doc==nextState.doc && this.state.pageid==nextState.pageid
-      &&this.state.selecting==nextState.selecting
-      &&this.state.preview==nextState.preview) return false;  //this is a work-around ... children under this component is causing recursive update
+      } 
+      else if 
+         (this.state.doc==nextState.doc && this.state.pageid==nextState.pageid
+        &&this.state.selecting==nextState.selecting
+        &&samehit
+        &&this.state.preview==nextState.preview) return false;  //this is a work-around ... children under this component is causing recursive update
+
+      if (this.props.kde.activeQuery&&samehit) {
+        var that=this;
+        setTimeout(function(){
+          that.getActiveHits(function(hits){
+            that.setState({activeHits:hits});
+          });
+        },100)
+      }
+
       return true;
   },
   storekey:function() {
@@ -27,7 +42,7 @@ var docview_tibetan = React.createClass({
   },
   saveMarkup:function() {
     var doc=this.state.doc;
-    if (!doc.dirty) return;
+    if (!doc || !doc.dirty) return;
     var filename=this.state.doc.meta.filename; 
     var username=this.props.user.name;
     var markups=this.page().filterMarkup(function(m){return m.payload.author==username});
@@ -36,19 +51,21 @@ var docview_tibetan = React.createClass({
       doc.markClean();
     }); 
   },
-  getActiveHits:function() { // get hits in this page and send to docsurface 
-    if (!this.props.kde.activeQuery) return;
-    return [];
-
-    var po=this.props.kde.pageOffset(this.props.filename , this.getPageName());
-    if (!po) return [];
-
-    var Q=this.props.kde.activeQuery;
-    var absolute_hits=excerpt.hitInRange(Q,po.start,po.end);
-    var hits=absolute_hits.map(function(h){
-      return [ h[0]-po.start,h[1],h[2]];
+  getActiveHits:function(cb) { // get hits in this page and send to docsurface 
+    if (!this.props.kde.activeQuery) {
+      cb(null);
+      return;
+    }
+    var that=this;
+    this.props.kde.pageOffset(this.props.filename , this.getPageName(),
+    function(po){
+      var Q=that.props.kde.activeQuery;
+      var absolute_hits=excerpt.hitInRange(Q,po.start,po.end);
+      var hits=absolute_hits.map(function(h){
+        return [ h[0]-po.start,h[1],h[2]];
+      });
+      cb(hits);
     });
-    return hits;
   },
   action:function(type) {
     var args = Array.prototype.slice.call(arguments);
@@ -120,9 +137,10 @@ var docview_tibetan = React.createClass({
       that.$ksana("loadDocumentJSON",{project:that.props.project,file:that.props.filename}).done(function(data){
         doc.addMarkups(data.kdm);
         doc.meta.filename=this.props.filename;
-        that.setState({doc:doc});
-    });
-
+        that.getActiveHits(function(hits){
+          that.setState({doc:doc,activeHits:hits});  
+        })
+      });
     })
     /*
     this.$ksana("loadDocumentJSON",{project:this.props.project,file:this.props.filename}).done(function(data){
@@ -152,11 +170,12 @@ var docview_tibetan = React.createClass({
     if (!n)return ""
     return n.name;
   },
+  /*
   imagefilename:function() {
     var pagename=this.getPageName();
     if (!this.props.project.setting) return pagename;
     return this.props.project.setting.getImage(pagename);
-  },
+  },*/
   imagefilename:function() {
     return this.getPageName();
   },
@@ -187,7 +206,7 @@ var docview_tibetan = React.createClass({
             template={this.props.project.tmpl}
             customfunc={this.props.kde.customfunc}
             styles={styles}
-            hits={this.getActiveHits()}
+            hits={this.state.activeHits}
             autoselect={this.props.selection}
             action={this.action}
           ></docview>
