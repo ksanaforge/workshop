@@ -60,11 +60,14 @@ var docview_tibetan = React.createClass({
     this.props.kde.pageOffset(this.props.filename , this.getPageName(),
     function(po){
       var Q=that.props.kde.activeQuery;
-      var absolute_hits=excerpt.hitInRange(Q,po.start,po.end);
-      var hits=absolute_hits.map(function(h){
-        return [ h[0]-po.start,h[1],h[2]];
-      });
-      cb(hits);
+      var relative_hits=[];
+      if (po) {
+        var absolute_hits=excerpt.hitInRange(Q,po.start,po.end);
+        var relative_hits=absolute_hits.map(function(h){
+          return [ h[0]-po.start,h[1],h[2]];
+        });
+      }
+      cb(relative_hits);
     });
   },
   action:function(type) {

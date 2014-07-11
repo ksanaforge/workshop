@@ -193,6 +193,7 @@ var main = React.createClass({
       }
 
     } else if (type=="selectfile" || type=="selectfolder") {
+      this.state.auxs.updated=true;
       this.forceUpdate();
     } else if (type=="openimage") {
       var file=args[0];
