@@ -30,7 +30,7 @@ var classical={
 	,"linebreak":"※"
 }
 
-templates={tibetan:tibetan,chinese:chinese,classical:classical};
+var templates={tibetan:tibetan,chinese:chinese,classical:classical};
 var openProject=function(proj) {
 	proj.tmpl=templates[proj.template];
 	proj.setting=project_settings[proj.name];
