@@ -8,9 +8,7 @@
     "ksana/document": "*",
     "ksanaforge/boot": "*",
     "ksanaforge/tabui": "*",
-    "socketio/socketio": "*",
     "brighthas/bootstrap": "*",
-    "component/jquery": "*",
     "ksanaforge/docview": "*",
     "ksanaforge/docsurface": "*",
     "ksanaforge/kse": "*",
@@ -58,7 +56,6 @@
     "../node_modules/"
   ],
   "local": [
-    "facebook/react"
   ],
   "license": "MIT",
   "main": "index.js",
