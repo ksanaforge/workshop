@@ -20,7 +20,7 @@ var searchmain = React.createClass({
   dosearch:function(e) {
     if (!this.db)return;
 
-    var range={start:1,end:this.db.get("meta").vsize};
+    var range={maxhit:500,start:1,end:this.db.get("meta").vsize};
     if (this.activeFolder!=this.db.activeFolder && this.db.activeFolder) {
       range=this.db.folderOffset(this.db.activeFolder);
       this.activeFolder=this.db.activeFolder;
@@ -87,7 +87,7 @@ var searchmain = React.createClass({
         <input className="tofind" ref="tofind" onKeyPress={this.tofindkeypress} defaultValue={this.tofind}></input>
         <button className="btn btn-primary" onClick={this.dosearch}>Search</button>
         </div> 
-        <div ref="excerpts" className="excerpts">{this.renderExcerpts()}</div> 
+        <div ref="excerpts" className="excerpts">(result){this.renderExcerpts()}</div> 
       </div>
     );
 
