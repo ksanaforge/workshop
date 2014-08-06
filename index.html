@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html><head>
 <meta charset="utf-8" />
-<script src="../nodemain.js"></script>
-<script src="../components/component-jquery/jquery.js"></script>
-<script src="../components/socketio-socketio/socket.io.js"></script>
-<script src="../components/facebook-react/react-with-addons.js"></script>
+<script>
+if (typeof process !="undefined") {			// checking if node.js is running
+	nodeRequire=require						// rename for later usage
+	if (process.versions["node-webkit"]) {	// checking if nw is running
+  		require("../node_scripts/watch.js")	// setup developing environment
+	}
+}
+</script>
+<script src="jquery.js"></script>
+<script src="socket.io.js"></script>
+<script src="react-with-addons.js"></script>
 <link type="text/css" rel="stylesheet" href="build.css"/>
 </head><body>
 <div id="main"></div>

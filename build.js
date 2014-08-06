@@ -2173,18 +2173,34 @@ var shortFilename=function(fn) {
 	while (arr.length>2) arr.shift();
 	return arr.join('/');
 }
-var indexpages=function(doc,parsed,cb) {
-	var fileInfo={pageNames:[],pageOffset:[],parentId:[],reverts:[]};
-	var fileContent=[];
-	var shortfn=shortFilename(status.filename);
-	var hasParentId=false, hasRevert=false;
 
+var putFileInfo=function(fileInfo,fileContent) {
+	var shortfn=shortFilename(status.filename);
 	session.json.files.push(fileInfo);
 	session.json.fileContents.push(fileContent);
 	session.json.fileNames.push(shortfn);
 	session.json.fileOffsets.push(session.vpos);
 	fileInfo.pageOffset.push(session.vpos);
-	session.pagecount+=doc.pageCount-1;
+}
+var putPages_new=function(parsed,cb) { //25% faster than create a new document
+	var fileInfo={pageNames:[],pageOffset:[]};
+	var fileContent=[];
+
+	putFileInfo(fileInfo,fileContent);
+	for (var i=0;i<parsed.texts.length;i++) {
+		var t=parsed.texts[i];
+		fileContent.push(t.t);
+		putPage(t.t);
+		fileInfo.pageNames.push(t.n);
+		fileInfo.pageOffset.push(session.vpos);
+	}
+	cb(parsed);//finish
+}
+var putPages=function(doc,parsed,cb) {
+	var fileInfo={pageNames:[],pageOffset:[],parentId:[],reverts:[]};
+	var fileContent=[];
+	
+	var hasParentId=false, hasRevert=false;
 
 	for (var i=1;i<doc.pageCount;i++) {
 		var pg=doc.getPage(i);
@@ -2208,24 +2224,22 @@ var indexpages=function(doc,parsed,cb) {
 	cb(parsed);//finish
 }
 var putDocument=function(parsed,cb) {
-	var D=nodeRequire("./document");
-
-	var dnew=D.createDocument(parsed.texts);
-
-	if (session.kdb) {
+	if (session.kdb) { //update an existing kdb
+		var D=nodeRequire("./document");
+		var dnew=D.createDocument(parsed.texts);
 		session.kdb.getDocument(status.filename,function(d){
 			if (d) {
 				upgradeDocument(d,dnew);
-				indexpages(d,parsed,cb);
-				status.pageCount+=d.pageCount;
+				putPages(d,parsed,cb);
+				status.pageCount+=d.pageCount-1;
 			} else { //no such page in old kdb
-				indexpages(dnew,parsed,cb);
-				status.pageCount+=dnew.pageCount;
+				putPages(dnew,parsed,cb);
+				status.pageCount+=dnew.pageCount-1;
 			}
 		});
 	} else {
-		indexpages(dnew,parsed,cb);
-		status.pageCount+=dnew.pageCount;
+		putPages_new(parsed,cb);
+		status.pageCount+=parsed.texts.length;//dnew.pageCount;
 	}
 }
 
@@ -2240,6 +2254,33 @@ var parseAttributesString=function(s) {
 	s.replace(pat,function(m,m1,m2){out[m1]=m2});
 	return out;
 }
+var storeTag=function() {
+/*
+	per-file tags  (inline markup)
+
+	given a file, return all tag in the file
+
+	string to vpos // sort by string
+	vpos to string // sort by vpos
+	[names],
+	[ {		type:string
+			,content:[string]
+			,positions:[vpos] //delta for sorted
+	   }
+	]
+	
+	sorted : string or integer
+
+	put a key with a value
+	put a integer with a value
+	
+	put an integer under a key // search for key then append integer
+
+*/
+}
+/*
+	maintain a tag stack for known tag
+*/
 var processTags=function(captureTags,tags,texts) {
 	var open=-1, openoffset=-1;
 	var getTextBetween=function(from,to,startoffset,endoffset) {
@@ -2259,12 +2300,13 @@ var processTags=function(captureTags,tags,texts) {
 				open=i; //store the page seq
 				startoffset=T[0]; //store the offset
 			}
-			if (open>-1 && T[1][0]=="/") {
+			if (open>-1 && T[1][0]=="/") { //nested not allow
 				var handler=captureTags[T[1].substr(1)];
 				if (handler) {
 					var text=getTextBetween(open,i,startoffset,T[0]);
 					var attr=parseAttributesString(T[2]);
-					handler(text, T[1], attr);
+					var tagres=handler(text, T[1], attr);
+					storeTag(tagres);
 					open=-1;
 				}
 			}
@@ -2331,6 +2373,8 @@ var initIndexer=function(mkdbconfig) {
 	session=initSession(mkdbconfig);
 	api=nodeRequire("ksana-document").customfunc.getAPI(mkdbconfig.config);
 	xml4kdb=nodeRequire("ksana-document").xml4kdb;
+
+	//mkdbconfig has a chance to overwrite API
 
 	normalize=api["normalize"];
 	isSkip=api["isSkip"];
@@ -2412,7 +2456,7 @@ var createMeta=function() {
 	meta.config=session.config.config;
 	meta.name=session.config.name;
 	meta.vsize=session.vpos;
-	meta.pagecount=session.pagecount;
+	meta.pagecount=status.pageCount;
 	return meta;
 }
 var guessSize=function() {
@@ -3133,6 +3177,10 @@ if (typeof process=="undefined") {
 	var Buffer=function(){ return ""};
 	var html5fs=true; 
 } else {
+	if (typeof nodeRequire=="undefined") {
+		if (typeof ksana!="undefined") var nodeRequire=ksana.require;
+		else var nodeRequire=require;
+	} 
 	var fs=nodeRequire('fs');
 	var Buffer=nodeRequire("buffer").Buffer;
 }
@@ -4856,7 +4904,8 @@ var createEngine=function(kdbid,context,cb) {
 
 	return engine;
 }
- 
+ //TODO delete directly from kdb instance
+ //kdb.free();
 var closeLocal=function(kdbid) {
 	var engine=localPool[kdbid];
 	if (engine) {
@@ -4866,7 +4915,10 @@ var closeLocal=function(kdbid) {
 }
 var close=function(kdbid) {
 	var engine=pool[kdbid];
-	if (engine) delete pool[kdbid];
+	if (engine) {
+		engine.kdb.free();
+		delete pool[kdbid];
+	}
 }
 var open=function(kdbid,cb,context) {
 	if (typeof io=="undefined") { //for offline mode
@@ -13242,6 +13294,7 @@ var docview = React.createClass({displayName: 'docview',
     }
   },
   showLinkButtons:function(left,top,height) {
+    return;
     if (this.linktimer) clearTimeout(this.linktimer);
     var that=this;
     this.linktimer=setTimeout(function(){
@@ -13321,18 +13374,21 @@ var docview = React.createClass({displayName: 'docview',
                 customfunc:this.props.customfunc,
                 hits:this.props.hits}
                   
-       ),   
-      React.DOM.div( {ref:"linkto", className:"btnlinkto-container"}, 
-        React.DOM.span( {onClick:this.showlinktomenu, className:"btnlinkto"}, "\u21dd")
-      ), 
-      React.DOM.div( {ref:"linkby", className:"btnlinkby-container"}, 
-        React.DOM.span( {onClick:this.showlinkbymenu, className:"btnlinkby"}, "\u21c7")
-      )
+       )   
       )
     );
   }
 });
 module.exports=docview;
+/*
+      <div ref="linkto" className="btnlinkto-container">
+        <span onClick={this.showlinktomenu} className="btnlinkto">{"\u21dd"}</span>
+      </div> 
+      <div ref="linkby" className="btnlinkby-container">
+        <span onClick={this.showlinkbymenu} className="btnlinkby">{"\u21c7"}</span>
+      </div>
+
+*/
 });
 require.register("ksanaforge-docview/cssgen.js", function(exports, require, module){
 var createStyleSheet=function() {
@@ -13427,12 +13483,12 @@ var surface = React.createClass({displayName: 'surface',
     if (!domnode) return;
 
     var dialog=this.refs.inlinedialog.getDOMNode();
-    var dialogheight=menu.firstChild.offsetHeight;
+    var dialogheight=dialog.firstChild.offsetHeight;
 
     dialog.style.left=domnode.offsetLeft - this.getDOMNode().offsetLeft ;
     dialog.style.top=domnode.offsetTop - this.getDOMNode().offsetTop + domnode.offsetHeight ;
     if (dialogheight>0 && dialogheight<parseInt(dialog.style.top)) {
-      dialog.style.top=parseInt(menu.style.top)-dialogheight-domnode.offsetHeight;
+      dialog.style.top=parseInt(dialog.style.top)-dialogheight-domnode.offsetHeight;
     }
     dialog.style.display='inline';
     this.inlinedialogopened=dialog;
@@ -13489,8 +13545,8 @@ var surface = React.createClass({displayName: 'surface',
       if (m[i].start==n) mm=m[i];
     }
     this.props.onSelection(mm.start,mm.len);
-    var menu=this.props.template.inlinedialog[mm.payload.type];
-    if (menu) {
+    var dialog=this.props.template.inlinedialog[mm.payload.type];
+    if (dialog) {
       this.setState({markup:mm});
     }
   },
@@ -13607,10 +13663,10 @@ var surface = React.createClass({displayName: 'surface',
 
     var m=this.state.markup;
     var text=this.props.page.inscription.substr(m.start,m.len);
-    var menu=this.props.template.inlinedialog[m.payload.type];
-    if (menu) return (
+    var dialog=this.props.template.inlinedialog[m.payload.type];
+    if (dialog) return (
       React.DOM.span( {ref:"inlinedialog", className:"inlinedialog"}, 
-        menu({action:this.inlinedialogaction,text:text,markup:m,
+        dialog({action:this.inlinedialogaction,text:text,markup:m,
           user:this.props.user})
       )
     );
@@ -13739,10 +13795,10 @@ var surface = React.createClass({displayName: 'surface',
             onMouseDown:this.mouseDown,
             onMouseUp:this.mouseUp,
             onMouseMove:this.mouseMove}
-            , xml 
-          ),
+            , xml  
+          ), 
           React.DOM.div( {ref:"caretdiv", className:"surface-caret-container"}, 
-             React.DOM.div( {ref:"caret", className:"surface-caret"})
+             React.DOM.div( {ref:"caret", className:"surface-caret"}, "|")
           )
 
       )
@@ -13756,17 +13812,17 @@ var surface = React.createClass({displayName: 'surface',
     this.caret=new caret.Create(this);
 
   }, 
-  showMakelinkDialog:function(menupos) {
+  showMakelinkDialog:function(dialgpos) {
     if (!this.state.linktarget) return;
 
-    var markups=this.getMarkupsAt(menupos);
+    var markups=this.getMarkupsAt(dialogpos);
     var linkby=markups.filter(function(m){return m.payload.type=="linkby"});
-
+ 
     //already build link
     if (linkby.length && linkby[0].start==this.state.linktarget.start) return;
     //has other markup at same pos
     if (markups.length !=linkby.length) return; 
-    this.showinlinedialog(menupos);
+    this.showinlinedialog(dialogpos);
   },
   componentDidMount:function() {
     this.showMakelinkDialog(this.props.selstart);
@@ -13798,11 +13854,11 @@ var Create=function(_surface) {
     var caretdiv=surface.refs.caretdiv.getDOMNode();
     var caret=surface.refs.caret.getDOMNode();
     var surfacerect=surface.refs.surface.getDOMNode().getBoundingClientRect();
-    var left=rect.left  -surfacerect.left;
-    var top=rect.top - surfacerect.height -surfacerect.top;
-    caretdiv.style.top=top;
-    caretdiv.style.left=left;
-    caretdiv.style.height=rect.height;
+    var left=rect.left  -3;
+    var top=rect.top;
+    caretdiv.style.top=top +"px";
+    caretdiv.style.left=left +"px";
+    caretdiv.style.height=rect.height +"px";
     surface.refs.surface.getDOMNode().focus();
     surface.props.action("caretmoved",left,top,rect.height);
     //this.moveInputBox(rect);
