@@ -158,12 +158,13 @@ var main = React.createClass({
     if (type==="setdoc") { 
       this.setState({doc:args[0]});
     } else if (type=="openproject") {
-      var proj=args[0];
+      var proj=args[0]; 
       var autoopen=args[1];
       var tab=args[2]||this.refs.maintab;
       var that=this;  
       kde.open(proj.name,function(engine){
-        proj.template="tibetan";
+        var meta=engine.get("meta");
+        proj.template=meta.template;
         project.openProject(proj);
         var obj={"id":"p_"+proj.shortname,"caption":proj.name,dbid:proj.name,
           "content":projectview,"active":true, "projectmain":true,
