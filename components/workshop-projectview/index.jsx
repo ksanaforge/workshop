@@ -118,7 +118,6 @@ var fileList = React.createClass({
   }
 });
 var projectview = React.createClass({
-  mixins: Require('kse-mixins'),
   getInitialState: function() {
     return {bar: "world",folders:[],files:[],selectedFile:0};
   },
@@ -190,16 +189,13 @@ var projectview = React.createClass({
   },
   openFile:function(i) {
     var f=this.state.folder+'/'+this.state.files[i];
-    var gotopageid,linktarget,linksource;
+    var gotopageid;
     if (this.props.autoopen)  {
       gotopageid=this.props.autoopen.pageid;
-      linktarget=this.props.autoopen.linktarget;
-      linksource=this.props.autoopen.linksource;
     }
-    this.props.action("openfile",this.props.kde.kdbid,f,gotopageid,null,linktarget,linksource);
+    this.props.action("openfile",this.props.kde.dbname,f,gotopageid,null);
     if (this.props.autoopen) {
       this.props.autoopen.pageid="";
-      this.props.autoopen.linktarget=null;
     }
     this.setState({selectedFile:i});
   },

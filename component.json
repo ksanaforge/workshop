@@ -11,8 +11,6 @@
     "brighthas/bootstrap": "*",
     "ksanaforge/docview": "*",
     "ksanaforge/docsurface": "*",
-    "ksanaforge/kse": "*",
-    "ksanaforge/kse-mixins": "*",
     "workshop/main": "*",
     "workshop/comp1": "*",
     "workshop/sampledoc": "*",
@@ -47,7 +45,11 @@
     "workshop/linkbymenu": "*",
     "workshop/linktomenu": "*",
     "workshop/inlinedialog_makelink": "*",
-    "workshop/filelist": "*"
+    "workshop/filelist": "*",
+    "ksanaforge/fileinstaller": "*",
+    "ksanaforge/checkbrowser":"*",
+    "ksanaforge/htmlfs":"*"
+
   },
   "development": {},
   "paths": [

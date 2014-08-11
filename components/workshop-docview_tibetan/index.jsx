@@ -9,7 +9,6 @@ var D=Require("ksana-document").document;
 var M=Require("ksana-document").markups;
 var excerpt=Require("ksana-document").kse.excerpt;
 var docview_tibetan = React.createClass({
-  mixins: Require('kse-mixins'),
   getInitialState: function() {
     var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
     return {doc:null,pageid:pageid};
@@ -29,9 +28,7 @@ var docview_tibetan = React.createClass({
       if (this.props.kde.activeQuery&&samehit) {
         var that=this;
         setTimeout(function(){
-          that.getActiveHits(function(hits){
-            that.setState({activeHits:hits});
-          });
+          that.setState( {activeHits: that.getActiveHits()} );
         },100)
       }
 
@@ -47,28 +44,22 @@ var docview_tibetan = React.createClass({
     var username=this.props.user.name;
     var markups=this.page().filterMarkup(function(m){return m.payload.author==username});
     var dbid=this.props.kde.kdbid;
+    /*
     this.$ksana("saveMarkup",{dbid:dbid,markups:markups,filename:filename,i:this.state.pageid } ,function(data){
       doc.markClean();
     }); 
+*/
   },
-  getActiveHits:function(cb) { // get hits in this page and send to docsurface 
-    if (!this.props.kde.activeQuery) {
-      cb(null);
-      return;
-    }
-    var that=this;
-    this.props.kde.pageOffset(this.props.filename , this.getPageName(),
-    function(po){
-      var Q=that.props.kde.activeQuery;
-      var relative_hits=[];
-      if (po) {
+  getActiveHits:function() { // get hits in this page and send to docsurface 
+    if (!this.props.kde.activeQuery) return [];
+    var po=this.props.kde.pageOffset(this.getPageName());
+    var Q=this.props.kde.activeQuery;
+    var relative_hits=[];
+    if (po) {
         var absolute_hits=excerpt.hitInRange(Q,po.start,po.end);
-        var relative_hits=absolute_hits.map(function(h){
-          return [ h[0]-po.start,h[1],h[2]];
-        });
-      }
-      cb(relative_hits);
-    });
+        var relative_hits=absolute_hits.map(function(h){  return [ h[0]-po.start,h[1],h[2]]; });
+    }
+    return relative_hits;
   },
   action:function(type) {
     var args = Array.prototype.slice.call(arguments);
@@ -137,13 +128,14 @@ var docview_tibetan = React.createClass({
     var that=this;
     this.props.kde.getDocument(fn,function(doc){
       doc.meta.filename=fn;
+      that.setState({doc:doc,activeHits:that.getActiveHits()});
+      /*
       that.$ksana("loadDocumentJSON",{project:that.props.project,file:that.props.filename}).done(function(data){
         doc.addMarkups(data.kdm);
         doc.meta.filename=this.props.filename;
-        that.getActiveHits(function(hits){
-          that.setState({doc:doc,activeHits:hits});  
-        })
+        that.setState({doc:doc,activeHits:that.getActiveHits()});
       });
+*/
     })
     /*
     this.$ksana("loadDocumentJSON",{project:this.props.project,file:this.props.filename}).done(function(data){

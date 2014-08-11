@@ -6,7 +6,6 @@ var contentnavigator=Require("contentnavigator");
 var excerpt=Require("ksana-document").kse.excerpt;
 
 var docview_classical = React.createClass({
-  mixins: Require('kse-mixins'),
   getInitialState: function() {
     var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
     return {doc:null,pageid:pageid};
@@ -60,11 +59,13 @@ var docview_classical = React.createClass({
     localStorage.setItem(this.props.user.name+".lastfile",JSON.stringify(lastfile));
   }, 
   componentDidMount:function() { 
+    /*
     this.$ksana("loadDocumentJSON",{project:this.props.project,file:this.props.filename}).done(function(data){
       var doc=this.loadDocument(data);
       doc.meta.filename=this.props.filename;
       this.setState({doc:doc});
     });
+*/
     if (this.props.tab ) this.props.tab.instance=this; // for tabui 
   },
   nav:function() {
@@ -80,9 +81,11 @@ var docview_classical = React.createClass({
     var username=this.props.user.name;
     var dbid=this.props.kde.kdbid;
     var markups=this.page().filterMarkup(function(m){return m.payload.author==username});
+    /*
     this.$ksana("saveMarkup",{dbid:dbid,markups:markups,filename:filename,i:this.state.pageid } ,function(data){
       doc.markClean();
     }); 
+*/
   },
   getActiveHits:function() {
     if (!this.props.kde.activeQuery) return;

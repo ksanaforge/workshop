@@ -2,7 +2,6 @@
 
 
 var projectlist = React.createClass({
-  mixins: Require('kse-mixins'),
   getInitialState: function() {
     return {bar: "world",hovered:-1,selected:-1};
   },
@@ -22,30 +21,31 @@ var projectlist = React.createClass({
     this.setState({hovered:hovered});
   },
   buildindex:function() {
+    /*
     var p=this.props.projects()[this.state.hovered];
     if (!p) return;
     this.props.action("buildindex",p);
+    */
   },
   renderProject:function(p,i) {
     var d=p.lastModified;
     var cls=(i==this.state.selected)?"success":"";
    // var formatted=d.getDay()+'/'+d.getMonth()+'/'+d.getFullYear();
-    return <tr key={'p'+i} data-i={i} className={cls} 
+    return (<tr key={'p'+i} data-i={i} className={cls} 
      onClick={this.selectproject}
      onDoubleClick={this.openproject}
      onMouseOver={this.hoverProject}>
       <td>{p.name}</td>
-      <td>{p.desc}</td>
-      <td>{p.author}</td>
+      <td></td>
+      <td></td>
       <td>0</td>
       <td>
         <span style={{visibility:this.state.hovered==i?"":"hidden"}} >
-        <button onClick={this.buildindex} className="btn btn-warning">Build Index</button>
           <button onClick={this.openproject} className="btn btn-success">Open</button>
         </span>
       </td>
-
-    </tr>
+    </tr>);
+//<button onClick={this.buildindex} className="btn btn-warning">Build Index</button>
   },
   sortHeader:function(e) {
     var field=e.target.attributes['data-field'];

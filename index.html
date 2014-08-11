@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html><head>
+<html  manifest="offline.appcache"><head>
 <meta charset="utf-8" />
 <script>
 if (typeof process !="undefined") {			// checking if node.js is running
@@ -7,10 +7,9 @@ if (typeof process !="undefined") {			// checking if node.js is running
 	if (process.versions["node-webkit"]) {	// checking if nw is running
   		require("../node_scripts/watch.js")	// setup developing environment
 	}
-}
+} 
 </script>
 <script src="jquery.js"></script>
-<script src="socket.io.js"></script>
 <script src="react-with-addons.js"></script>
 <link type="text/css" rel="stylesheet" href="build.css"/>
 </head><body>

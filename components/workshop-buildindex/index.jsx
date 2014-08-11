@@ -3,7 +3,7 @@
 if (typeof $ =='undefined') $=Require('jquery');
 var emptystatus={done:false,progress:0,message:""};
 var buildindex = React.createClass({
-  mixins: Require('kse-mixins'),
+  //mixins: Require('kse-mixins'),
   getInitialState: function() {
     return {status:emptystatus};
   },
@@ -12,28 +12,34 @@ var buildindex = React.createClass({
     this.buildtimer=0;
   },
   getstatus:function() {
+    /*
     this.$ksana('buildStatus',this.state.status).done(function(status){
       var elapsed=Math.floor((new Date()-this.state.starttime)/1000);
       if (status.done) this.stoptimer();
       this.setState({status:status, elapsed:elapsed});
     });
+*/
   },
   start:function(proj) {
     if (this.buildtimer) return;//cannot start another instance
     this.setState({status:emptystatus,starttime:new Date(),elapsed:0});
+    /*
     this.$ksana('buildIndex',proj).done(function(status){
       this.state.status=status;
       $(this.refs.dialog.getDOMNode()).modal({backdrop:'static'}).modal('show');
       this.buildtimer=setInterval( this.getstatus,1000);
     });
+*/
   },
   close:function() {
     $(this.refs.dialog.getDOMNode()).modal('hide');
   },
   stop:function() {
+    /*
     this.$ksana('stopIndex',this.state.status).done(function(s){
       this.setState({status:s});
     });
+*/
   }, 
   buttons:function() {
     if (this.state.status.done) {

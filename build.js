@@ -2127,7 +2127,7 @@ var tokenize=null;
 
 var putPosting=function(tk) {
 	var	postingid=session.json.tokens[tk];
-	var out=session.json;
+	var out=session.json, posting=null;
 	if (!postingid) {
 		out.postingCount++;
 		posting=out.postings[out.postingCount]=[];
@@ -2174,34 +2174,36 @@ var shortFilename=function(fn) {
 	return arr.join('/');
 }
 
-var putFileInfo=function(fileInfo,fileContent) {
+var putFileInfo=function(fileContent) {
 	var shortfn=shortFilename(status.filename);
-	session.json.files.push(fileInfo);
+	//session.json.files.push(fileInfo);
 	session.json.fileContents.push(fileContent);
 	session.json.fileNames.push(shortfn);
 	session.json.fileOffsets.push(session.vpos);
-	fileInfo.pageOffset.push(session.vpos);
+	//fileInfo.pageOffset.push(session.vpos);
 }
 var putPages_new=function(parsed,cb) { //25% faster than create a new document
-	var fileInfo={pageNames:[],pageOffset:[]};
+	//var fileInfo={pageNames:[],pageOffset:[]};
 	var fileContent=[];
 
-	putFileInfo(fileInfo,fileContent);
+	putFileInfo(fileContent);
 	for (var i=0;i<parsed.texts.length;i++) {
 		var t=parsed.texts[i];
 		fileContent.push(t.t);
 		putPage(t.t);
-		fileInfo.pageNames.push(t.n);
-		fileInfo.pageOffset.push(session.vpos);
+		session.json.pageNames.push(t.n);
+		session.json.pageOffsets.push(session.vpos);
 	}
 	cb(parsed);//finish
 }
 var putPages=function(doc,parsed,cb) {
-	var fileInfo={pageNames:[],pageOffset:[],parentId:[],reverts:[]};
-	var fileContent=[];
-	
+	var fileInfo={parentId:[],reverts:[]};
+	var fileContent=[];	
 	var hasParentId=false, hasRevert=false;
-
+	putFileInfo(fileContent);
+	if (!session.files) session.files=[];
+	session.json.files.push(fileInfo);
+	
 	for (var i=1;i<doc.pageCount;i++) {
 		var pg=doc.getPage(i);
 		if (pg.isLeafPage()) {
@@ -2210,8 +2212,9 @@ var putPages=function(doc,parsed,cb) {
 		} else {
 			fileContent.push("");
 		}
-		fileInfo.pageNames.push(pg.name);
-		fileInfo.pageOffset.push(session.vpos);
+		sesison.json.pageNames.push(pg.name);
+		session.json.pageOffsets.push(session.vpos);
+
 		fileInfo.parentId.push(pg.parentId);
 		if (pg.parentId) hasParentId=true;
 		var revertstr="";
@@ -2254,35 +2257,29 @@ var parseAttributesString=function(s) {
 	s.replace(pat,function(m,m1,m2){out[m1]=m2});
 	return out;
 }
-var storeTag=function() {
-/*
-	per-file tags  (inline markup)
-
-	given a file, return all tag in the file
-
-	string to vpos // sort by string
-	vpos to string // sort by vpos
-	[names],
-	[ {		type:string
-			,content:[string]
-			,positions:[vpos] //delta for sorted
-	   }
-	]
-	
-	sorted : string or integer
-
-	put a key with a value
-	put a integer with a value
-	
-	put an integer under a key // search for key then append integer
-
-*/
+var storeFields=function(fields ,root) {
+	if (!(fields instanceof Array) ) fields=[fields];
+	debugger;
+	var storeField=function(field) {
+		var path=field.path;
+		storepoint=root;
+		if (!(path instanceof Array)) path=[path];
+		for (var i=0;i<path.length;i++) {
+			if (!storepoint[path[i]]) {
+				if (i<path.length-1) storepoint[path[i]]={};
+				else storepoint[path[i]]=[];
+			}
+			storepoint=storepoint[path[i]];
+		}
+		storepoint.push(field.value);
+	}
+	fields.map(storeField);
 }
 /*
 	maintain a tag stack for known tag
 */
+var tagStack=[];
 var processTags=function(captureTags,tags,texts) {
-	var open=-1, openoffset=-1;
 	var getTextBetween=function(from,to,startoffset,endoffset) {
 		if (from==to) return texts[from].t.substring(startoffset,endoffset);
 		var first=texts[from].t.substr(startoffset);
@@ -2294,21 +2291,30 @@ var processTags=function(captureTags,tags,texts) {
 		return first+middle+last;
 	}
 	for (var i=0;i<tags.length;i++) {
+
 		for (var j=0;j<tags[i].length;j++) {
-			var T=tags[i][j];			
-			if (captureTags[T[1]]) {
-				open=i; //store the page seq
-				startoffset=T[0]; //store the offset
+			var T=tags[i][j],tagname=T[1],tagoffset=T[0],attributes=T[2];	
+			if (captureTags[tagname]) {
+				attr=parseAttributesString(attributes);
+				tagStack.push([tagname,tagoffset,attr,i]);
 			}
-			if (open>-1 && T[1][0]=="/") { //nested not allow
-				var handler=captureTags[T[1].substr(1)];
-				if (handler) {
-					var text=getTextBetween(open,i,startoffset,T[0]);
-					var attr=parseAttributesString(T[2]);
-					var tagres=handler(text, T[1], attr);
-					storeTag(tagres);
-					open=-1;
+			var handler=null;
+			if (tagname[0]=="/") {
+				handler=captureTags[tagname.substr(1)];
+			}
+			if (handler) {
+				var prev=tagStack[tagStack.length-1];
+				if (tagname.substr(1)!=prev[0]) {
+					console.error("tag unbalance",tagname,prev[0]);
+				} else {
+					tagStack.pop();
 				}
+				var text=getTextBetween(prev[3],i,prev[1],tagoffset);
+				status.vpos=tagoffset;
+				status.tagStack=tagStack;
+				var fields=handler(text, tagname, attr, status);
+				if (!session.json.fields) session.json.fields={};
+				if (fields) storeFields(fields,session.json.fields);
 			}
 		}	
 	}
@@ -2353,13 +2359,14 @@ var putFile=function(fn,cb) {
 }
 var initSession=function(config) {
 	var json={
-		postings:[[0]] //first one is always empty, because tokenid cannot be 0		
-		,files:[]
+		postings:[[0]] //first one is always empty, because tokenid cannot be 0
+		,postingCount:0
 		,fileContents:[]
 		,fileNames:[]
 		,fileOffsets:[]
+		,pageNames:[]
+		,pageOffsets:[]
 		,tokens:{}
-		,postingCount:0
 	};
 	config.inputEncoding=config.inputEncoding||"utf8";
 	var session={vpos:1, json:json , kdb:null, filenow:0,done:false
@@ -2481,6 +2488,8 @@ var optimize4kdb=function(json) {
 	json.tokens=newtokens;
 	for (var i=0;i<json.postings.length;i++) json.postings[i].sorted=true; //use delta format to save space
 	json.postingslen=buildpostingslen(json.tokens,json.postings);
+	json.fileOffsets.sorted=true;
+	json.pageOffsets.sorted=true;
 	return json;
 }
 
@@ -2490,6 +2499,7 @@ var finalize=function(cb) {
 	if (session.kdb) Kde.closeLocal(session.kdbfn);
 
 	session.json.fileOffsets.push(session.vpos); //serve as terminator
+	session.json.pageOffsets.push(session.vpos); //serve as terminator
 	session.json.meta=createMeta();
 	
 	if (!session.config.nobackup) backup(session.kdbfn);
@@ -2500,8 +2510,13 @@ var finalize=function(cb) {
 
 	var kdbw =nodeRequire("ksana-document").kdbw(session.kdbfn,opts);
 	//console.log(JSON.stringify(session.json,""," "));
-
+	if (session.config.finalizeField) {
+		console.log("finalizing fields");
+		session.config.finalizeField(session.fields);
+	}
+	console.log("optimizing");
 	var json=optimize4kdb(session.json);
+
 	console.log("output to",session.kdbfn);
 	kdbw.save(json,null,{autodelete:true});
 	
@@ -4689,6 +4704,29 @@ var toDoc=function(pagenames,texts,parents,reverts) {
 	d.endCreatePages();
 	return d;
 }
+var getFileRange=function(i) {
+	var engine=this;
+	var fileOffsets=engine.get(["fileOffsets"]);
+	var pageOffsets=engine.get(["pageOffsets"]);
+	var pageNames=engine.get(["pageNames"]);
+	var fileStart=fileOffsets[i],fileEnd=fileOffsets[i+1];
+	var start=-1,end=-1;	
+	for (var i=0;i<pageOffsets.length;i++) {
+		if (pageOffsets[i]>=fileStart && start==-1) start=i;
+		if (pageOffsets[i]>=fileEnd && end==-1) end=i;
+	}
+	return {start:start,end:end};
+}
+var getFilePageOffsets=function(i) {
+	var range=getFileRange.apply(this,[i]);
+	return pageOffsets.slice(range.start,range.end);
+}
+
+var getFilePageNames=function(i) {
+	var range=getFileRange.apply(this,[i]);
+	var pageNames=this.get("pageNames");
+	return pageNames.slice(range.Start,range.end);
+}
 var getDocument=function(filename,cb){
 	var engine=this;
 	var filenames=engine.get("fileNames");
@@ -4697,17 +4735,51 @@ var getDocument=function(filename,cb){
 	if (i==-1) {
 		cb(null);
 	} else {
+		var pagenames=getFilePageNames.apply(engine,[i]);
 		var files=engine.get(["files",i],true,function(file){
-			var pagenames=file.pageNames;
-			var parentId=file.parentId;
-			var reverts=file.reverts;
+			var parentId=null,reverts=null;
+			if (file) {
+				parentId=file.parentId;
+				reverts=file.reverts;
+			}
 			engine.get(["fileContents",i],true,function(data){
 				cb(toDoc(pagenames,data,parentId,reverts));
 			});			
 		});
 	}
 }
+var indexOfSorted = function (array, obj, near) { 
+  var low = 0,
+  high = array.length;
+  while (low < high) {
+    var mid = (low + high) >> 1;
+    if (array[mid]==obj) return mid;
+    array[mid] < obj ? low = mid + 1 : high = mid;
+  }
+  if (near) return low;
+  else if (array[low]==obj) return low;else return -1;
+};
+var indexOfSorted_str = function (array, obj, near) { 
+  var low = 0,
+  high = array.length;
+  while (low < high) {
+    var mid = (low + high) >> 1;
+    if (array[mid]==obj) return mid;
+    (array[mid].localeCompare(obj)<0) ? low = mid + 1 : high = mid;
+  }
+  if (near) return low;
+  else if (array[low]==obj) return low;else return -1;
+};
 
+
+var bsearch=function(array,value,near) {
+	var func=indexOfSorted;
+	if (typeof array[0]=="string") func=indexOfSorted_str;
+	return func(array,value,near);
+}
+var bsearchNear=function(array,value) {
+	return bsearch(array,value,true);
+}
 var createLocalEngine=function(kdb,cb,context) {
 	var engine={lastAccess:new Date(), kdb:kdb, queryCache:{}, postingCache:{}};
 
@@ -4746,13 +4818,18 @@ var createLocalEngine=function(kdb,cb,context) {
 			cb(null);	
 		}
 	};	
+	engine.bsearch=bsearch;
+	engine.bsearchNear=bsearchNear;
 	engine.fileOffset=fileOffset;
 	engine.folderOffset=folderOffset;
 	engine.pageOffset=pageOffset;
 	engine.getDocument=getDocument;
+	engine.getFilePageNames=getFilePageNames;
+	engine.getFilePageOffsets=getFilePageOffsets;
 	//only local engine allow getSync
 	if (!kdb.fs.html5fs)	engine.getSync=engine.kdb.getSync;
-	var preload=[["meta"],["fileNames"],["fileOffsets"],["tokens"],["postingslen"]];
+	var preload=[["meta"],["fileNames"],["fileOffsets"],
+	["tokens"],["postingslen"],["pageNames"],["pageOffsets"]];
 
 	var setPreload=function(res) {
 		engine.dbname=res[0].name;
@@ -4829,18 +4906,14 @@ var getRemote=function(key,recursive,cb) {
 		}
 	}
 }
-var pageOffset=function(fn,pagename,cb) {
-	var engine=this;
-	var filenames=engine.get("fileNames");
-	var i=filenames.indexOf(fn);
-	if (i==-1) return null;
+var pageOffset=function(pagename) {
+	if (arguments.length>1) throw "argument : pagename ";
 
-	engine.get(["files",i],function(fileinfo){
-		var j=fileinfo.pageNames.indexOf(pagename);
-		if (j){
-			cb.apply(engine.context,[{start: fileinfo.pageOffset[j] , end:fileinfo.pageOffset[j+1]}]);	
-		} else cb.apply(engine.context,[null]);
-	});
+	var pageNames=engine.get("pageNames");
+	var pageOffsets=engine.get("pageOffsets");
+
+	var i=pageNames.indexOf(pagename);
+	return (i>-1)?pageOffsets[i]:0;
 }
 var fileOffset=function(fn) {
 	var engine=this;
@@ -4876,20 +4949,29 @@ var createEngine=function(kdbid,context,cb) {
 	postingCache:{}, queryCache:{}, traffic:0,fetched:0};
 	engine.setContext=function(ctx) {this.context=ctx};
 	engine.get=getRemote;
+	engine.bsearch=bsearch;
+	engine.bsearchNear=bsearchNear;
 	engine.fileOffset=fileOffset;
 	engine.folderOffset=folderOffset;
 	engine.pageOffset=pageOffset;
 	engine.getDocument=getDocument;
+	engine.getFilePageNames=getFilePageNames;
+	engine.getFilePageOffsets=getFilePageOffsets;
+
 	if (typeof context=="object") engine.context=context;
 
 	//engine.findLinkBy=link.findLinkBy;
-	$kse("get",{key:[["meta"],["fileNames"],["fileOffsets"],["tokens"],["postingslen"]], recursive:true,db:kdbid}).done(function(res){
+	$kse("get",{key:[["meta"],["fileNames"],["fileOffsets"],["tokens"],["postingslen"],,["pageNames"],["pageOffsets"]], 
+		recursive:true,db:kdbid}).done(function(res){
 		engine.dbname=res[0].name;
 
 		engine.cache["fileNames"]=res[1];
 		engine.cache["fileOffsets"]=res[2];
 		engine.cache["tokens"]=res[3];
 		engine.cache["postingslen"]=res[4];
+		engine.cache["pageNames"]=res[5];
+		engine.cache["pageOffsets"]=res[6];
+		console.log(res[6])
 //		engine.cache["tokenId"]=res[4];
 //		engine.cache["files"]=res[2];
 
@@ -4979,10 +5061,9 @@ var openLocalNode=function(kdbid,cb,context) {
 var openLocalHtml5=function(kdbid,cb,context) {
 	var Kdb=Require('ksana-document').kdb;
 	
-
 	var engine=localPool[kdbid];
 	if (engine) {
-		if (cb) cb(engine);
+		if (cb) cb.apply(engine.context,[engine]);
 		return engine;
 	}
 	var Kdb=Require('ksana-document').kdb;
@@ -5008,8 +5089,14 @@ var setPath=function(path) {
 	console.log("set path",path)
 }
 
+var enumKdb=function(cb,context){
+	Require("ksana-document").html5fs.readdir(function(out){
+		cb.apply(this,[out]);
+	},context||this);
+}
+
 module.exports={openLocal:openLocal, open:open, close:close, 
-	setPath:setPath, closeLocal:closeLocal};
+	setPath:setPath, closeLocal:closeLocal, enumKdb:enumKdb};
 });
 require.register("ksana-document/boolsearch.js", function(exports, require, module){
 /*
@@ -5280,16 +5367,10 @@ var getPageWithHit=function(fileid,offsets) {
 	pagewithhit.map(function(p,idx){if (p.length) out.push(idx)});
 	return out;
 }
-var pageWithHit=function(fileid,cb) {
+var pageWithHit=function(fileid) {
 	var Q=this,engine=Q.engine;
-	if (typeof cb=="function") {
-		engine.get(["files",fileid,"pageOffset"],function(offsets){
-			cb(getPageWithHit.apply(this,[fileid,offsets]));
-		})
-	} else {
-		var offsets=engine.getSync(["files",fileid,"pageOffset"]);
-		return getPageWithHit.apply(this,[fileid,offsets]);
-	}
+	var offsets=engine.getFilePageOffsets(fileid);
+	return getPageWithHit.apply(this,[fileid,offsets]);
 }
 
 var newQuery =function(engine,query,opts) {
@@ -5993,29 +6074,6 @@ var hitInRange=function(Q,startvoff,endvoff) {
 	return res;
 }
 
-var getFileInfo=function(engine,arr,cb) {
-	var taskqueue=[],out=[];
-	for (var i=0;i<arr.length;i++) {
-		taskqueue.push(
-			(function(idx){
-				return (
-					function(data){
-						if (typeof data=='object' && data.__empty) {
-							 //not pushing the first call
-						} else out.push(data);
-						engine.get(["files",idx],true,taskqueue.shift());
-					}
-				);
-		})(arr[i]));
-	}
-	//last call 
-	taskqueue.push(function(data){
-		out.push(data);
-		cb(out);
-	});
-	taskqueue.shift()({__empty:true});
-}
-
 /*
 given a vpos range start, file, convert to filestart, fileend
    filestart : starting file
@@ -6075,51 +6133,52 @@ var resultlist=function(engine,Q,opts,cb) {
 		cb(output);
 		return;
 	}
-	getFileInfo(engine,fileWithHits,function(files) {
-		var output=[];
-		for (var i=0;i<files.length;i++) {
-			var pagewithhit=plist.groupbyposting2(Q.byFile[ fileWithHits[i] ],  files[i].pageOffset);
-			pagewithhit.shift(); //the first item is not used (0~Q.byFile[0] )
-			for (var j=0; j<pagewithhit.length;j++) {
-				if (!pagewithhit[j].length) continue;
-				//var offsets=pagewithhit[j].map(function(p){return p- fileOffsets[i]});
-				var name=files[i].pageNames[j];
-				output.push(  {file: fileWithHits[i] , page:j,  pagename:name});
+
+	var output=[],files=[];//temporary holder for pagenames
+	for (var i=0;i<fileWithHits.length;i++) {
+		var nfile=fileWithHits[i];
+		var pageOffsets=engine.getFilePageOffsets(nfile);
+		var pageNames=engine.getFilePageNames(nfile);
+		files[nfile]={pageOffsets:pageOffsets};
+		var pagewithhit=plist.groupbyposting2(Q.byFile[ nfile ],  pageOffsets);
+		pagewithhit.shift(); //the first item is not used (0~Q.byFile[0] )
+		for (var j=0; j<pagewithhit.length;j++) {
+			if (!pagewithhit[j].length) continue;
+			//var offsets=pagewithhit[j].map(function(p){return p- fileOffsets[i]});
+			output.push(  {file: nfile, page:j,  pagename:pageNames[j+1]});
+		}
+	}
+
+	var pagekeys=output.map(function(p){
+		return ["fileContents",p.file,p.page];
+	});
+	//prepare the text
+	engine.get(pagekeys,function(pages){
+		var seq=0;
+		if (pages) for (var i=0;i<pages.length;i++) {
+			var startvpos=files[output[i].file].pageOffsets[output[i].page];
+			var endvpos=files[output[i].file].pageOffsets[output[i].page+1];
+			var hl={};
+			
+			if (opts.nohighlight) {
+				hl.text=pages[i];
+				hl.hits=hitInRange(Q,startvpos,endvpos);
+			} else {
+				var o={text:pages[i],startvpos:startvpos, endvpos: endvpos, Q:Q,fulltext:opts.fulltext};
+				hl=highlight(Q,o);
+			}
+			output[i].text=hl.text;
+			output[i].hits=hl.hits;
+			output[i].seq=seq;
+			seq+=hl.hits.length;
+
+			output[i].start=startvpos;
+			if (opts.range.maxhit && seq>opts.range.maxhit) {
+				output.length=i;
+				break;
 			}
 		}
-
-		var pagekeys=output.map(function(p){
-			return ["fileContents",p.file,p.page];
-		});
-		//prepare the text
-		engine.get(pagekeys,function(pages){
-			var seq=0;
-			if (pages) for (var i=0;i<pages.length;i++) {
-				var k=fileWithHits.indexOf(output[i].file);
-				var startvpos=files[k].pageOffset[output[i].page];
-				var endvpos=files[k].pageOffset[output[i].page+1];
-				var hl={};
-				
-				if (opts.nohighlight) {
-					hl.text=pages[i];
-					hl.hits=hitInRange(Q,startvpos,endvpos);
-				} else {
-					var o={text:pages[i],startvpos:startvpos, endvpos: endvpos, Q:Q,fulltext:opts.fulltext};
-					hl=highlight(Q,o);
-				}
-				output[i].text=hl.text;
-				output[i].hits=hl.hits;
-				output[i].seq=seq;
-				seq+=hl.hits.length;
-
-				output[i].start=startvpos;
-				if (opts.range.maxhit && seq>opts.range.maxhit) {
-					output.length=i;
-					break;
-				}
-			}
-			cb(output);
-		});
+		cb(output);
 	});
 }
 var injectTag=function(Q,opts){
@@ -10882,7 +10941,7 @@ var ksana={"platform":"remote"};
 if (typeof process !="undefined") {
 	if (process.versions["node-webkit"]) {
   	ksana.platform="node-webkit"
-  	ksana.require=nodeRequire;
+  	if (typeof nodeRequire!="undefined") ksana.require=nodeRequire;
   }
 } else if (typeof chrome!="undefined" && chrome.fileSystem){
 	ksana.platform="chrome";
@@ -14045,309 +14104,10 @@ this.keydown=function(e) {
 
 module.exports={Create:Create};
 });
-require.register("ksanaforge-kse/index.js", function(exports, require, module){
-var useDB=function(db,callback) {
-	//chrome doesn't allow new Function()
-	var customfunc=null;
-  if (ksana.platform=='chrome') customfunc=Require(ksana.appId+'/sample.js');
-  db=this.state.db;
-  if (ksana.platform=='remote') db=ksana.appId+"/"+db;
-  this.$ksana("prepare",{db:db,customfunc:customfunc})
-    .done(function(data) {
-    	callback.apply(this,[data]);
-  });
-} 
-
-
-module.exports={ksana:require('./ksana'), $ksana:require("./ksana_promise"),
-useDB:useDB}
-
-});
-require.register("ksanaforge-kse/rpc.js", function(exports, require, module){
-/*
-	this is for browser, a simple wrapper for socket.io rpc
-	
-	for each call to server, create a unique id
-	when server return, get the slot by unique id, and invoke callbacks.
-*/
-  function GUID () {
-    var S4 = function ()    {    return Math.floor(        Math.random() * 0x10000  ).toString(16);  };
-    return (   S4() + S4() + "-" + S4() + "-" +  S4() + "-" + S4() + "-" +S4() + S4() + S4()    );
-  }
-
-	var RPCs={}; //*  key: unique calling id  */
-	if (typeof io=='undefined') io=require("../socketio");
-	var socket = io(window.location.host);//.connect(window.location.host);
-  
-	var returnfromserver=function(res) {
-		var slot=RPCs[res.fid];
-		
-		if (!slot) {
-			throw "invalid fid "+res.fid;
-			return;
-		}
-		
-		if (res.success) {
-			if (slot.successCB)  slot.successCB(res.err,res.response);
-		} else {
-			if (slot.errorCB)  slot.errorCB(res.err,res.response);
-		}
-		delete RPCs[res.fid]; //drop the slot
-	}
- 
-var pchost={
-  exec: function(successCB, errorCB, service, action, params) {
-	var fid=GUID();
-	//create a slot to hold
-	var slot={  fid:fid, successCB:successCB, errorCB:errorCB ,params:params, action:action, service:service};
-	RPCs[fid]=slot;
-	socket.emit('rpc',  { service: service, action:action, params: params , fid:fid });
-  }
-}
-  
-  socket.on( 'rpc', returnfromserver );	 
-  //window.host=pchost;
-  module.exports=pchost;
-});
-require.register("ksanaforge-kse/rpc_yase.js", function(exports, require, module){
-var rpc=require('./rpc')
-var makeinf=function(name) {
-	return (
-		function(opts,callback) {
-			rpc.exec(callback,0,"yase",name,opts);
-		});
-}
-var api={};
-api.initialize=makeinf("initialize");
-api.phraseSearch=makeinf("phraseSearch");
-api.boolSearch=makeinf("boolSearch");
-api.search=makeinf("search");
-api.getText=makeinf("getText");
-api.getTextByTag=makeinf("getTextByTag");
-api.closestTag=makeinf("closestTag");
-api.getTagAttr=makeinf("getTagAttr");
-api.getTagInRange=makeinf("getTagInRange");
-api.getTextRange=makeinf("getTextRange");
-api.buildToc=makeinf("buildToc");
-api.getTermVariants=makeinf("getTermVariants");
-
-api.fillText=makeinf("fillText");
-api.getRange=makeinf("getRange");
-api.findTag=makeinf("findTag");
-api.findTagBySelectors=makeinf("findTagBySelectors");
-api.getRaw=makeinf("getRaw");
-api.getBlob=makeinf("getBlob");
-api.customfunc=makeinf("customfunc");
-api.getTagInRange=makeinf("getTagInRange");
-api.exist=makeinf("exist");
-api.keyExists=makeinf("keyExists");
-api.enumLocalYdb=makeinf("enumLocalYdb");
-api.sameId=makeinf("sameId");
-api.prepare=makeinf("prepare");
-
-rpc.exec(function(err,data){
-	api.version=data;
-},0,"yase","version",{});
-
-
-module.exports=api;
-
-});
-require.register("ksanaforge-kse/rpc_document.js", function(exports, require, module){
-var rpc=require('./rpc')
-var makeinf=function(name) {
-	return (
-		function(opts,callback) {
-			rpc.exec(callback,0,"document",name,opts);
-		});
-}
-var api={};
-
-api.enumProject=makeinf("enumProject");
-api.enumKdb=makeinf("enumKdb");
-api.getProjectFolders=makeinf("getProjectFolders");
-api.getProjectFiles=makeinf("getProjectFiles");
-api.loadDocumentJSON=makeinf("loadDocumentJSON");
-api.saveMarkup=makeinf("saveMarkup");
-api.saveDocument=makeinf("saveDocument");
-api.getUserSettings=makeinf("getUserSettings");
-api.login=makeinf("login");
-api.buildIndex=makeinf("buildIndex");
-api.buildStatus=makeinf("buildStatus");
-api.stopIndex=makeinf("stopIndex");
-api.get=makeinf("get");
-api.search=makeinf("search");
-
-rpc.exec(function(err,data){
-	api.version=data;
-},0,"document","version",{});
-
-
-module.exports=api;
-
-});
-require.register("ksanaforge-kse/ksana.js", function(exports, require, module){
-
-var Ksana=function(){
-  ksana.services={};
-  var makeinf=function(name) {
-      var service=null;
-      for (var i in ksana.services) {
-        if (ksana.services[i][name]) service=ksana.services[i]
-      }
-      if (!service) throw 'api not found '+name;
-
-      return function(opts,callback) {
-              var handler=service[name];
-              if (handler.async) {
-                handler(opts,callback);
-              } else {
-                var data=handler(opts);
-                //this line is not really needed.
-                setTimeout( function() { callback(0,data) }, 0);        
-              }
-      }
-  }  
-  var makeprepare=function(opts) {
-      return function(opts,callback) {
-        ksana.services.yase.prepare(opts,function(err,data){
-          callback(err,data);
-        })
-      };
-  }
-
-
-  if (ksana.platform=='node-webkit' || ksana.platform=='chrome') {
-    /* compatible async interface for browser side js code*/
-    /*
-    var api_yadb=nodeRequire('yadb').api;
-    api_yadb(ksana.services);
-    var api_yase=nodeRequire('yase').api ; 
-    api_yase(ksana.services); 
-    */
-    var api_document=nodeRequire('ksana-document').api;
-    api_document(ksana.services);
-
-    return { //turn into async, for compatible with node_server
-    /*      
-        phraseSearch: makeinf('phraseSearch'),
-        boolSearch: makeinf('boolSearch'),
-        search: makeinf('search'),
-        getTermVariants: makeinf('getTermVariants'),
-        getText: makeinf('getText'),
-        getTextByTag: makeinf('getTextByTag'),
-        getTextRange:makeinf('getTextRange'),
-        getTagInRange: makeinf('getTagInRange'),
-        closestTag: makeinf('closestTag'),
-        buildToc: makeinf('buildToc'),
-        getTagAttr: makeinf('getTagAttr'),
-        fillText: makeinf('fillText'),
-        getRange: makeinf('getRange'),
-        getRaw: makeinf('getRaw'),
-        getBlob: makeinf('getBlob'),
-        findTag: makeinf('findTag'),
-        expandToken: makeinf('expandToken'),
-        
-        findTagBySelectors: makeinf('findTagBySelectors'),
-        exist: makeinf('exist'),
-        keyExists: makeinf('keyExists'),
-        customfunc: makeinf('customfunc'),
-       // version: services["yase"].version(),
-
-        enumLocalYdb:makeinf('enumLocalYdb'),
-        sameId:makeinf('sameId'),
-        prepare:makeprepare(),
-      */
-        //document services
-        enumProject:makeinf('enumProject'),
-        enumKdb:makeinf('enumKdb'),
-        getProjectFolders:makeinf('getProjectFolders'),
-        getProjectFiles:makeinf('getProjectFiles'),
-        loadDocumentJSON:makeinf('loadDocumentJSON'),
-        saveMarkup:makeinf('saveMarkup'),
-        saveDocument:makeinf('saveDocument'),
-        getUserSettings:makeinf('getUserSettings'),
-        login:makeinf('login'),
-        buildIndex:makeinf('buildIndex'),
-        buildStatus:makeinf('buildStatus'),
-        stopIndex:makeinf('stopIndex'),
-        get:makeinf("get"),
-        search:makeinf("search")
-    };  
-
-  } else {
-    //cannot call document services in server mode
-    //for node_server , use socket.io to talk to server-side yase_api.js
-    //var api=require('./rpc_yase');
-    return require('./rpc_document');
-  }
-}
-
-module.exports=Ksana();
-});
-require.register("ksanaforge-kse/ksana_promise.js", function(exports, require, module){
-var ksana=require('./ksana');
-var $ksana=function(api,opts) {
-    if (typeof ksana[api]!=='function') {
-      throw api+' not found';
-      return;
-    }
-    var deferred = new jQuery.Deferred();
-    var promise=deferred.promise();
-    var that=this;
-
-    ksana[api](opts,function(err,data){
-      if (err) deferred.fail(err);
-      else deferred.resolveWith(that,[data]);
-      deferred.always(err);
-    });
-
-    return promise;
-};
-module.exports=$ksana;
-});
-require.register("ksanaforge-kse-mixins/index.js", function(exports, require, module){
-
-var SetIntervalMixin = {
-  componentWillMount: function() {
-    this.intervals = [];
-  },
-  setInterval: function() {
-    this.intervals.push(setInterval.apply(null, arguments));
-  },
-  clearInterval:function(handle) {
-    var timers=this.intervals.filter(function(I){return I==handle});
-    timers.map(clearInterval);
-  },
-  componentWillUnmount: function() {
-    this.intervals.map(clearInterval);
-  }
-};
-var kse=require("../kse");
-var YaseMixin = {
-  componentWillMount:function() {
-    this.$yase=function() { //for backward compatibility
-      return kse.$ksana.apply(this,arguments);
-    }
-    this.$ksana=function() { //new name
-      return kse.$ksana.apply(this,arguments);
-    }/*
-    this.useDB=function() {
-      return kse.useDB.apply(this,arguments);
-    }
-    */
-  }
-}
-
-module.exports=[YaseMixin,SetIntervalMixin]
-});
 require.register("workshop-main/index.js", function(exports, require, module){
 /** @jsx React.DOM */
 var bootstrap=Require('bootstrap');
-if (typeof $ =='undefined') $=Require('jquery');
-
 var tabui=Require("tabui"); 
-
 var styles=Require("styles")[0].markups;
 var docview=Require("docview"); 
 var imageview=Require("imageview");
@@ -14362,9 +14122,13 @@ var about=Require("about");
 var searchmain=Require("searchmain");
 var userlogin=Require("userlogin"); 
 var buildindex=Require("buildindex");
-var Kde=Require("ksana-document").kde;
-var Kse=Require("ksana-document").kse;
-//sfxdfffasdfff 
+var kde=Require("ksana-document").kde;
+var kse=Require("ksana-document").kse;
+var fileinstaller=Require("fileinstaller");
+
+var require_kdb=[{ 
+  filename:"jiangkangyur.kdb"  , url:"http://ya.ksana.tw/kdb/jiangkangyur.kdb" , desc:"Jiangkangyur"
+}];  
 
 //disable system right click menu
 window.document.oncontextmenu = function(e){
@@ -14375,7 +14139,6 @@ window.onbeforeunload = function(event){
 };
 
 var main = React.createClass({displayName: 'main', 
-  mixins:Require('kse-mixins'),
   searchtab:0,
   getProjects:function() {
     return this.state.projects?this.state.projects:[];
@@ -14417,20 +14180,20 @@ var main = React.createClass({displayName: 'main',
           "params":{"action":this.action, "projects":this.getProjects}});
       tabs.updated=true;
       this.setState({projects:projects,tabs:tabs});
+  }, 
+  enumProjects:function() {
+      //var projects=JSON.parse(localStorage.getItem("projects"));
+      kde.enumKdb(function(files){
+        var projects=files.map(function(f){
+          var name=f[0].substr(0,f[0].length-4);
+          return {name:name,shortname:name} 
+        });
+        this.addProjectTab(projects);  
+      },this);      
   },
-  enumProjects:function(settings) {
-        this.$ksana('enumProject').done(function(projects){
-          this.setState({settings:settings});
-          this.addProjectTab(projects);
-      });
-  },
-  componentDidMount:function() {
-    if (!this.state.settings) {
-      this.$ksana("getUserSettings").done(function(settings){
-        window.document.title=settings.title + ', build '+settings.buildDateTime;
-        this.enumProjects(settings);
-      });    
-    }
+  onReady:function(usage,quota) {  
+    this.setState({dialog:false,quota:quota,usage:usage});
+    this.enumProjects();
     this.makescrollable();
   },
   newsearchtab:function(proj) {
@@ -14462,7 +14225,7 @@ var main = React.createClass({displayName: 'main',
 
     return null;
   },
-  openfile:function(kde,proj,filename,pageid,template,linktarget,linksource) {
+  openfile:function(engine,proj,filename,pageid,template,linktarget,linksource) {
       var template=template || proj.tmpl.docview || "docview_default";
       var docview=Require(template);
       var tab=this.projecttab(proj.shortname);
@@ -14471,7 +14234,7 @@ var main = React.createClass({displayName: 'main',
         ,"content":docview,"active":true
         ,"dbid":proj.shortname
         ,"params":{"action":this.action, filename:filename, project:proj
-                          ,user:this.user, pageid: pageid, kde:kde ,linktarget:linktarget,linksource:linksource}};
+                          ,user:this.user, pageid: pageid, kde:engine ,linktarget:linktarget,linksource:linksource}};
         tab.newTab(obj);    
    },
    openlink:function(dbid,thelink) {
@@ -14482,10 +14245,10 @@ var main = React.createClass({displayName: 'main',
        this.action("openproject",proj,thelink,this.refs.auxtab); 
      }
    }, 
-   excerpt2link:function(kde,excerpts,phraselen) {
+   excerpt2link:function(engine,excerpts,phraselen) {
      var out=[];
-     var filenames=kde.get("fileNames");
-     var files=kde.get("files");
+     var filenames=engine.get("fileNames");
+     var files=engine.get("files");
      excerpts.map(function(e){
         var file=files[e.file];
         var start=e.hits[0][0]-e.start+phraselen*2; //don't know why???
@@ -14505,37 +14268,29 @@ var main = React.createClass({displayName: 'main',
       var proj=args[0];
       var autoopen=args[1];
       var tab=args[2]||this.refs.maintab;
-      project.openProject(proj);
       var that=this;  
-      Kde.open(proj.shortname,function(kde){
-        var obj={"id":"p_"+proj.shortname,"caption":proj.name,dbid:proj.shortname,
+      kde.open(proj.name,function(engine){
+        proj.template="tibetan";
+        project.openProject(proj);
+        var obj={"id":"p_"+proj.shortname,"caption":proj.name,dbid:proj.name,
           "content":projectview,"active":true, "projectmain":true,
-          "params":{"action":that.action, "project":proj, "autoopen":autoopen, "kde":kde }};
-        kde.setContext(that);
+          "params":{"action":that.action, "project":proj, "autoopen":autoopen, "kde":engine }};
         that.newsearchtab(proj);
         tab.newTab(obj);
-      });
+      },this);
     } else if (type=="newquery") {
       this.forceUpdate();
     } else if (type=="openfile") {
-      var proj=args[0];
+      var proj=args[0];    
       var filename=args[1];
-      var pageid=args[2] ;
+      var pageid=args[2] ; 
       var template=args[3];
-      var linktarget=args[4];
-      var linksource=args[5];
       if (typeof proj=="string") {
         proj=this.getProjectByName(proj);
       } 
-
-      var kde=Kde.open(proj.shortname); //already open
-      if (!kde) {
-        var autoopen={filename:filename,pageid:pageid,linktarget:linktarget,linksource:linksource};
-        this.openproject(proj,autoopen);
-      } else {
-        this.openfile(kde,proj,filename,pageid,template,linktarget,linksource);
-      }
-
+      kde.open(proj.shortname,function(engine){
+        this.openfile(engine,proj,filename,pageid,template);  
+      },this);
     } else if (type=="selectfile" || type=="selectfolder") {
       this.state.auxs.updated=true;
       this.forceUpdate();
@@ -14576,25 +14331,25 @@ var main = React.createClass({displayName: 'main',
     } else if (type=="buildindex") {
       this.refs.builddialog.start(args[0].shortname);
     } else if (type=="searchkeyword") {
-      var kde= Kde.open(args[1]);
-      if (!kde) return;
-      kde.activeTofind=args[0];
+      var engine= kde.open(args[1]);
+      if (!engine) return;
+      engine.activeTofind=args[0];
       this.state.auxs.updated=true;
       this.forceUpdate(); 
     } else if (type=="searchquote") {
       var quote=args[0],cb=args[1];
       var that=this;
-      Kde.open("ccc",function(kde){
-        Kse.search(kde,quote.text,{range:{start:0}},function(data){
+      kde.open("ccc",function(engine){
+        kse.search(engine,quote.text,{range:{start:0}},function(data){
           if (data.excerpt && data.excerpt.length) {
-            cb( that.excerpt2link(kde,data.excerpt,quote.text.length),quote);
+            cb( that.excerpt2link(engine,data.excerpt,quote.text.length),quote);
           } else cb([]);
         });
       });
 
     } else if (type=="closedb") {
       var dbid=args[0];
-      Kde.close(dbid);
+      kde.close(dbid);
     } else if (type=="openlink") {
       var payload=args[0];
       var thelink={file:payload.file,pageid:payload.i,
@@ -14634,12 +14389,6 @@ var main = React.createClass({displayName: 'main',
     this.forceUpdate();
   },
    //<button onClick={this.newtab}>newtab</button>
-  showdevmenu:function() {
-    if (this.state.settings && this.state.settings.developer) {
-      return devmenu( {action:this.action});
-    }
-    else return null;
-  },
   makescrollable:function() {
     var f=this.refs.maintab.getDOMNode();
     var aux=this.refs.auxtab.getDOMNode();
@@ -14665,13 +14414,23 @@ var main = React.createClass({displayName: 'main',
   componentDidUpdate:function() {
     this.makescrollable();
   },
+  openFileinstaller:function(autoclose) {
+    if (window.location.origin.indexOf("http://127.0.0.1")==0) {
+      require_kdb[0].url=window.location.origin+"/jiangkangyur.kdb";
+    }
+    return fileinstaller( {quota:"512M", autoclose:autoclose, needed:require_kdb, 
+                     onReady:this.onReady})
+  },
   render:function() {
-    return React.DOM.div( {style:{"width":"100%"}}, 
-    this.showdevmenu(),
-    tabui( {ref:"maintab", lastfile:this.state.lastfile, tabs:this.state.tabs}),
-    tabui( {ref:"auxtab", tabs:this.state.auxs}),
-    buildindex( {ref:"builddialog"})
-    )
+    if (!this.state.quota) { // install required db
+        return this.openFileinstaller(true);
+    } else { 
+      return React.DOM.div( {style:{"width":"100%"}}, 
+      tabui( {ref:"maintab", lastfile:this.state.lastfile, tabs:this.state.tabs}),
+      tabui( {ref:"auxtab", tabs:this.state.auxs}),
+      buildindex( {ref:"builddialog"})
+      )
+    }
   }
 });
 module.exports=main;
@@ -15061,7 +14820,6 @@ require.register("workshop-projectlist/index.js", function(exports, require, mod
 
 
 var projectlist = React.createClass({displayName: 'projectlist',
-  mixins: Require('kse-mixins'),
   getInitialState: function() {
     return {bar: "world",hovered:-1,selected:-1};
   },
@@ -15081,30 +14839,31 @@ var projectlist = React.createClass({displayName: 'projectlist',
     this.setState({hovered:hovered});
   },
   buildindex:function() {
+    /*
     var p=this.props.projects()[this.state.hovered];
     if (!p) return;
     this.props.action("buildindex",p);
+    */
   },
   renderProject:function(p,i) {
     var d=p.lastModified;
     var cls=(i==this.state.selected)?"success":"";
    // var formatted=d.getDay()+'/'+d.getMonth()+'/'+d.getFullYear();
-    return React.DOM.tr( {key:'p'+i, 'data-i':i, className:cls, 
+    return (React.DOM.tr( {key:'p'+i, 'data-i':i, className:cls, 
      onClick:this.selectproject,
      onDoubleClick:this.openproject,
      onMouseOver:this.hoverProject}, 
       React.DOM.td(null, p.name),
-      React.DOM.td(null, p.desc),
-      React.DOM.td(null, p.author),
+      React.DOM.td(null),
+      React.DOM.td(null),
       React.DOM.td(null, "0"),
       React.DOM.td(null, 
         React.DOM.span( {style:{visibility:this.state.hovered==i?"":"hidden"}} , 
-        React.DOM.button( {onClick:this.buildindex, className:"btn btn-warning"}, "Build Index"),
           React.DOM.button( {onClick:this.openproject, className:"btn btn-success"}, "Open")
         )
       )
-
-    )
+    ));
+//<button onClick={this.buildindex} className="btn btn-warning">Build Index</button>
   },
   sortHeader:function(e) {
     var field=e.target.attributes['data-field'];
@@ -15304,7 +15063,6 @@ var fileList = React.createClass({displayName: 'fileList',
   }
 });
 var projectview = React.createClass({displayName: 'projectview',
-  mixins: Require('kse-mixins'),
   getInitialState: function() {
     return {bar: "world",folders:[],files:[],selectedFile:0};
   },
@@ -15376,16 +15134,13 @@ var projectview = React.createClass({displayName: 'projectview',
   },
   openFile:function(i) {
     var f=this.state.folder+'/'+this.state.files[i];
-    var gotopageid,linktarget,linksource;
+    var gotopageid;
     if (this.props.autoopen)  {
       gotopageid=this.props.autoopen.pageid;
-      linktarget=this.props.autoopen.linktarget;
-      linksource=this.props.autoopen.linksource;
     }
-    this.props.action("openfile",this.props.kde.kdbid,f,gotopageid,null,linktarget,linksource);
+    this.props.action("openfile",this.props.kde.dbname,f,gotopageid,null);
     if (this.props.autoopen) {
       this.props.autoopen.pageid="";
-      this.props.autoopen.linktarget=null;
     }
     this.setState({selectedFile:i});
   },
@@ -15597,7 +15352,6 @@ var D=Require("ksana-document").document;
 var M=Require("ksana-document").markups;
 var excerpt=Require("ksana-document").kse.excerpt;
 var docview_tibetan = React.createClass({displayName: 'docview_tibetan',
-  mixins: Require('kse-mixins'),
   getInitialState: function() {
     var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
     return {doc:null,pageid:pageid};
@@ -15617,9 +15371,7 @@ var docview_tibetan = React.createClass({displayName: 'docview_tibetan',
       if (this.props.kde.activeQuery&&samehit) {
         var that=this;
         setTimeout(function(){
-          that.getActiveHits(function(hits){
-            that.setState({activeHits:hits});
-          });
+          that.setState( {activeHits: that.getActiveHits()} );
         },100)
       }
 
@@ -15635,28 +15387,22 @@ var docview_tibetan = React.createClass({displayName: 'docview_tibetan',
     var username=this.props.user.name;
     var markups=this.page().filterMarkup(function(m){return m.payload.author==username});
     var dbid=this.props.kde.kdbid;
+    /*
     this.$ksana("saveMarkup",{dbid:dbid,markups:markups,filename:filename,i:this.state.pageid } ,function(data){
       doc.markClean();
     }); 
+*/
   },
-  getActiveHits:function(cb) { // get hits in this page and send to docsurface 
-    if (!this.props.kde.activeQuery) {
-      cb(null);
-      return;
-    }
-    var that=this;
-    this.props.kde.pageOffset(this.props.filename , this.getPageName(),
-    function(po){
-      var Q=that.props.kde.activeQuery;
-      var relative_hits=[];
-      if (po) {
+  getActiveHits:function() { // get hits in this page and send to docsurface 
+    if (!this.props.kde.activeQuery) return [];
+    var po=this.props.kde.pageOffset(this.getPageName());
+    var Q=this.props.kde.activeQuery;
+    var relative_hits=[];
+    if (po) {
         var absolute_hits=excerpt.hitInRange(Q,po.start,po.end);
-        var relative_hits=absolute_hits.map(function(h){
-          return [ h[0]-po.start,h[1],h[2]];
-        });
-      }
-      cb(relative_hits);
-    });
+        var relative_hits=absolute_hits.map(function(h){  return [ h[0]-po.start,h[1],h[2]]; });
+    }
+    return relative_hits;
   },
   action:function(type) {
     var args = Array.prototype.slice.call(arguments);
@@ -15725,13 +15471,14 @@ var docview_tibetan = React.createClass({displayName: 'docview_tibetan',
     var that=this;
     this.props.kde.getDocument(fn,function(doc){
       doc.meta.filename=fn;
+      that.setState({doc:doc,activeHits:that.getActiveHits()});
+      /*
       that.$ksana("loadDocumentJSON",{project:that.props.project,file:that.props.filename}).done(function(data){
         doc.addMarkups(data.kdm);
         doc.meta.filename=this.props.filename;
-        that.getActiveHits(function(hits){
-          that.setState({doc:doc,activeHits:hits});  
-        })
+        that.setState({doc:doc,activeHits:that.getActiveHits()});
       });
+*/
     })
     /*
     this.$ksana("loadDocumentJSON",{project:this.props.project,file:this.props.filename}).done(function(data){
@@ -16101,7 +15848,6 @@ require.register("workshop-searchmain/index.js", function(exports, require, modu
 var kse=Require("ksana-document").kse; 
 var kde=Require("ksana-document").kde; 
 var searchmain = React.createClass({displayName: 'searchmain',
-  mixins: Require('kse-mixins'), 
   shouldComponentUpdate:function(nextProps,nextState) {
 
     if (this.db && (this.db.activeFile!=this.activeFile
@@ -16166,8 +15912,7 @@ var searchmain = React.createClass({displayName: 'searchmain',
   componentWillMount:function() {
     if (!this.props.db) return;
     if (this.db) return; //
-    this.db=kde.open(this.props.db);
-    this.db.setContext(this);
+    kde.open(this.props.db,function(db){this.db=db},this);
   },
   componentDidUpdate:function() {
     if (!this.db)return;
@@ -16391,7 +16136,6 @@ var contentnavigator=Require("contentnavigator");
 var excerpt=Require("ksana-document").kse.excerpt;
 
 var docview_classical = React.createClass({displayName: 'docview_classical',
-  mixins: Require('kse-mixins'),
   getInitialState: function() {
     var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
     return {doc:null,pageid:pageid};
@@ -16445,11 +16189,13 @@ var docview_classical = React.createClass({displayName: 'docview_classical',
     localStorage.setItem(this.props.user.name+".lastfile",JSON.stringify(lastfile));
   }, 
   componentDidMount:function() { 
+    /*
     this.$ksana("loadDocumentJSON",{project:this.props.project,file:this.props.filename}).done(function(data){
       var doc=this.loadDocument(data);
       doc.meta.filename=this.props.filename;
       this.setState({doc:doc});
     });
+*/
     if (this.props.tab ) this.props.tab.instance=this; // for tabui 
   },
   nav:function() {
@@ -16465,9 +16211,11 @@ var docview_classical = React.createClass({displayName: 'docview_classical',
     var username=this.props.user.name;
     var dbid=this.props.kde.kdbid;
     var markups=this.page().filterMarkup(function(m){return m.payload.author==username});
+    /*
     this.$ksana("saveMarkup",{dbid:dbid,markups:markups,filename:filename,i:this.state.pageid } ,function(data){
       doc.markClean();
     }); 
+*/
   },
   getActiveHits:function() {
     if (!this.props.kde.activeQuery) return;
@@ -16844,7 +16592,7 @@ require.register("workshop-buildindex/index.js", function(exports, require, modu
 if (typeof $ =='undefined') $=Require('jquery');
 var emptystatus={done:false,progress:0,message:""};
 var buildindex = React.createClass({displayName: 'buildindex',
-  mixins: Require('kse-mixins'),
+  //mixins: Require('kse-mixins'),
   getInitialState: function() {
     return {status:emptystatus};
   },
@@ -16853,28 +16601,34 @@ var buildindex = React.createClass({displayName: 'buildindex',
     this.buildtimer=0;
   },
   getstatus:function() {
+    /*
     this.$ksana('buildStatus',this.state.status).done(function(status){
       var elapsed=Math.floor((new Date()-this.state.starttime)/1000);
       if (status.done) this.stoptimer();
       this.setState({status:status, elapsed:elapsed});
     });
+*/
   },
   start:function(proj) {
     if (this.buildtimer) return;//cannot start another instance
     this.setState({status:emptystatus,starttime:new Date(),elapsed:0});
+    /*
     this.$ksana('buildIndex',proj).done(function(status){
       this.state.status=status;
       $(this.refs.dialog.getDOMNode()).modal({backdrop:'static'}).modal('show');
       this.buildtimer=setInterval( this.getstatus,1000);
     });
+*/
   },
   close:function() {
     $(this.refs.dialog.getDOMNode()).modal('hide');
   },
   stop:function() {
+    /*
     this.$ksana('stopIndex',this.state.status).done(function(s){
       this.setState({status:s});
     });
+*/
   }, 
   buttons:function() {
     if (this.state.status.done) {
@@ -17216,10 +16970,482 @@ var filelist = React.createClass({displayName: 'filelist',
 });
 module.exports=filelist;
 });
+require.register("ksanaforge-fileinstaller/index.js", function(exports, require, module){
+/** @jsx React.DOM */
+
+/* todo , optional kdb */
+
+var htmlfs=Require("htmlfs");    
+var checkbrowser=Require("checkbrowser");  
+  
+var html5fs=Require("ksana-document").html5fs;
+var filelist = React.createClass({displayName: 'filelist',
+	getInitialState:function() {
+		return {downloading:false,progress:0};
+	},
+	updatable:function(f) {
+        	var classes="btn btn-warning";
+        	if (this.state.downloading) classes+=" disabled";
+		if (f.hasUpdate) return React.DOM.button( {className:classes, 
+			'data-filename':f.filename,  'data-url':f.url,
+	            onClick:this.download}
+	       , "Update")
+		else return null;
+	},
+	showLocal:function(f) {
+        var classes="btn btn-danger";
+        if (this.state.downloading) classes+=" disabled";
+	  return React.DOM.tr(null, React.DOM.td(null, f.filename),
+	      React.DOM.td(null),
+	      React.DOM.td( {className:"pull-right"}, 
+	      this.updatable(f),React.DOM.button( {className:classes, 
+	               onClick:this.deleteFile, 'data-filename':f.filename}, "Delete")
+	        
+	      )
+	  )
+	},  
+	showRemote:function(f) { 
+	  var classes="btn btn-warning";
+	  if (this.state.downloading) classes+=" disabled";
+	  return (React.DOM.tr( {'data-id':f.filename}, React.DOM.td(null, 
+	      f.filename),
+	      React.DOM.td(null, f.desc),
+	      React.DOM.td(null, 
+	      React.DOM.span( {'data-filename':f.filename,  'data-url':f.url,
+	            className:classes,
+	            onClick:this.download}, "Download")
+	      )
+	  ));
+	},
+	showFile:function(f) {
+	//	return <span data-id={f.filename}>{f.url}</span>
+		return (f.ready)?this.showLocal(f):this.showRemote(f);
+	},
+	reloadDir:function() {
+		this.props.action("reload");
+	},
+	download:function(e) {
+		var url=e.target.dataset["url"];
+		var filename=e.target.dataset["filename"];
+		this.setState({downloading:true,progress:0,url:url});
+		this.userbreak=false;
+		html5fs.download(url,filename,function(){
+			this.reloadDir();
+			this.setState({downloading:false,progress:1});
+			},function(progress,total){
+				if (progress==0) {
+					this.setState({message:"total "+total})
+			 	}
+			 	this.setState({progress:progress});
+			 	//if user press abort return true
+			 	return this.userbreak;
+			}
+		,this);
+	},
+	deleteFile:function( e) {
+		var filename=e.target.attributes["data-filename"].value;
+		this.props.action("delete",filename);
+	},
+	allFilesReady:function(e) {
+		return this.props.files.every(function(f){ return f.ready});
+	},
+	dismiss:function() {
+		$(this.refs.dialog1.getDOMNode()).modal('hide');
+		this.props.action("dismiss");
+	},
+	abortdownload:function() {
+		this.userbreak=true;
+	},
+	showProgress:function() {
+	     if (this.state.downloading) {
+	      var progress=Math.round(this.state.progress*100);
+	      return (
+	      	React.DOM.div(null, 
+	      	"Downloading from ", this.state.url,
+	      React.DOM.div(  {key:"progress", className:"progress col-md-8"}, 
+	          React.DOM.div( {className:"progress-bar", role:"progressbar", 
+	              'aria-valuenow':progress, 'aria-valuemin':"0", 
+	              'aria-valuemax':"100", style:{width: progress+"%"}}, 
+	            progress,"%"
+	          )
+	        ),
+	        React.DOM.button( {onClick:this.abortdownload, 
+	        	className:"btn btn-danger col-md-4"}, "Abort")
+	        )
+	        );
+	      } else {
+	      		if ( this.allFilesReady() ) {
+	      			return React.DOM.button( {onClick:this.dismiss, className:"btn btn-success"}, "Ok")
+	      		} else return null;
+	      		
+	      }
+	},
+	showUsage:function() {
+		var percent=this.props.remainPercent;
+           return (React.DOM.div(null, React.DOM.span( {className:"pull-left"}, "Usage:"),React.DOM.div( {className:"progress"}, 
+		  React.DOM.div( {className:"progress-bar progress-bar-success progress-bar-striped", role:"progressbar",  style:{width: percent+"%"}}, 
+		    	percent+"%"
+		  )
+		)));
+	},
+	render:function() {
+	  	return (
+		React.DOM.div( {ref:"dialog1", className:"modal fade", 'data-backdrop':"static"}, 
+		    React.DOM.div( {className:"modal-dialog"}, 
+		      React.DOM.div( {className:"modal-content"}, 
+		        React.DOM.div( {className:"modal-header"}, 
+		          React.DOM.h4( {className:"modal-title"}, "File Installer")
+		        ),
+		        React.DOM.div( {className:"modal-body"}, 
+		        	React.DOM.table( {className:"table"}, 
+		        	React.DOM.tbody(null, 
+		          	this.props.files.map(this.showFile)
+		          	)
+		          )
+		        ),
+		        React.DOM.div( {className:"modal-footer"}, 
+		        	this.showUsage(),
+		           this.showProgress()
+		        )
+		      )
+		    )
+		  )
+		);
+	},	
+	componentDidMount:function() {
+		$(this.refs.dialog1.getDOMNode()).modal('show');
+	}
+});
+/*TODO kdb check version*/
+var filemanager = React.createClass({displayName: 'filemanager',
+	getInitialState:function() {
+		var quota=this.getQuota();
+		return {browserReady:false,noupdate:true,
+			requestQuota:quota,remain:0};
+	},
+	getQuota:function() {
+		var q=this.props.quota||"128M";
+		var unit=q[q.length-1];
+		var times=1;
+		if (unit=="M") times=1024*1024;
+		else if (unit="K") times=1024;
+		return parseInt(q) * times;
+	},
+	missingKdb:function() {
+		var missing=this.props.needed.filter(function(kdb){
+			for (var i in html5fs.files) {
+				if (html5fs.files[i][0]==kdb.filename) return false;
+			}
+			return true;
+		},this);
+		return missing;
+	},
+	getRemoteUrl:function(fn) {
+		var f=this.props.needed.filter(function(f){return f.filename==fn});
+		if (f.length ) return f[0].url;
+	},
+	genFileList:function(existing,missing){
+		var out=[];
+		for (var i in existing) {
+			var url=this.getRemoteUrl(existing[i][0]);
+			out.push({filename:existing[i][0], url :url, ready:true });
+		}
+		for (var i in missing) {
+			out.push(missing[i]);
+		}
+		return out;
+	},
+	reload:function() {
+		html5fs.readdir(function(files){
+  			this.setState({files:this.genFileList(files,this.missingKdb())});
+  		},this);
+	 },
+	deleteFile:function(fn) {
+	  html5fs.rm(fn,function(){
+	  	this.reload();
+	  },this);
+	},
+	onQuoteOk:function(quota,usage) {
+		var files=this.genFileList(html5fs.files,this.missingKdb());
+		var that=this;
+		that.checkIfUpdate(files,function(hasupdate) {
+			var missing=this.missingKdb();
+			var autoclose=this.props.autoclose;
+			if (missing.length) autoclose=false;
+			that.setState({autoclose:autoclose,
+				quota:quota,usage:usage,files:files,
+				missing:missing,
+				noupdate:!hasupdate,
+				remain:quota-usage});
+		});
+	},  
+	onBrowserOk:function() {
+	  this.totalDownloadSize();
+	}, 
+	dismiss:function() {
+		this.props.onReady(this.state.usage,this.state.quota);
+		setTimeout(function(){
+			$(".modal.in").modal('hide');
+		},500);
+	}, 
+	totalDownloadSize:function() {
+		var files=this.missingKdb();
+		var taskqueue=[],totalsize=0;
+		for (var i=0;i<files.length;i++) {
+			taskqueue.push(
+				(function(idx){
+					return (function(data){
+						if (!(typeof data=='object' && data.__empty)) totalsize+=data;
+						html5fs.getDownloadSize(files[idx].url,taskqueue.shift());
+					});
+				})(i)
+			);
+		}
+		var that=this;
+		taskqueue.push(function(data){	
+			totalsize+=data;
+			setTimeout(function(){that.setState({requireSpace:totalsize,browserReady:true})},0);
+		});
+		taskqueue.shift()({__empty:true});
+	},
+	checkIfUpdate:function(files,cb) {
+		var taskqueue=[];
+		for (var i=0;i<files.length;i++) {
+			taskqueue.push(
+				(function(idx){
+					return (function(data){
+						if (!(typeof data=='object' && data.__empty)) files[idx-1].hasUpdate=data;
+						html5fs.checkUpdate(files[idx].url,files[idx].filename,taskqueue.shift());
+					});
+				})(i)
+			);
+		}
+		var that=this;
+		taskqueue.push(function(data){	
+			files[files.length-1].hasUpdate=data;
+			var hasupdate=files.some(function(f){return f.hasUpdate});
+			if (cb) cb.apply(that,[hasupdate]);
+		});
+		taskqueue.shift()({__empty:true});
+	},
+	render:function(){
+    		if (!this.state.browserReady) {   
+      			return checkbrowser( {feature:"fs", onReady:this.onBrowserOk})
+    		} if (!this.state.quota || this.state.remain<this.state.requireSpace) {  
+    			var quota=this.state.requestQuota;
+    			if (this.state.usage+this.state.requireSpace>quota) {
+    				quota=(this.state.usage+this.state.requireSpace)*1.5;
+    			}
+      			return htmlfs( {quota:quota, autoclose:"true", onReady:this.onQuoteOk})
+      		} else {
+			if (!this.state.noupdate || this.missingKdb().length || !this.state.autoclose) {
+				var remain=Math.round((this.state.usage/this.state.quota)*100);				
+				return filelist( {action:this.action, files:this.state.files, remainPercent:remain})
+			} else {
+				setTimeout( this.dismiss ,0);
+				return React.DOM.span(null, "Success");
+			}
+      		}
+	},
+	action:function() {
+	  var args = Array.prototype.slice.call(arguments);
+	  var type=args.shift();
+	  var res=null, that=this;
+	  if (type=="delete") {
+	    this.deleteFile(args[0]);
+	  }  else if (type=="reload") {
+	  	this.reload();
+	  } else if (type=="dismiss") {
+	  	this.dismiss();
+	  }
+	}
+});
+
+module.exports=filemanager;
+});
+require.register("ksanaforge-checkbrowser/index.js", function(exports, require, module){
+/** @jsx React.DOM */
+
+var checkfs=function() {
+	return (navigator && navigator.webkitPersistentStorage);
+}
+var featurechecks={
+	"fs":checkfs
+}
+var checkbrowser = React.createClass({displayName: 'checkbrowser',
+	getInitialState:function() {
+		var missingFeatures=this.getMissingFeatures();
+		return {ready:false, missing:missingFeatures};
+	},
+	getMissingFeatures:function() {
+		var feature=this.props.feature.split(",");
+		var status=[];
+		feature.map(function(f){
+			var checker=featurechecks[f];
+			if (checker) checker=checker();
+			status.push([f,checker]);
+		});
+		return status.filter(function(f){return !f[1]});
+	},
+	downloadbrowser:function() {
+		window.location="https://www.google.com/chrome/"
+	},
+	renderMissing:function() {
+		var showMissing=function(m) {
+			return React.DOM.div(null, m);
+		}
+		return (
+		 React.DOM.div( {ref:"dialog1", className:"modal fade", 'data-backdrop':"static"}, 
+		    React.DOM.div( {className:"modal-dialog"}, 
+		      React.DOM.div( {className:"modal-content"}, 
+		        React.DOM.div( {className:"modal-header"}, 
+		          React.DOM.button( {type:"button", className:"close", 'data-dismiss':"modal", 'aria-hidden':"true"}, "×"),
+		          React.DOM.h4( {className:"modal-title"}, "Browser Check")
+		        ),
+		        React.DOM.div( {className:"modal-body"}, 
+		          React.DOM.p(null, "Sorry but the following feature is missing"),
+		          this.state.missing.map(showMissing)
+		        ),
+		        React.DOM.div( {className:"modal-footer"}, 
+		          React.DOM.button( {onClick:this.downloadbrowser, type:"button", className:"btn btn-primary"}, "Download Google Chrome")
+		        )
+		      )
+		    )
+		  )
+		 );
+	},
+	renderReady:function() {
+		return React.DOM.span(null, "browser ok")
+	},
+	render:function(){
+		return  (this.state.missing.length)?this.renderMissing():this.renderReady();
+	},
+	componentDidMount:function() {
+		if (!this.state.missing.length) {
+			this.props.onReady();
+		} else {
+			$(this.refs.dialog1.getDOMNode()).modal('show');
+		}
+	}
+});
+
+module.exports=checkbrowser;
+});
+require.register("ksanaforge-htmlfs/index.js", function(exports, require, module){
+/** @jsx React.DOM */
+var html5fs=Require("ksana-document").html5fs;
+var htmlfs = React.createClass({displayName: 'htmlfs',
+	getInitialState:function() { 
+		return {ready:false, quota:0,usage:0,Initialized:false,autoclose:this.props.autoclose};
+	},
+	initFilesystem:function() {
+		var quota=this.props.quota||1024*1024*128; // default 128MB
+		quota=parseInt(quota);
+		html5fs.init(quota,function(q){
+			this.dialog=false;
+			$(this.refs.dialog1.getDOMNode()).modal('hide');
+			this.setState({quota:q,autoclose:true});
+		},this);
+	},
+	welcome:function() {
+		return (
+		React.DOM.div( {ref:"dialog1", className:"modal fade", id:"myModal", 'data-backdrop':"static"}, 
+		    React.DOM.div( {className:"modal-dialog"}, 
+		      React.DOM.div( {className:"modal-content"}, 
+		        React.DOM.div( {className:"modal-header"}, 
+		          React.DOM.h4( {className:"modal-title"}, "Welcome")
+		        ),
+		        React.DOM.div( {className:"modal-body"}, 
+		          "Browser will ask for your confirmation."
+		        ),
+		        React.DOM.div( {className:"modal-footer"}, 
+		          React.DOM.button( {onClick:this.initFilesystem, type:"button", 
+		            className:"btn btn-primary"}, "Initialize File System")
+		        )
+		      )
+		    )
+		  )
+		 );
+	},
+	renderDefault:function(){
+		var used=Math.floor(this.state.usage/this.state.quota *100);
+		var more=function() {
+			if (used>50) return React.DOM.button( {type:"button", className:"btn btn-primary"}, "Allocate More");
+			else null;
+		}
+		return (
+		React.DOM.div( {ref:"dialog1", className:"modal fade", id:"myModal", 'data-backdrop':"static"}, 
+		    React.DOM.div( {className:"modal-dialog"}, 
+		      React.DOM.div( {className:"modal-content"}, 
+		        React.DOM.div( {className:"modal-header"}, 
+		          React.DOM.h4( {className:"modal-title"}, "Sandbox File System")
+		        ),
+		        React.DOM.div( {className:"modal-body"}, 
+		          React.DOM.div( {className:"progress"}, 
+		            React.DOM.div( {className:"progress-bar", role:"progressbar", style:{width: used+"%" }}, 
+		               used,"%"
+		            )
+		          ),
+		          React.DOM.span(null, this.state.quota, " total , ", this.state.usage, " in used")
+		        ),
+		        React.DOM.div( {className:"modal-footer"}, 
+		          React.DOM.button( {onClick:this.dismiss, type:"button", className:"btn btn-default", 'data-dismiss':"modal"}, "Close"),         
+		          more()
+		        )
+		      )
+		    )
+		  )
+		  );
+	},
+	dismiss:function() {
+		var that=this;
+		setTimeout(function(){
+			that.props.onReady(that.state.quota,that.state.usage);	
+		},0);
+	},
+	queryQuota:function() {
+		html5fs.queryQuota(function(usage,quota){
+			this.setState({usage:usage,quota:quota,initialized:true});
+		},this);
+	},
+	render:function() {
+		var that=this;
+		if (!this.state.quota || this.state.quota<this.props.quota) {
+			if (this.state.initialized) {
+				this.dialog=true;
+				return this.welcome();	
+			} else {
+				return React.DOM.span(null, "checking quota")
+			}			
+		} else {
+			if (!this.state.autoclose) {
+				this.dialog=true;
+				return this.renderDefault(); 
+			}
+			this.dismiss();
+			this.dialog=false;
+			return React.DOM.span(null)
+		}
+	},
+	componentDidMount:function() {
+		if (!this.state.quota) {
+			this.queryQuota();
+
+		};
+	},
+	componentDidUpdate:function() {
+		if (this.dialog) $(this.refs.dialog1.getDOMNode()).modal('show');
+	}
+});
+
+module.exports=htmlfs;
+});
 require.register("workshop/index.js", function(exports, require, module){
 var boot=require("boot");
 boot("ksanaforge-workshop","main","main");
 });
+
+
 
 
 
@@ -17375,19 +17601,6 @@ require.alias("ksanaforge-docsurface/caret.js", "workshop/deps/docsurface/caret.
 require.alias("ksanaforge-docsurface/index.js", "workshop/deps/docsurface/index.js");
 require.alias("ksanaforge-docsurface/index.js", "docsurface/index.js");
 require.alias("ksanaforge-docsurface/index.js", "ksanaforge-docsurface/index.js");
-require.alias("ksanaforge-kse/index.js", "workshop/deps/kse/index.js");
-require.alias("ksanaforge-kse/rpc.js", "workshop/deps/kse/rpc.js");
-require.alias("ksanaforge-kse/rpc_yase.js", "workshop/deps/kse/rpc_yase.js");
-require.alias("ksanaforge-kse/rpc_document.js", "workshop/deps/kse/rpc_document.js");
-require.alias("ksanaforge-kse/ksana.js", "workshop/deps/kse/ksana.js");
-require.alias("ksanaforge-kse/ksana_promise.js", "workshop/deps/kse/ksana_promise.js");
-require.alias("ksanaforge-kse/index.js", "workshop/deps/kse/index.js");
-require.alias("ksanaforge-kse/index.js", "kse/index.js");
-require.alias("ksanaforge-kse/index.js", "ksanaforge-kse/index.js");
-require.alias("ksanaforge-kse-mixins/index.js", "workshop/deps/kse-mixins/index.js");
-require.alias("ksanaforge-kse-mixins/index.js", "workshop/deps/kse-mixins/index.js");
-require.alias("ksanaforge-kse-mixins/index.js", "kse-mixins/index.js");
-require.alias("ksanaforge-kse-mixins/index.js", "ksanaforge-kse-mixins/index.js");
 require.alias("workshop-main/index.js", "workshop/deps/main/index.js");
 require.alias("workshop-main/index.js", "workshop/deps/main/index.js");
 require.alias("workshop-main/index.js", "main/index.js");
@@ -17530,6 +17743,24 @@ require.alias("workshop-filelist/index.js", "workshop/deps/filelist/index.js");
 require.alias("workshop-filelist/index.js", "workshop/deps/filelist/index.js");
 require.alias("workshop-filelist/index.js", "filelist/index.js");
 require.alias("workshop-filelist/index.js", "workshop-filelist/index.js");
+require.alias("ksanaforge-fileinstaller/index.js", "workshop/deps/fileinstaller/index.js");
+require.alias("ksanaforge-fileinstaller/index.js", "workshop/deps/fileinstaller/index.js");
+require.alias("ksanaforge-fileinstaller/index.js", "fileinstaller/index.js");
+require.alias("ksanaforge-checkbrowser/index.js", "ksanaforge-fileinstaller/deps/checkbrowser/index.js");
+require.alias("ksanaforge-checkbrowser/index.js", "ksanaforge-fileinstaller/deps/checkbrowser/index.js");
+require.alias("ksanaforge-checkbrowser/index.js", "ksanaforge-checkbrowser/index.js");
+require.alias("ksanaforge-htmlfs/index.js", "ksanaforge-fileinstaller/deps/htmlfs/index.js");
+require.alias("ksanaforge-htmlfs/index.js", "ksanaforge-fileinstaller/deps/htmlfs/index.js");
+require.alias("ksanaforge-htmlfs/index.js", "ksanaforge-htmlfs/index.js");
+require.alias("ksanaforge-fileinstaller/index.js", "ksanaforge-fileinstaller/index.js");
+require.alias("ksanaforge-checkbrowser/index.js", "workshop/deps/checkbrowser/index.js");
+require.alias("ksanaforge-checkbrowser/index.js", "workshop/deps/checkbrowser/index.js");
+require.alias("ksanaforge-checkbrowser/index.js", "checkbrowser/index.js");
+require.alias("ksanaforge-checkbrowser/index.js", "ksanaforge-checkbrowser/index.js");
+require.alias("ksanaforge-htmlfs/index.js", "workshop/deps/htmlfs/index.js");
+require.alias("ksanaforge-htmlfs/index.js", "workshop/deps/htmlfs/index.js");
+require.alias("ksanaforge-htmlfs/index.js", "htmlfs/index.js");
+require.alias("ksanaforge-htmlfs/index.js", "ksanaforge-htmlfs/index.js");
 require.alias("workshop/index.js", "workshop/index.js");
 if (typeof exports == 'object') {
   module.exports = require('workshop');

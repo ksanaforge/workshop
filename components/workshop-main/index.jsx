@@ -1,9 +1,6 @@
 /** @jsx React.DOM */
 var bootstrap=Require('bootstrap');
-if (typeof $ =='undefined') $=Require('jquery');
-
 var tabui=Require("tabui"); 
-
 var styles=Require("styles")[0].markups;
 var docview=Require("docview"); 
 var imageview=Require("imageview");
@@ -18,9 +15,13 @@ var about=Require("about");
 var searchmain=Require("searchmain");
 var userlogin=Require("userlogin"); 
 var buildindex=Require("buildindex");
-var Kde=Require("ksana-document").kde;
-var Kse=Require("ksana-document").kse;
-//sfxdfffasdfff 
+var kde=Require("ksana-document").kde;
+var kse=Require("ksana-document").kse;
+var fileinstaller=Require("fileinstaller");
+
+var require_kdb=[{ 
+  filename:"jiangkangyur.kdb"  , url:"http://ya.ksana.tw/kdb/jiangkangyur.kdb" , desc:"Jiangkangyur"
+}];  
 
 //disable system right click menu
 window.document.oncontextmenu = function(e){
@@ -31,7 +32,6 @@ window.onbeforeunload = function(event){
 };
 
 var main = React.createClass({ 
-  mixins:Require('kse-mixins'),
   searchtab:0,
   getProjects:function() {
     return this.state.projects?this.state.projects:[];
@@ -73,20 +73,20 @@ var main = React.createClass({
           "params":{"action":this.action, "projects":this.getProjects}});
       tabs.updated=true;
       this.setState({projects:projects,tabs:tabs});
+  }, 
+  enumProjects:function() {
+      //var projects=JSON.parse(localStorage.getItem("projects"));
+      kde.enumKdb(function(files){
+        var projects=files.map(function(f){
+          var name=f[0].substr(0,f[0].length-4);
+          return {name:name,shortname:name} 
+        });
+        this.addProjectTab(projects);  
+      },this);      
   },
-  enumProjects:function(settings) {
-        this.$ksana('enumProject').done(function(projects){
-          this.setState({settings:settings});
-          this.addProjectTab(projects);
-      });
-  },
-  componentDidMount:function() {
-    if (!this.state.settings) {
-      this.$ksana("getUserSettings").done(function(settings){
-        window.document.title=settings.title + ', build '+settings.buildDateTime;
-        this.enumProjects(settings);
-      });    
-    }
+  onReady:function(usage,quota) {  
+    this.setState({dialog:false,quota:quota,usage:usage});
+    this.enumProjects();
     this.makescrollable();
   },
   newsearchtab:function(proj) {
@@ -118,7 +118,7 @@ var main = React.createClass({
 
     return null;
   },
-  openfile:function(kde,proj,filename,pageid,template,linktarget,linksource) {
+  openfile:function(engine,proj,filename,pageid,template,linktarget,linksource) {
       var template=template || proj.tmpl.docview || "docview_default";
       var docview=Require(template);
       var tab=this.projecttab(proj.shortname);
@@ -127,7 +127,7 @@ var main = React.createClass({
         ,"content":docview,"active":true
         ,"dbid":proj.shortname
         ,"params":{"action":this.action, filename:filename, project:proj
-                          ,user:this.user, pageid: pageid, kde:kde ,linktarget:linktarget,linksource:linksource}};
+                          ,user:this.user, pageid: pageid, kde:engine ,linktarget:linktarget,linksource:linksource}};
         tab.newTab(obj);    
    },
    openlink:function(dbid,thelink) {
@@ -138,10 +138,10 @@ var main = React.createClass({
        this.action("openproject",proj,thelink,this.refs.auxtab); 
      }
    }, 
-   excerpt2link:function(kde,excerpts,phraselen) {
+   excerpt2link:function(engine,excerpts,phraselen) {
      var out=[];
-     var filenames=kde.get("fileNames");
-     var files=kde.get("files");
+     var filenames=engine.get("fileNames");
+     var files=engine.get("files");
      excerpts.map(function(e){
         var file=files[e.file];
         var start=e.hits[0][0]-e.start+phraselen*2; //don't know why???
@@ -161,37 +161,29 @@ var main = React.createClass({
       var proj=args[0];
       var autoopen=args[1];
       var tab=args[2]||this.refs.maintab;
-      project.openProject(proj);
       var that=this;  
-      Kde.open(proj.shortname,function(kde){
-        var obj={"id":"p_"+proj.shortname,"caption":proj.name,dbid:proj.shortname,
+      kde.open(proj.name,function(engine){
+        proj.template="tibetan";
+        project.openProject(proj);
+        var obj={"id":"p_"+proj.shortname,"caption":proj.name,dbid:proj.name,
           "content":projectview,"active":true, "projectmain":true,
-          "params":{"action":that.action, "project":proj, "autoopen":autoopen, "kde":kde }};
-        kde.setContext(that);
+          "params":{"action":that.action, "project":proj, "autoopen":autoopen, "kde":engine }};
         that.newsearchtab(proj);
         tab.newTab(obj);
-      });
+      },this);
     } else if (type=="newquery") {
       this.forceUpdate();
     } else if (type=="openfile") {
-      var proj=args[0];
+      var proj=args[0];    
       var filename=args[1];
-      var pageid=args[2] ;
+      var pageid=args[2] ; 
       var template=args[3];
-      var linktarget=args[4];
-      var linksource=args[5];
       if (typeof proj=="string") {
         proj=this.getProjectByName(proj);
       } 
-
-      var kde=Kde.open(proj.shortname); //already open
-      if (!kde) {
-        var autoopen={filename:filename,pageid:pageid,linktarget:linktarget,linksource:linksource};
-        this.openproject(proj,autoopen);
-      } else {
-        this.openfile(kde,proj,filename,pageid,template,linktarget,linksource);
-      }
-
+      kde.open(proj.shortname,function(engine){
+        this.openfile(engine,proj,filename,pageid,template);  
+      },this);
     } else if (type=="selectfile" || type=="selectfolder") {
       this.state.auxs.updated=true;
       this.forceUpdate();
@@ -232,25 +224,25 @@ var main = React.createClass({
     } else if (type=="buildindex") {
       this.refs.builddialog.start(args[0].shortname);
     } else if (type=="searchkeyword") {
-      var kde= Kde.open(args[1]);
-      if (!kde) return;
-      kde.activeTofind=args[0];
+      var engine= kde.open(args[1]);
+      if (!engine) return;
+      engine.activeTofind=args[0];
       this.state.auxs.updated=true;
       this.forceUpdate(); 
     } else if (type=="searchquote") {
       var quote=args[0],cb=args[1];
       var that=this;
-      Kde.open("ccc",function(kde){
-        Kse.search(kde,quote.text,{range:{start:0}},function(data){
+      kde.open("ccc",function(engine){
+        kse.search(engine,quote.text,{range:{start:0}},function(data){
           if (data.excerpt && data.excerpt.length) {
-            cb( that.excerpt2link(kde,data.excerpt,quote.text.length),quote);
+            cb( that.excerpt2link(engine,data.excerpt,quote.text.length),quote);
           } else cb([]);
         });
       });
 
     } else if (type=="closedb") {
       var dbid=args[0];
-      Kde.close(dbid);
+      kde.close(dbid);
     } else if (type=="openlink") {
       var payload=args[0];
       var thelink={file:payload.file,pageid:payload.i,
@@ -290,12 +282,6 @@ var main = React.createClass({
     this.forceUpdate();
   },
    //<button onClick={this.newtab}>newtab</button>
-  showdevmenu:function() {
-    if (this.state.settings && this.state.settings.developer) {
-      return <devmenu action={this.action}/>;
-    }
-    else return null;
-  },
   makescrollable:function() {
     var f=this.refs.maintab.getDOMNode();
     var aux=this.refs.auxtab.getDOMNode();
@@ -321,13 +307,23 @@ var main = React.createClass({
   componentDidUpdate:function() {
     this.makescrollable();
   },
+  openFileinstaller:function(autoclose) {
+    if (window.location.origin.indexOf("http://127.0.0.1")==0) {
+      require_kdb[0].url=window.location.origin+"/jiangkangyur.kdb";
+    }
+    return <fileinstaller quota="512M" autoclose={autoclose} needed={require_kdb} 
+                     onReady={this.onReady}/>
+  },
   render:function() {
-    return <div style={{"width":"100%"}}>
-    {this.showdevmenu()}
-    <tabui ref="maintab" lastfile={this.state.lastfile} tabs={this.state.tabs}/>
-    <tabui ref="auxtab" tabs={this.state.auxs}/>
-    <buildindex ref="builddialog"/>
-    </div>
+    if (!this.state.quota) { // install required db
+        return this.openFileinstaller(true);
+    } else { 
+      return <div style={{"width":"100%"}}>
+      <tabui ref="maintab" lastfile={this.state.lastfile} tabs={this.state.tabs}/>
+      <tabui ref="auxtab" tabs={this.state.auxs}/>
+      <buildindex ref="builddialog"/>
+      </div>
+    }
   }
 });
 module.exports=main;

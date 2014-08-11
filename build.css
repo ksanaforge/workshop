@@ -7176,8 +7176,6 @@ td.visible-print {
  letter-spacing:1em;
  display: table-row;
 }
-
-
 body, html,#main {
 	height: 100%;
 	overflow-y:hidden;
@@ -7236,4 +7234,7 @@ hl[n="0"] {color:red;}
 .menuitem_excerpt {font-size:75%;}
 .inlinedialog_makelink {}
 .filelist {}
+
+
+
 #main {overflow-x: hidden;overflow-y:auto;height:100%;}

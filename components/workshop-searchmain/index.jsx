@@ -2,7 +2,6 @@
 var kse=Require("ksana-document").kse; 
 var kde=Require("ksana-document").kde; 
 var searchmain = React.createClass({
-  mixins: Require('kse-mixins'), 
   shouldComponentUpdate:function(nextProps,nextState) {
 
     if (this.db && (this.db.activeFile!=this.activeFile
@@ -67,8 +66,7 @@ var searchmain = React.createClass({
   componentWillMount:function() {
     if (!this.props.db) return;
     if (this.db) return; //
-    this.db=kde.open(this.props.db);
-    this.db.setContext(this);
+    kde.open(this.props.db,function(db){this.db=db},this);
   },
   componentDidUpdate:function() {
     if (!this.db)return;
