@@ -66,7 +66,9 @@ var searchmain = React.createClass({
   componentWillMount:function() {
     if (!this.props.db) return;
     if (this.db) return; //
-    kde.open(this.props.db,function(db){this.db=db},this);
+    kde.open(this.props.db,function(db){
+      this.db=db;
+    },this);
   },
   componentDidUpdate:function() {
     if (!this.db)return;
@@ -76,8 +78,8 @@ var searchmain = React.createClass({
        this.getDOMNode().offsetHeight - this.refs.controls.getDOMNode().offsetHeight ;
   },
   tofindkeypress:function(e) {
-     if (e.keyCode==13)  this.dosearch(e);
-  },
+     if (e.key=="Enter")  this.dosearch(e);
+  }, 
   render: function() {
     return (
       <div className="searchmain">

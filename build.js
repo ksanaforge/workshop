@@ -217,6 +217,8 @@ require.register("ksana-document/index.js", function(exports, require, module){
 	,kse:require('./kse') // search engine
 	,kdb:require("./kdb")
 	,html5fs:require("./html5fs")
+	,plist:require("./plist")
+	,bsearch:require("./bsearch")
 }
 if (typeof process!="undefined") {
 	API.persistent=require('./persistent');
@@ -1976,7 +1978,7 @@ var normalize_tibetan=function(token) {
 
 var isSkip_tibetan=function(token) {
 	var t=token.trim();
-	return (t=="" || t=="　" || t=="\n");	
+	return (t=="" || t=="　" ||  t=="\n");	
 }
 var simple1={
 	func:{
@@ -2139,8 +2141,11 @@ var putPosting=function(tk) {
 }
 var putPage=function(inscription) {
 	var tokenized=tokenize(inscription);
+	var tokenOffset=0, tovpos=[];
 	for (var i=0;i<tokenized.tokens.length;i++) {
 		var t=tokenized.tokens[i];
+		tovpos[tokenOffset]=session.vpos;
+		tokenOffset+=t.length;
 		if (isSkip(t)) {
 			 session.vpos--;
 		} else {
@@ -2149,7 +2154,9 @@ var putPage=function(inscription) {
  		}
  		session.vpos++;
 	}
+	tovpos[tokenOffset]=session.vpos;
 	session.indexedTextLength+= inscription.length;
+	return tovpos;
 }
 var upgradeDocument=function(d,dnew) {
 	var Diff=nodeRequire("./diff");	
@@ -2185,21 +2192,27 @@ var putFileInfo=function(fileContent) {
 var putPages_new=function(parsed,cb) { //25% faster than create a new document
 	//var fileInfo={pageNames:[],pageOffset:[]};
 	var fileContent=[];
+	parsed.tovpos=[];
 
 	putFileInfo(fileContent);
 	for (var i=0;i<parsed.texts.length;i++) {
 		var t=parsed.texts[i];
 		fileContent.push(t.t);
-		putPage(t.t);
+		var tovpos=putPage(t.t);
+		parsed.tovpos[i]=tovpos;
 		session.json.pageNames.push(t.n);
 		session.json.pageOffsets.push(session.vpos);
 	}
+	
 	cb(parsed);//finish
 }
+
 var putPages=function(doc,parsed,cb) {
 	var fileInfo={parentId:[],reverts:[]};
 	var fileContent=[];	
 	var hasParentId=false, hasRevert=false;
+	parsed.tovpos=[];
+
 	putFileInfo(fileContent);
 	if (!session.files) session.files=[];
 	session.json.files.push(fileInfo);
@@ -2208,7 +2221,8 @@ var putPages=function(doc,parsed,cb) {
 		var pg=doc.getPage(i);
 		if (pg.isLeafPage()) {
 			fileContent.push(pg.inscription);
-			putPage(pg.inscription);
+			var tovpos=putPage(pg.inscription);
+			parsed.tovpos[i-1]=tovpos;
 		} else {
 			fileContent.push("");
 		}
@@ -2257,9 +2271,10 @@ var parseAttributesString=function(s) {
 	s.replace(pat,function(m,m1,m2){out[m1]=m2});
 	return out;
 }
-var storeFields=function(fields ,root) {
+var storeFields=function(fields,json) {
+	if (!json.fields) json.fields={};
+	var root=json.fields;
 	if (!(fields instanceof Array) ) fields=[fields];
-	debugger;
 	var storeField=function(field) {
 		var path=field.path;
 		storepoint=root;
@@ -2271,6 +2286,9 @@ var storeFields=function(fields ,root) {
 			}
 			storepoint=storepoint[path[i]];
 		}
+		if (typeof field.value=="undefined") {
+			throw "empty field value of "+path;
+		} 
 		storepoint.push(field.value);
 	}
 	fields.map(storeField);
@@ -2293,7 +2311,7 @@ var processTags=function(captureTags,tags,texts) {
 	for (var i=0;i<tags.length;i++) {
 
 		for (var j=0;j<tags[i].length;j++) {
-			var T=tags[i][j],tagname=T[1],tagoffset=T[0],attributes=T[2];	
+			var T=tags[i][j],tagname=T[1],tagoffset=T[0],attributes=T[2],tagvpos=T[3];	
 			if (captureTags[tagname]) {
 				attr=parseAttributesString(attributes);
 				tagStack.push([tagname,tagoffset,attr,i]);
@@ -2301,7 +2319,7 @@ var processTags=function(captureTags,tags,texts) {
 			var handler=null;
 			if (tagname[0]=="/") {
 				handler=captureTags[tagname.substr(1)];
-			}
+			} 
 			if (handler) {
 				var prev=tagStack[tagStack.length-1];
 				if (tagname.substr(1)!=prev[0]) {
@@ -2310,13 +2328,24 @@ var processTags=function(captureTags,tags,texts) {
 					tagStack.pop();
 				}
 				var text=getTextBetween(prev[3],i,prev[1],tagoffset);
-				status.vpos=tagoffset;
+				status.vpos=tagvpos; 
 				status.tagStack=tagStack;
 				var fields=handler(text, tagname, attr, status);
-				if (!session.json.fields) session.json.fields={};
-				if (fields) storeFields(fields,session.json.fields);
+				
+				if (fields) storeFields(fields,session.json);
 			}
 		}	
+	}
+}
+var resolveTagsVpos=function(parsed) {
+	var bsearch=require("ksana-document").bsearch;
+	for (var i=0;i<parsed.tags.length;i++) {
+		for (var j=0;j<parsed.tags[i].length;j++) {
+			var t=parsed.tags[i][j];
+			var pos=t[0];
+			t[3]=parsed.tovpos[i][pos];
+			while (pos && typeof t[3]=="undefined") t[3]=parsed.tovpos[i][--pos];
+		}
 	}
 }
 var putFile=function(fn,cb) {
@@ -2336,14 +2365,19 @@ var putFile=function(fn,cb) {
 	//assert.equal(end>start,true);
 
 	// split source xml into 3 parts, before <body> , inside <body></body> , and after </body>
+	var body=texts.substring(start,end+bodyendlen);
+	status.json=session.json;
+	status.storeFields=storeFields;
+	
+	status.bodytext=body;
+	status.starttext=texts.substring(0,start);
+	status.fileStartVpos=session.vpos;
 
 	if (callbacks.beforebodystart) callbacks.beforebodystart.apply(session,[texts.substring(0,start),status]);
-	var body=texts.substring(start,end+bodyendlen);
 	parseBody(body,session.config.pageSeparator,function(parsed){
+		status.parsed=parsed;
 		if (callbacks.afterbodyend) {
-			status.parsed=parsed;
-			status.bodytext=body;
-			status.starttext=texts.substring(0,start);
+			resolveTagsVpos(parsed);
 			if (captureTags) {
 				processTags(captureTags, parsed.tags, parsed.texts);
 			}
@@ -2353,6 +2387,7 @@ var putFile=function(fn,cb) {
 			status.parsed=null;
 			status.bodytext=null;
 			status.starttext=null;
+			status.json=null;
 		}
 		cb(); //parse body finished
 	});	
@@ -2378,7 +2413,7 @@ var initIndexer=function(mkdbconfig) {
 	var Kde=nodeRequire("./kde");
 
 	session=initSession(mkdbconfig);
-	api=nodeRequire("ksana-document").customfunc.getAPI(mkdbconfig.config);
+	api=nodeRequire("ksana-document").customfunc.getAPI(mkdbconfig.meta.config);
 	xml4kdb=nodeRequire("ksana-document").xml4kdb;
 
 	//mkdbconfig has a chance to overwrite API
@@ -2410,12 +2445,12 @@ var start=function(mkdbconfig) {
   	return status;
 }
 
-
 var indexstep=function() {
 	
 	if (session.filenow<session.files.length) {
 		status.filename=session.files[session.filenow];
 		status.progress=session.filenow/session.files.length;
+		status.filenow=session.filenow;
 		putFile(status.filename,function(){
 			session.filenow++;
 			setTimeout(indexstep,1); //rest for 1 ms to response status			
@@ -2509,7 +2544,6 @@ var finalize=function(cb) {
 	//output=api("optimize")(session.json,session.ydbmeta.config);
 	var opts={size:session.config.estimatesize};
 	if (!opts.size) opts.size=guessSize();
-
 	var kdbw =nodeRequire("ksana-document").kdbw(session.kdbfn,opts);
 	//console.log(JSON.stringify(session.json,""," "));
 	if (session.config.finalizeField) {
@@ -2770,7 +2804,6 @@ var DT={
 	//type a ydb in command prompt shows nothing
 }
 
-
 var Create=function(path,opts,cb) {
 	/* loadxxx functions move file pointer */
 	// load variable length int
@@ -2924,7 +2957,6 @@ var Create=function(path,opts,cb) {
 					taskqueue.push(function(data){
 						o[keys[keys.length-1]]=data;
 						opts.cur=endcur;
-
 						cb.apply(that,[o]);
 					});
 				}
@@ -2971,7 +3003,7 @@ var Create=function(path,opts,cb) {
 				this.fs.readUI8(opts.cur-1,cb);
 			} else if (signature===DT.utf8) {
 				var c=opts.cur;opts.cur+=datasize;
-				this.fs.readString(c,datasize,'utf8',cb);	
+				this.fs.readString(c,datasize,'utf8',cb);
 			} else if (signature===DT.ucs2) {
 				var c=opts.cur;opts.cur+=datasize;
 				this.fs.readString(c,datasize,'ucs2',cb);	
@@ -3082,6 +3114,8 @@ var Create=function(path,opts,cb) {
 			
 			var pathnow="",taskqueue=[],opts={},r=null;
 			var lastkey="";
+
+
 			for (var i=0;i<path.length;i++) {
 				var task=(function(key,k){
 
@@ -4349,8 +4383,12 @@ var read=function(handle,buffer,offset,length,position,cb) {	 //buffer and offse
       xhr.setRequestHeader('Range', 'bytes='+range[0]+'-'+range[1]);
       xhr.responseType = 'arraybuffer';
       xhr.send();
+
       xhr.onload = function(e) {
-          cb(0,this.response.byteLength,this.response);
+        var that=this;
+        setTimeout(function(){
+          cb(0,that.response.byteLength,that.response);
+        },0);
       }; 
 }
 
@@ -4609,6 +4647,7 @@ require.register("ksana-document/kse.js", function(exports, require, module){
   need a KDE instance to be functional
   
 */
+var bsearch=require("./bsearch");
 
 var _search=function(engine,q,opts,cb) {
 	if (typeof engine=="string") {//browser only
@@ -4625,12 +4664,28 @@ var _search=function(engine,q,opts,cb) {
 
 var _highlightPage=function(engine,fileid,pageid,opts,cb){
 	if (opts.q) {
-		require("./search").main(engine,opts.q,opts,function(Q){
+		_search(engine,opts.q,opts,function(Q){
 			api.excerpt.highlightPage(Q,fileid,pageid,opts,cb);
 		});
 	} else {
 		api.excerpt.getPage(engine,fileid,pageid,cb);
 	}
+}
+
+var vpos2filepage=function(engine,vpos) {
+    var pageOffsets=engine.get("pageOffsets");
+    var fileOffsets=engine.get(["fileOffsets"]);
+    var pageNames=engine.get("pageNames");
+    var fileid=bsearch(fileOffsets,vpos+1,true);
+    fileid--;
+    var pageid=bsearch(pageOffsets,vpos+1,true);
+    pageid--;
+
+    var fileOffset=fileOffsets[fileid];
+    var pageOffset=bsearch(pageOffsets,fileOffset+1,true);
+    pageOffset--;
+    pageid-=pageOffset;
+    return {file:fileid,page:pageid};
 }
 var api={
 	search:_search
@@ -4638,6 +4693,7 @@ var api={
 	,regex:require("./regex")
 	,highlightPage:_highlightPage
 	,excerpt:require("./excerpt")
+	,vpos2filepage:vpos2filepage
 }
 module.exports=api;
 });
@@ -4650,7 +4706,7 @@ require.register("ksana-document/kde.js", function(exports, require, module){
 if (typeof nodeRequire=='undefined')var nodeRequire=require;
 var pool={},localPool={};
 var apppath="";
-
+var bsearch=require("./bsearch");
 var _getSync=function(keys,recursive) {
 	var out=[];
 	for (var i in keys) {
@@ -4683,7 +4739,7 @@ var _gets=function(keys,recursive,cb) { //get many data with one call
 
 	taskqueue.push(function(data){
 		output.push(data);
-		cb(output,keys); //return to caller
+		cb.apply(engine.context||engine,[output,keys]); //return to caller
 	});
 
 	taskqueue.shift()({__empty:true}); //run the task
@@ -4712,22 +4768,26 @@ var getFileRange=function(i) {
 	var pageOffsets=engine.get(["pageOffsets"]);
 	var pageNames=engine.get(["pageNames"]);
 	var fileStart=fileOffsets[i],fileEnd=fileOffsets[i+1];
-	var start=-1,end=-1;	
-	for (var i=0;i<pageOffsets.length;i++) {
-		if (pageOffsets[i]>=fileStart && start==-1) start=i;
-		if (pageOffsets[i]>=fileEnd && end==-1) end=i;
-	}
+
+	var start=bsearch(pageOffsets,fileStart);
+	var end=bsearch(pageOffsets,fileEnd);
+	//in case of items with same value
+	//return the last one
+	while (pageOffsets[start+1]==pageOffsets[start]) start++; 
+	while (pageOffsets[end+1]==pageOffsets[end]) end++;
+
 	return {start:start,end:end};
 }
 var getFilePageOffsets=function(i) {
+	var pageOffsets=this.get("pageOffsets");
 	var range=getFileRange.apply(this,[i]);
-	return pageOffsets.slice(range.start,range.end);
+	return pageOffsets.slice(range.start,range.end+1);
 }
 
 var getFilePageNames=function(i) {
 	var range=getFileRange.apply(this,[i]);
 	var pageNames=this.get("pageNames");
-	return pageNames.slice(range.Start,range.end);
+	return pageNames.slice(range.start,range.end);
 }
 var getDocument=function(filename,cb){
 	var engine=this;
@@ -4750,40 +4810,8 @@ var getDocument=function(filename,cb){
 		});
 	}
 }
-var indexOfSorted = function (array, obj, near) { 
-  var low = 0,
-  high = array.length;
-  while (low < high) {
-    var mid = (low + high) >> 1;
-    if (array[mid]==obj) return mid;
-    array[mid] < obj ? low = mid + 1 : high = mid;
-  }
-  if (near) return low;
-  else if (array[low]==obj) return low;else return -1;
-};
-var indexOfSorted_str = function (array, obj, near) { 
-  var low = 0,
-  high = array.length;
-  while (low < high) {
-    var mid = (low + high) >> 1;
-    if (array[mid]==obj) return mid;
-    (array[mid].localeCompare(obj)<0) ? low = mid + 1 : high = mid;
-  }
-  if (near) return low;
-  else if (array[low]==obj) return low;else return -1;
-};
-
-
-var bsearch=function(array,value,near) {
-	var func=indexOfSorted;
-	if (typeof array[0]=="string") func=indexOfSorted_str;
-	return func(array,value,near);
-}
-var bsearchNear=function(array,value) {
-	return bsearch(array,value,true);
-}
 var createLocalEngine=function(kdb,cb,context) {
-	var engine={lastAccess:new Date(), kdb:kdb, queryCache:{}, postingCache:{}};
+	var engine={lastAccess:new Date(), kdb:kdb, queryCache:{}, postingCache:{}, cache:{}};
 
 	if (kdb.fs.html5fs) {
 		var customfunc=Require("ksana-document").customfunc;
@@ -4820,8 +4848,6 @@ var createLocalEngine=function(kdb,cb,context) {
 			cb(null);	
 		}
 	};	
-	engine.bsearch=bsearch;
-	engine.bsearchNear=bsearchNear;
 	engine.fileOffset=fileOffset;
 	engine.folderOffset=folderOffset;
 	engine.pageOffset=pageOffset;
@@ -4909,6 +4935,7 @@ var getRemote=function(key,recursive,cb) {
 	}
 }
 var pageOffset=function(pagename) {
+	var engine=this;
 	if (arguments.length>1) throw "argument : pagename ";
 
 	var pageNames=engine.get("pageNames");
@@ -4951,8 +4978,6 @@ var createEngine=function(kdbid,context,cb) {
 	postingCache:{}, queryCache:{}, traffic:0,fetched:0};
 	engine.setContext=function(ctx) {this.context=ctx};
 	engine.get=getRemote;
-	engine.bsearch=bsearch;
-	engine.bsearchNear=bsearchNear;
 	engine.fileOffset=fileOffset;
 	engine.folderOffset=folderOffset;
 	engine.pageOffset=pageOffset;
@@ -4973,7 +4998,7 @@ var createEngine=function(kdbid,context,cb) {
 		engine.cache["postingslen"]=res[4];
 		engine.cache["pageNames"]=res[5];
 		engine.cache["pageOffsets"]=res[6];
-		console.log(res[6])
+
 //		engine.cache["tokenId"]=res[4];
 //		engine.cache["files"]=res[2];
 
@@ -5011,7 +5036,7 @@ var open=function(kdbid,cb,context) {
 
 	var engine=pool[kdbid];
 	if (engine) {
-		if (cb) cb.apply(engine.context,[engine]);
+		if (cb) cb.apply(context||engine.context,[engine]);
 		return engine;
 	}
 	engine=createEngine(kdbid,context,cb);
@@ -5050,7 +5075,7 @@ var openLocalNode=function(kdbid,cb,context) {
 			new Kdb(tries[i],function(kdb){
 				createLocalEngine(kdb,function(engine){
 						localPool[kdbid]=engine;
-						cb(engine);
+						cb.apply(context||engine.context,[engine]);
 				},context);
 			});
 			return engine;
@@ -5065,7 +5090,7 @@ var openLocalHtml5=function(kdbid,cb,context) {
 	
 	var engine=localPool[kdbid];
 	if (engine) {
-		if (cb) cb.apply(engine.context,[engine]);
+		if (cb) cb.apply(context||engine.context,[engine]);
 		return engine;
 	}
 	var Kdb=Require('ksana-document').kdb;
@@ -5074,7 +5099,7 @@ var openLocalHtml5=function(kdbid,cb,context) {
 	new Kdb(kdbfn,function(handle){
 		createLocalEngine(handle,function(engine){
 			localPool[kdbid]=engine;
-			cb.apply(engine.context,[engine]);
+			cb.apply(context||engine.context,[engine]);
 		},context);		
 	});
 }
@@ -6104,14 +6129,16 @@ var getFileWithHits=function(engine,Q,range) {
 		}
 	}
 
-	var fileWithHits=[];
+	var fileWithHits=[],totalhit=0;
+	range.maxhit=range.maxhit||1000;
+
 	for (var i=start;i<Q.byFile.length;i++) {
 		if(Q.byFile[i].length>0) {
+			totalhit+=Q.byFile[i].length;
 			fileWithHits.push(i);
 			range.nextFileStart=i;
-			if (fileWithHits.length>=filecount) {
-				break;
-			}
+			if (fileWithHits.length>=filecount) break;
+			if (totalhit>range.maxhit) break;
 		}
 	}
 	if (i>=Q.byFile.length) { //no more file
@@ -6147,12 +6174,12 @@ var resultlist=function(engine,Q,opts,cb) {
 		for (var j=0; j<pagewithhit.length;j++) {
 			if (!pagewithhit[j].length) continue;
 			//var offsets=pagewithhit[j].map(function(p){return p- fileOffsets[i]});
-			output.push(  {file: nfile, page:j,  pagename:pageNames[j+1]});
+			output.push(  {file: nfile, page:j,  pagename:pageNames[j]});
 		}
 	}
 
 	var pagekeys=output.map(function(p){
-		return ["fileContents",p.file,p.page];
+		return ["fileContents",p.file,p.page+1];
 	});
 	//prepare the text
 	engine.get(pagekeys,function(pages){
@@ -6161,6 +6188,10 @@ var resultlist=function(engine,Q,opts,cb) {
 			var startvpos=files[output[i].file].pageOffsets[output[i].page];
 			var endvpos=files[output[i].file].pageOffsets[output[i].page+1];
 			var hl={};
+
+			if (opts.range && opts.range.start && startvpos<opts.range.start ) {
+				startvpos=opts.range.start;
+			}
 			
 			if (opts.nohighlight) {
 				hl.text=pages[i];
@@ -6169,17 +6200,18 @@ var resultlist=function(engine,Q,opts,cb) {
 				var o={text:pages[i],startvpos:startvpos, endvpos: endvpos, Q:Q,fulltext:opts.fulltext};
 				hl=highlight(Q,o);
 			}
-			output[i].text=hl.text;
-			output[i].hits=hl.hits;
-			output[i].seq=seq;
-			seq+=hl.hits.length;
+			if (hl.text) {
+				output[i].text=hl.text;
+				output[i].hits=hl.hits;
+				output[i].seq=seq;
+				seq+=hl.hits.length;
 
-			output[i].start=startvpos;
-			if (opts.range.maxhit && seq>opts.range.maxhit) {
-				output.length=i;
-				break;
+				output[i].start=startvpos;				
+			} else {
+				output[i]=null; //remove item vpos less than opts.range.start
 			}
-		}
+		} 
+		output=output.filter(function(o){return o!=null});
 		cb(output);
 	});
 }
@@ -6254,9 +6286,10 @@ var highlight=function(Q,opts) {
 var getPage=function(engine,fileid,pageid,cb) {
 	var fileOffsets=engine.get("fileOffsets");
 	var pagekeys=["fileContents",fileid,pageid];
+	var pagenames=engine.getFilePageNames(fileid);
 
 	engine.get(pagekeys,function(text){
-		cb.apply(engine.context,[{text:text,file:fileid,page:pageid}]);
+		cb.apply(engine.context,[{text:text,file:fileid,page:pageid,pagename:pagenames[pageid]}]);
 	});
 }
 
@@ -6264,18 +6297,19 @@ var highlightPage=function(Q,fileid,pageid,opts,cb) {
 	if (typeof opts=="function") {
 		cb=opts;
 	}
+
 	if (!Q || !Q.engine) return cb(null);
+	var pageOffsets=Q.engine.getFilePageOffsets(fileid);
+	var startvpos=pageOffsets[pageid];
+	var endvpos=pageOffsets[pageid+1];
+	var pagenames=Q.engine.getFilePageNames(fileid);
 
-	getPage(Q.engine,fileid,pageid,function(page){
-		Q.engine.get(["files",fileid,"pageOffset"],true,function(pageOffset){
-			var startvpos=pageOffset[page.page];
-			var endvpos=pageOffset[page.page+1];
-
-			var opt={text:page.text,hits:null,tag:'hl',voff:startvpos,fulltext:true};
-			opt.hits=hitInRange(Q,startvpos,endvpos);
-			cb.apply(Q.engine.context,[{text:injectTag(Q,opt),hits:opt.hits}]);
-		});
-	});
+	this.getPage(Q.engine, fileid,pageid+1,function(res){
+		var opt={text:res.text,hits:null,tag:'hl',voff:startvpos,fulltext:true};
+		opt.hits=hitInRange(Q,startvpos,endvpos);
+		var pagename=pagenames[pageid];
+		cb.apply(Q.engine.context,[{text:injectTag(Q,opt),page:pageid,file:fileid,hits:opt.hits,pagename:pagename}]);
+	})
 }
 module.exports={resultlist:resultlist, 
 	hitInRange:hitInRange, 
@@ -10394,14 +10428,15 @@ var parseXMLTag=function(s) {
 };
 var parseUnit=function(unittext) {
 	// name,sunit, soff, eunit, eoff , attributes
-	var totaltaglength=0,tags=[];
+	var totaltaglength=0,tags=[],tagoffset=0;
 	var parsed=unittext.replace(/<(.*?)>/g,function(m,m1,off){
 		var i=m1.indexOf(" "),tag=m1,attributes="";
 		if (i>-1) {
 			tag=m1.substr(0,i);
 			attributes=m1.substr(i+1);
 		}
-		tags.push([off-totaltaglength , tag,attributes]);
+		tagoffset=off-totaltaglength;
+		tags.push([tagoffset , tag,attributes, 0 ]); //vpos to be resolved
 		totaltaglength+=m.length;
 		return ""; //remove the tag from inscription
 	});
@@ -10410,11 +10445,11 @@ var parseUnit=function(unittext) {
 var splitUnit=function(buf,sep) {
 	var units=[], unit="", last=0 ,name="";
 	buf.replace(sep,function(m,m1,offset){
-		units.push([name,buf.substring(last,offset)]);
+		units.push([name,buf.substring(last,offset),last]);
 		name=m1;
 		last=offset;//+m.length;   //keep the separator
 	});
-	units.push([name,buf.substring(last)]);
+	units.push([name,buf.substring(last),last]);
 	return units;
 };
 var defaultsep="_.id";
@@ -10591,7 +10626,8 @@ var warning=function(err) {
 	}	
 }
 var ontext=function(e) {
-	if (context.handler) context.text+=e;
+	//if (context.handler) 
+	context.text+=e;
 }
 var onopentag=function(e) {
 	context.paths.push(e.name);
@@ -10603,11 +10639,9 @@ var onopentag=function(e) {
 		if (handler) 	context.handler=handler;
 		var close_handler=context.close_handlers[context.path];
 		if (close_handler) 	context.close_handler=close_handler;
-		if (context.handler)  context.handler(true);
-	} else {
-		context.handler();
 	}
-	
+
+	if (context.handler)  context.handler(true);
 }
 
 var onclosetag=function(e) {
@@ -10615,18 +10649,27 @@ var onclosetag=function(e) {
 
 	var handler=context.close_handlers[context.path];
 	if (handler) {
-		if (context.close_handler) context.close_handler(true);
+		var res=null;
+		if (context.close_handler) res=context.close_handler(true);
 		context.handler=null;//stop handling
 		context.close_handler=null;//stop handling
 		context.text="";
+		if (res && context.status.storeFields) {
+			context.status.storeFields(res, context.status.json);
+		}
 	} else if (context.close_handler) {
 		context.close_handler();
 	}
+	
 	context.paths.pop();
 	context.parents.pop();
 	context.path=context.paths.join("/");		
 }
-var addHandler=function(path,tagmodule) {
+var addHandler=function(path,_tagmodule) {
+	var tagmodule=_tagmodule;
+	if (typeof tagmodule=="function") {
+		tagmodule={close_handler:_tagmodule};
+	}
 	if (tagmodule.handler) context.handlers[path]=tagmodule.handler;
 	if (tagmodule.close_handler) context.close_handlers[path]=tagmodule.close_handler;
 	if (tagmodule.reset) tagmodule.reset();
@@ -10671,7 +10714,7 @@ var createAnchors=function(parsed) {
 }
 var resolveAnchors=function(anchors,texts) {
 	tagmodules.map(function(m){
-		m.resolve(anchors,texts);
+		if (m.resolve) m.resolve(anchors,texts);
 	})
 }
 var  createMarkups=function(parsed) {
@@ -10688,27 +10731,27 @@ var  createMarkups=function(parsed) {
 var handlersResult=function() {
 	var out={};
 	tagmodules.map(function(m){
-		out[m.name]=m.result();
+		if (m.result) out[m.name]=m.result();
 	})
 }
 
-var parseP5=function(xml,parsed,fn,_config) {
+var parseP5=function(xml,parsed,fn,_config,_status) {
 	parser=require("sax").parser(true);
 	filename=fn;
-	context={ paths:[] , parents:[], handlers:{}, close_handlers:{}, text:"" ,now:null};
+	context={ paths:[] , parents:[], handlers:{}, close_handlers:{}, text:"" ,now:null,status:_status};
 	parser.onopentag=onopentag;
 	parser.onclosetag=onclosetag;
 	parser.ontext=ontext;
 	config=_config;
 	tagmodules=[];
-
+	context.addHandler=addHandler;
+	if (_config.setupHandlers) config.setupHandlers.apply(context);
 	parser.write(xml);
 	context=null;
 	parser=null;
 	if (parsed) return createMarkups(parsed);
 	else return handlersResult();
 }
-parseP5.addHandler=addHandler;
 module.exports=parseP5;
 });
 require.register("ksana-document/concordance.js", function(exports, require, module){
@@ -10936,6 +10979,42 @@ var getstatus=function() {
 	return status;
 }
 module.exports={start:start,stop:stop,status:getstatus};
+});
+require.register("ksana-document/bsearch.js", function(exports, require, module){
+var indexOfSorted = function (array, obj, near) { 
+  var low = 0,
+  high = array.length;
+  while (low < high) {
+    var mid = (low + high) >> 1;
+    if (array[mid]==obj) return mid;
+    array[mid] < obj ? low = mid + 1 : high = mid;
+  }
+  if (near) return low;
+  else if (array[low]==obj) return low;else return -1;
+};
+var indexOfSorted_str = function (array, obj, near) { 
+  var low = 0,
+  high = array.length;
+  while (low < high) {
+    var mid = (low + high) >> 1;
+    if (array[mid]==obj) return mid;
+    (array[mid].localeCompare(obj)<0) ? low = mid + 1 : high = mid;
+  }
+  if (near) return low;
+  else if (array[low]==obj) return low;else return -1;
+};
+
+
+var bsearch=function(array,value,near) {
+	var func=indexOfSorted;
+	if (typeof array[0]=="string") func=indexOfSorted_str;
+	return func(array,value,near);
+}
+var bsearchNear=function(array,value) {
+	return bsearch(array,value,true);
+}
+
+module.exports=bsearch;//{bsearchNear:bsearchNear,bsearch:bsearch};
 });
 require.register("ksanaforge-boot/index.js", function(exports, require, module){
 var ksana={"platform":"remote"};
@@ -13340,7 +13419,7 @@ var docview = React.createClass({displayName: 'docview',
     } else if (action=="getmarkupsat") {
       return this.getMarkupsAt(args[0]);
     } else if (action=="copy") {
-      if (!process) return;
+      if (typeof process=="undefined") return;
       var text=args[0];
       var gui = nodeRequire('nw.gui');
       var clipboard = gui.Clipboard.get();
@@ -13546,8 +13625,8 @@ var surface = React.createClass({displayName: 'surface',
     var dialog=this.refs.inlinedialog.getDOMNode();
     var dialogheight=dialog.firstChild.offsetHeight;
 
-    dialog.style.left=domnode.offsetLeft - this.getDOMNode().offsetLeft ;
-    dialog.style.top=domnode.offsetTop - this.getDOMNode().offsetTop + domnode.offsetHeight ;
+    dialog.style.left=(domnode.offsetLeft - this.getDOMNode().offsetLeft)+"px" ;
+    dialog.style.top=(domnode.offsetTop - this.getDOMNode().offsetTop + domnode.offsetHeight)+"px" ;
     if (dialogheight>0 && dialogheight<parseInt(dialog.style.top)) {
       dialog.style.top=parseInt(dialog.style.top)-dialogheight-domnode.offsetHeight;
     }
@@ -14266,7 +14345,7 @@ var main = React.createClass({displayName: 'main',
 
     if (type==="setdoc") { 
       this.setState({doc:args[0]});
-    } else if (type=="openproject") {
+    } else if (type=="openproject") { 
       var proj=args[0]; 
       var autoopen=args[1];
       var tab=args[2]||this.refs.maintab;
@@ -14334,11 +14413,12 @@ var main = React.createClass({displayName: 'main',
     } else if (type=="buildindex") {
       this.refs.builddialog.start(args[0].shortname);
     } else if (type=="searchkeyword") {
-      var engine= kde.open(args[1]);
-      if (!engine) return;
-      engine.activeTofind=args[0];
-      this.state.auxs.updated=true;
-      this.forceUpdate(); 
+      kde.open(args[1],function(engine){
+        engine.activeTofind=args[0];
+        this.state.auxs.updated=true;
+        this.forceUpdate(); 
+
+      },this);
     } else if (type=="searchquote") {
       var quote=args[0],cb=args[1];
       var that=this;
@@ -15389,7 +15469,7 @@ var docview_tibetan = React.createClass({displayName: 'docview_tibetan',
     var filename=this.state.doc.meta.filename; 
     var username=this.props.user.name;
     var markups=this.page().filterMarkup(function(m){return m.payload.author==username});
-    var dbid=this.props.kde.kdbid;
+    var dbid=this.props.kde.dbname;
     /*
     this.$ksana("saveMarkup",{dbid:dbid,markups:markups,filename:filename,i:this.state.pageid } ,function(data){
       doc.markClean();
@@ -15452,7 +15532,7 @@ var docview_tibetan = React.createClass({displayName: 'docview_tibetan',
     } else if (type=="makingselection") {
       this.setState({selecting: {start:args[0],end: args[1]}});
     } else if (type=="searchkeyword") {
-      this.props.action("searchkeyword",args[0],this.props.kde.kdbid);
+      this.props.action("searchkeyword",args[0],this.props.kde.dbname);
     } else if (type=="linkby") {
       var selstart=args[0],len=args[1],cb=args[2];
       //this.props.kde.findLinkBy(this.page(),selstart,len,cb);
@@ -15489,7 +15569,7 @@ var docview_tibetan = React.createClass({displayName: 'docview_tibetan',
       doc.meta.filename=this.props.filename;
       this.setState({doc:doc});
     });
-*/
+*/ 
     if (this.props.tab ) this.props.tab.instance=this; // for tabui 
   },
   page:function() {
@@ -15915,7 +15995,9 @@ var searchmain = React.createClass({displayName: 'searchmain',
   componentWillMount:function() {
     if (!this.props.db) return;
     if (this.db) return; //
-    kde.open(this.props.db,function(db){this.db=db},this);
+    kde.open(this.props.db,function(db){
+      this.db=db;
+    },this);
   },
   componentDidUpdate:function() {
     if (!this.db)return;
@@ -15925,8 +16007,8 @@ var searchmain = React.createClass({displayName: 'searchmain',
        this.getDOMNode().offsetHeight - this.refs.controls.getDOMNode().offsetHeight ;
   },
   tofindkeypress:function(e) {
-     if (e.keyCode==13)  this.dosearch(e);
-  },
+     if (e.key=="Enter")  this.dosearch(e);
+  }, 
   render: function() {
     return (
       React.DOM.div( {className:"searchmain"}, 
@@ -17572,6 +17654,7 @@ require.alias("ksana-document/buildfromxml.js", "workshop/deps/ksana-document/bu
 require.alias("ksana-document/tei.js", "workshop/deps/ksana-document/tei.js");
 require.alias("ksana-document/concordance.js", "workshop/deps/ksana-document/concordance.js");
 require.alias("ksana-document/regex.js", "workshop/deps/ksana-document/regex.js");
+require.alias("ksana-document/bsearch.js", "workshop/deps/ksana-document/bsearch.js");
 require.alias("ksana-document/index.js", "workshop/deps/ksana-document/index.js");
 require.alias("ksana-document/index.js", "ksana-document/index.js");
 require.alias("ksana-document/index.js", "ksana-document/index.js");

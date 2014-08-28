@@ -157,7 +157,7 @@ var main = React.createClass({
 
     if (type==="setdoc") { 
       this.setState({doc:args[0]});
-    } else if (type=="openproject") {
+    } else if (type=="openproject") { 
       var proj=args[0]; 
       var autoopen=args[1];
       var tab=args[2]||this.refs.maintab;
@@ -225,11 +225,12 @@ var main = React.createClass({
     } else if (type=="buildindex") {
       this.refs.builddialog.start(args[0].shortname);
     } else if (type=="searchkeyword") {
-      var engine= kde.open(args[1]);
-      if (!engine) return;
-      engine.activeTofind=args[0];
-      this.state.auxs.updated=true;
-      this.forceUpdate(); 
+      kde.open(args[1],function(engine){
+        engine.activeTofind=args[0];
+        this.state.auxs.updated=true;
+        this.forceUpdate(); 
+
+      },this);
     } else if (type=="searchquote") {
       var quote=args[0],cb=args[1];
       var that=this;

@@ -43,7 +43,7 @@ var docview_tibetan = React.createClass({
     var filename=this.state.doc.meta.filename; 
     var username=this.props.user.name;
     var markups=this.page().filterMarkup(function(m){return m.payload.author==username});
-    var dbid=this.props.kde.kdbid;
+    var dbid=this.props.kde.dbname;
     /*
     this.$ksana("saveMarkup",{dbid:dbid,markups:markups,filename:filename,i:this.state.pageid } ,function(data){
       doc.markClean();
@@ -106,7 +106,7 @@ var docview_tibetan = React.createClass({
     } else if (type=="makingselection") {
       this.setState({selecting: {start:args[0],end: args[1]}});
     } else if (type=="searchkeyword") {
-      this.props.action("searchkeyword",args[0],this.props.kde.kdbid);
+      this.props.action("searchkeyword",args[0],this.props.kde.dbname);
     } else if (type=="linkby") {
       var selstart=args[0],len=args[1],cb=args[2];
       //this.props.kde.findLinkBy(this.page(),selstart,len,cb);
@@ -143,7 +143,7 @@ var docview_tibetan = React.createClass({
       doc.meta.filename=this.props.filename;
       this.setState({doc:doc});
     });
-*/
+*/ 
     if (this.props.tab ) this.props.tab.instance=this; // for tabui 
   },
   page:function() {
