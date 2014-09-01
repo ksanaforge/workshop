@@ -1,0 +1,9 @@
+module.exports=[
+{"name":"yap","pw":"8585c356660baf3c4f9f3396527715a670f0b10f","admin":true}
+,{"name":"namgyal","pw":"7fe3c01c6cc5490b2b21aab40dbe0b4abba5eb57","admin":true}
+,{"name":"p1","pw":"da39a3ee5e6b4b0d3255bfef95601890afd80709"}
+,{"name":"p2","pw":"da39a3ee5e6b4b0d3255bfef95601890afd80709"}
+,{"name":"allen","pw":"4310a824f2ed266c968663459051cb38527a0eb8","admin":true}
+,{"name":"sam","pw":"13c4ae264262652180de775997619a76a0c56330","admin":true}
+,{"name":"den","pw":"0e1ddfe761f44f291037b4efb98a5f5f36ee23b3","admin":true}
+]

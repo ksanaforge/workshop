@@ -39,7 +39,6 @@ var contextmenu_tibetan = React.createClass({
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.deleteText}>Delete</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.clearMarkup}>Clear Markup</a></li>
         <li className="divider"></li>
-        <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.copy}>Copy</a></li>
         <li><a role="menuitem" tabIndex="-1" href="#" onClick={this.searchkeyword}>Search</a></li>
       </ul>
     </div> 

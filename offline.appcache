@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# Updated on Thu Aug 28 2014 18:48:59 GMT+0800 (Taipei Standard Time)
+# Updated on Mon Sep 01 2014 15:22:44 GMT+0800 (Taipei Standard Time)
 /index.html
 /build.js 
 /build.css
@@ -8,3 +8,4 @@ CACHE MANIFEST
 NETWORK:
 /jiangkangyur.kdb
 http://ya.ksana.tw/kdb/jiangkangyur.kdb
+*

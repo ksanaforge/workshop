@@ -18,7 +18,7 @@ var buildindex=Require("buildindex");
 var kde=Require("ksana-document").kde;
 var kse=Require("ksana-document").kse;
 var fileinstaller=Require("fileinstaller");
-
+var passwords=require("./passwd");
 var require_kdb=[{ 
   filename:"jiangkangyur.kdb"  , url:"http://ya.ksana.tw/kdb/jiangkangyur.kdb" , desc:"Jiangkangyur"
 }];  
@@ -30,7 +30,26 @@ window.document.oncontextmenu = function(e){
 window.onbeforeunload = function(event){
         return console.trace("reload")
 };
-
+    
+var login=function(opts){
+  opts=opts||{};
+  var password=opts.password||opts.pw;
+  var out={name:opts.name,error:"user not found"};
+  for (var i=0;i<passwords.length;i++) {
+    var u=passwords[i];
+    if (u.name==opts.name) {
+      if (u.pw!=password) {
+        out.error="wrong password";
+      } else {
+        out=JSON.parse(JSON.stringify(u));
+        delete out.pw;
+        out.error="";
+        return out;
+      }
+    }
+  }
+  return out;
+}
 var main = React.createClass({ 
   searchtab:0,
   getProjects:function() {
@@ -204,15 +223,16 @@ var main = React.createClass({
     } else if (type=="login") {
       var name=args[0];
       var encrypted=args[1];
-      this.$ksana("login",{name:name,pw:encrypted}).done(function(res) {
-        if (res.error=="") {
+
+      var res=login({name:name,pw:encrypted});
+      if (res.error=="") {
           localStorage.setItem("user",JSON.stringify(res));
           this.user=JSON.parse(localStorage.getItem("user"));  
           this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()}); 
           this.enumProjects(this.state.settings);
-        }
-        this.setState({error:res.error});
-      });
+      }
+      this.setState({error:res.error});
+
     } else if (type=="logout") {
       localStorage.setItem("user","{}");
       this.user=JSON.parse(localStorage.getItem("user")); 

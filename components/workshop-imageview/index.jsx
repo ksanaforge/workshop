@@ -15,7 +15,7 @@ var imageview = React.createClass({
     filename='00'+filename;
     filename=filename.substring(filename.length-4);
 
-    return this.props.project.filename+'.images/'
+    return "http://114.34.239.14/kangyur_images/lijiang/"
     +folder+'/'+folder+'-'+filename+".jpg";
   }, 
   adjustImage:function() {

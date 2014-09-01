@@ -10,7 +10,8 @@ var M=Require("ksana-document").markups;
 var excerpt=Require("ksana-document").kse.excerpt;
 var docview_tibetan = React.createClass({
   getInitialState: function() {
-    var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
+    //var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
+    var pageid=1;
     return {doc:null,pageid:pageid};
   },
   shouldComponentUpdate:function(nextProps,nextState) {

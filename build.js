@@ -2261,7 +2261,7 @@ var putDocument=function(parsed,cb) {
 }
 
 var parseBody=function(body,sep,cb) {
-	var res=xml4kdb.parseXML(body, {sep:sep});
+	var res=xml4kdb.parseXML(body, {sep:sep,trim:!!session.config.trim});
 	putDocument(res,cb);
 }
 
@@ -4769,11 +4769,13 @@ var getFileRange=function(i) {
 	var pageNames=engine.get(["pageNames"]);
 	var fileStart=fileOffsets[i],fileEnd=fileOffsets[i+1];
 
-	var start=bsearch(pageOffsets,fileStart);
+	var start=bsearch(pageOffsets,fileStart+1,true);
+	if (i==0) start=0; //work around for first file
 	var end=bsearch(pageOffsets,fileEnd);
 	//in case of items with same value
 	//return the last one
-	while (pageOffsets[start+1]==pageOffsets[start]) start++; 
+	while (start && pageOffsets[start-1]==pageOffsets[start]) start--;	
+	
 	while (pageOffsets[end+1]==pageOffsets[end]) end++;
 
 	return {start:start,end:end};
@@ -4787,7 +4789,7 @@ var getFilePageOffsets=function(i) {
 var getFilePageNames=function(i) {
 	var range=getFileRange.apply(this,[i]);
 	var pageNames=this.get("pageNames");
-	return pageNames.slice(range.start,range.end);
+	return pageNames.slice(range.start,range.end+1);
 }
 var getDocument=function(filename,cb){
 	var engine=this;
@@ -10462,6 +10464,7 @@ var parseXML=function(buf, opts){
 	var texts=[], tags=[];
 	units.map(function(U,i){
 		var out=parseUnit(U[1]);
+		if (opts.trim) out.inscription=out.inscription.trim();
 		texts.push({n:U[0]||emptypagename,t:out.inscription});
 		tags.push(out.tags);
 	});
@@ -13418,12 +13421,14 @@ var docview = React.createClass({displayName: 'docview',
       this.setState({selstart:newstart,sellength:0});
     } else if (action=="getmarkupsat") {
       return this.getMarkupsAt(args[0]);
+/*      
     } else if (action=="copy") {
       if (typeof process=="undefined") return;
       var text=args[0];
       var gui = nodeRequire('nw.gui');
       var clipboard = gui.Clipboard.get();
       clipboard.set(text);
+*/
     } else if (action=="caretmoved") {
       this.showLinkButtons(args[0],args[1],args[2]);
     } else if (action=="openlink") { 
@@ -13467,7 +13472,12 @@ var docview = React.createClass({displayName: 'docview',
       var menu=this.refs.menu.getDOMNode();
       menu.classList.add("open");
       menu.style.left=x+'px';
-      menu.style.top=(y-this.getDOMNode().offsetTop)+'px'; 
+      var menuheight=menu.querySelector(".dropdown-menu").offsetHeight;
+      var yy=y-this.getDOMNode().offsetTop;
+      if (yy+menuheight>this.getDOMNode().offsetHeight) {
+        yy-=menuheight;
+      }
+      menu.style.top=yy+'px'; 
     }
   },
   onSelection:function(start,len,x,y,e) {
@@ -13672,7 +13682,7 @@ var surface = React.createClass({displayName: 'surface',
       }
     }
 
-    sel.empty();
+    //sel.empty();
     this.refs.surface.getDOMNode().focus();
     return {start:start,len:length};
   },
@@ -14160,15 +14170,12 @@ this.keydown=function(e) {
     else if (kc==13) enter();
     else if (kc==27) surface.closeinlinedialog();
     else if (validchar(kc)) {
-
-      if (kc==67 && e.ctrlKey) {
-        surface.props.action("copy",surface.selectedText());
-      } else {
+      //if (kc==67 && e.ctrlKey) {
+      //  surface.props.action("copy",surface.selectedText());
+      //} else {
         prevent=false;
-      }
-
+      //}
     }
-
     if (kc>=27&&kc<50)  updateSelStart();
     if (prevent) e.preventDefault();
 
@@ -14206,7 +14213,7 @@ var buildindex=Require("buildindex");
 var kde=Require("ksana-document").kde;
 var kse=Require("ksana-document").kse;
 var fileinstaller=Require("fileinstaller");
-
+var passwords=require("./passwd");
 var require_kdb=[{ 
   filename:"jiangkangyur.kdb"  , url:"http://ya.ksana.tw/kdb/jiangkangyur.kdb" , desc:"Jiangkangyur"
 }];  
@@ -14218,7 +14225,26 @@ window.document.oncontextmenu = function(e){
 window.onbeforeunload = function(event){
         return console.trace("reload")
 };
-
+    
+var login=function(opts){
+  opts=opts||{};
+  var password=opts.password||opts.pw;
+  var out={name:opts.name,error:"user not found"};
+  for (var i=0;i<passwords.length;i++) {
+    var u=passwords[i];
+    if (u.name==opts.name) {
+      if (u.pw!=password) {
+        out.error="wrong password";
+      } else {
+        out=JSON.parse(JSON.stringify(u));
+        delete out.pw;
+        out.error="";
+        return out;
+      }
+    }
+  }
+  return out;
+}
 var main = React.createClass({displayName: 'main', 
   searchtab:0,
   getProjects:function() {
@@ -14392,15 +14418,16 @@ var main = React.createClass({displayName: 'main',
     } else if (type=="login") {
       var name=args[0];
       var encrypted=args[1];
-      this.$ksana("login",{name:name,pw:encrypted}).done(function(res) {
-        if (res.error=="") {
+
+      var res=login({name:name,pw:encrypted});
+      if (res.error=="") {
           localStorage.setItem("user",JSON.stringify(res));
           this.user=JSON.parse(localStorage.getItem("user"));  
           this.setState({tabs:this.defaultMainTabs(),auxs:this.defaultAuxTabs()}); 
           this.enumProjects(this.state.settings);
-        }
-        this.setState({error:res.error});
-      });
+      }
+      this.setState({error:res.error});
+
     } else if (type=="logout") {
       localStorage.setItem("user","{}");
       this.user=JSON.parse(localStorage.getItem("user")); 
@@ -14517,6 +14544,17 @@ var main = React.createClass({displayName: 'main',
   }
 });
 module.exports=main;
+});
+require.register("workshop-main/passwd.js", function(exports, require, module){
+module.exports=[
+{"name":"yap","pw":"8585c356660baf3c4f9f3396527715a670f0b10f","admin":true}
+,{"name":"namgyal","pw":"7fe3c01c6cc5490b2b21aab40dbe0b4abba5eb57","admin":true}
+,{"name":"p1","pw":"da39a3ee5e6b4b0d3255bfef95601890afd80709"}
+,{"name":"p2","pw":"da39a3ee5e6b4b0d3255bfef95601890afd80709"}
+,{"name":"allen","pw":"4310a824f2ed266c968663459051cb38527a0eb8","admin":true}
+,{"name":"sam","pw":"13c4ae264262652180de775997619a76a0c56330","admin":true}
+,{"name":"den","pw":"0e1ddfe761f44f291037b4efb98a5f5f36ee23b3","admin":true}
+]
 });
 require.register("workshop-comp1/index.js", function(exports, require, module){
 /** @jsx React.DOM */
@@ -15436,7 +15474,8 @@ var M=Require("ksana-document").markups;
 var excerpt=Require("ksana-document").kse.excerpt;
 var docview_tibetan = React.createClass({displayName: 'docview_tibetan',
   getInitialState: function() {
-    var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
+    //var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
+    var pageid=1;
     return {doc:null,pageid:pageid};
   },
   shouldComponentUpdate:function(nextProps,nextState) {
@@ -15870,7 +15909,6 @@ var contextmenu_tibetan = React.createClass({displayName: 'contextmenu_tibetan',
         React.DOM.li(null, React.DOM.a( {role:"menuitem", tabIndex:"-1", href:"#", onClick:this.deleteText}, "Delete")),
         React.DOM.li(null, React.DOM.a( {role:"menuitem", tabIndex:"-1", href:"#", onClick:this.clearMarkup}, "Clear Markup")),
         React.DOM.li( {className:"divider"}),
-        React.DOM.li(null, React.DOM.a( {role:"menuitem", tabIndex:"-1", href:"#", onClick:this.copy}, "Copy")),
         React.DOM.li(null, React.DOM.a( {role:"menuitem", tabIndex:"-1", href:"#", onClick:this.searchkeyword}, "Search"))
       )
     ) 
@@ -15897,7 +15935,7 @@ var imageview = React.createClass({displayName: 'imageview',
     filename='00'+filename;
     filename=filename.substring(filename.length-4);
 
-    return this.props.project.filename+'.images/'
+    return "http://114.34.239.14/kangyur_images/lijiang/"
     +folder+'/'+folder+'-'+filename+".jpg";
   }, 
   adjustImage:function() {
@@ -17688,6 +17726,7 @@ require.alias("ksanaforge-docsurface/index.js", "workshop/deps/docsurface/index.
 require.alias("ksanaforge-docsurface/index.js", "docsurface/index.js");
 require.alias("ksanaforge-docsurface/index.js", "ksanaforge-docsurface/index.js");
 require.alias("workshop-main/index.js", "workshop/deps/main/index.js");
+require.alias("workshop-main/passwd.js", "workshop/deps/main/passwd.js");
 require.alias("workshop-main/index.js", "workshop/deps/main/index.js");
 require.alias("workshop-main/index.js", "main/index.js");
 require.alias("workshop-main/index.js", "workshop-main/index.js");
