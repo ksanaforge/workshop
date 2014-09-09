@@ -8,6 +8,7 @@ var imageview=Require("imageview");
 var D=Require("ksana-document").document;
 var M=Require("ksana-document").markups;
 var excerpt=Require("ksana-document").kse.excerpt;
+var persistentmarkup=Require("ksana-document").persistentmarkup;
 var docview_tibetan = React.createClass({
   getInitialState: function() {
     //var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
@@ -45,11 +46,10 @@ var docview_tibetan = React.createClass({
     var username=this.props.user.name;
     var markups=this.page().filterMarkup(function(m){return m.payload.author==username});
     var dbid=this.props.kde.dbname;
-    /*
-    this.$ksana("saveMarkup",{dbid:dbid,markups:markups,filename:filename,i:this.state.pageid } ,function(data){
+    
+    persistentmarkup.saveMarkup({dbid:dbid,markups:markups,filename:filename,i:this.state.pageid } ,function(data){
       doc.markClean();
     }); 
-*/
   },
   getActiveHits:function() { // get hits in this page and send to docsurface 
     if (!this.props.kde.activeQuery) return [];
@@ -123,38 +123,44 @@ var docview_tibetan = React.createClass({
   }, 
   loadDocument:function(fromserver) {
     return D.createDocument(fromserver.kd,fromserver.kdm);
-  },
+  }, 
   componentDidMount:function() {
     var fn=this.props.filename;
     var that=this;
-    this.props.kde.getDocument(fn,function(doc){
+    var pagecount=-this.props.kde.pageCount; //negative fetch all page
+    
+    that.props.kde.getDocument(fn,function(doc){
       doc.meta.filename=fn;
-      that.setState({doc:doc,activeHits:that.getActiveHits()});
+      persistentmarkup.loadMarkup(fn,-doc.pageCount,function(markups){
+        doc.addMarkups(markups);
+        that.setState({doc:doc,activeHits:that.getActiveHits()});  
+      });
+    });
+    if (this.props.tab ) this.props.tab.instance=this; // for tabui 
+
       /*
       that.$ksana("loadDocumentJSON",{project:that.props.project,file:that.props.filename}).done(function(data){
         doc.addMarkups(data.kdm);
         doc.meta.filename=this.props.filename;
         that.setState({doc:doc,activeHits:that.getActiveHits()});
       });
-*/
-    })
-    /*
     this.$ksana("loadDocumentJSON",{project:this.props.project,file:this.props.filename}).done(function(data){
       var doc=this.loadDocument(data);
       doc.meta.filename=this.props.filename;
       this.setState({doc:doc});
     });
-*/ 
-    if (this.props.tab ) this.props.tab.instance=this; // for tabui 
-  },
+  */ 
+    
+  },  
   page:function() {
     if (!this.state.doc) return null;
     var page=this.state.doc.getPage(this.state.pageid);
     var user=this.props.user.name;
+    var admin_viewable=this.props.project.tmpl.admin_viewable_tags || [];
     if (this.state.preview) {
       var suggestions=page.filterMarkup(function(m){
         var p=m.payload;
-        return (p.author==user && (p.type=="suggest" || p.type=="revision"));
+        return (p.author==user || admin_viewable.indexOf(p.type)>-1);
       });
       return page.preview({suggestions:suggestions});
     } else {

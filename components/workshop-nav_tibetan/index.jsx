@@ -64,7 +64,7 @@ var nav_tibetan = React.createClass({
     if (!this.props.page) return <div></div>
     return (
       <div className="row">
-      <div className="col-md-4">
+      <div className="col-md-5">
         <div className="input-group">
              <span className="input-group-btn">
               <button id="btnfirstpage" className="btn btn-default" onClick={this.firstPage}>First</button>
@@ -78,7 +78,7 @@ var nav_tibetan = React.createClass({
         </div>
       </div>
 
-      <div className="col-md-5">
+      <div className="col-md-2">
         {this.previewmenu()}
         {this.renderStatus()}
       </div>

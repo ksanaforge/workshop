@@ -1,4 +1,4 @@
-build
+build.*
 ksana_databases
 *.kdb
 *.kdbk

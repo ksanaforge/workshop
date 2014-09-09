@@ -22,7 +22,7 @@ var passwords=require("./passwd");
 var require_kdb=[{ 
   filename:"jiangkangyur.kdb"  , url:"http://ya.ksana.tw/kdb/jiangkangyur.kdb" , desc:"Jiangkangyur"
 }];  
-
+ 
 //disable system right click menu
 window.document.oncontextmenu = function(e){
     return false;
@@ -139,7 +139,7 @@ var main = React.createClass({
   },
   openfile:function(engine,proj,filename,pageid,template,linktarget,linksource) {
       var template=template || proj.tmpl.docview || "docview_default";
-      var docview=Require(template);
+      var docview=Require(template);      
       var tab=this.projecttab(proj.shortname);
       var obj={"id":"f_"+filename
         ,"caption":proj.shortname+'/'+filename
@@ -331,9 +331,12 @@ var main = React.createClass({
   },
   openFileinstaller:function(autoclose) {
     if (window.location.origin.indexOf("http://127.0.0.1")==0) {
-      require_kdb[0].url=window.location.origin+"/jiangkangyur.kdb";
+      for (var i=0;i<require_kdb.length;i++) {
+        require_kdb[i].url=window.location.origin+"/"+require_kdb[i].filename;  
+      }
     }
-    return <fileinstaller quota="512M" autoclose={autoclose} needed={require_kdb} 
+
+        return <fileinstaller quota="512M" autoclose={autoclose} needed={require_kdb} 
                      onReady={this.onReady}/>
   },
   render:function() {

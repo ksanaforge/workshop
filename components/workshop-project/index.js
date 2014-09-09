@@ -11,6 +11,7 @@ var tibetan={
 	,"contextmenu" : Require("contextmenu_tibetan")
 	,"layout":"horizontal"
 	,"navigator":"nav_tibetan"
+	,"admin_viewable_tags" :["comment"]
 }
 var chinese={
 	"docview":"docview_chinese",
