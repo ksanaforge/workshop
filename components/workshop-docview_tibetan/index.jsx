@@ -46,8 +46,10 @@ var docview_tibetan = React.createClass({
     var username=this.props.user.name;
     var markups=this.page().filterMarkup(function(m){return m.payload.author==username});
     var dbid=this.props.kde.dbname;
-    
-    persistentmarkup.saveMarkup({dbid:dbid,markups:markups,filename:filename,i:this.state.pageid } ,function(data){
+    if (!this.markupdb) {
+      this.markupdb=new PouchDB("M!"+dbid);
+    }    
+    persistentmarkup.saveMarkup({db:this.markupdb,markups:markups,filename:filename,i:this.state.pageid } ,function(data){
       doc.markClean();
     }); 
   },
@@ -128,10 +130,14 @@ var docview_tibetan = React.createClass({
     var fn=this.props.filename;
     var that=this;
     var pagecount=-this.props.kde.pageCount; //negative fetch all page
-    
+    if (!this.markupdb) {
+      this.markupdb=new PouchDB("M!"+this.props.kde.dbname);
+    }
+    var markupdb=this.markupdb;
+
     that.props.kde.getDocument(fn,function(doc){
       doc.meta.filename=fn;
-      persistentmarkup.loadMarkup(fn,-doc.pageCount,function(markups){
+      persistentmarkup.loadMarkup(markupdb,fn,-doc.pageCount,function(markups){
         doc.addMarkups(markups);
         that.setState({doc:doc,activeHits:that.getActiveHits()});  
       });

@@ -1,11 +1,11 @@
 CACHE MANIFEST
-# Updated on Tue Sep 09 2014 18:58:06 GMT+0800 (Taipei Standard Time)
+# Updated on Tue Sep 09 2014 20:10:13 GMT+0800 (Taipei Standard Time)
 /index.html
 /build.js 
 /build.css
 /jquery.js
 /react-with-addons.js
+/pouchdb-3.0.4.min.js
 NETWORK:
 /jiangkangyur.kdb
 http://ya.ksana.tw/kdb/jiangkangyur.kdb
-*
