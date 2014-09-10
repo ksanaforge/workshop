@@ -47,9 +47,9 @@
     "workshop/inlinedialog_makelink": "*",
     "workshop/filelist": "*",
     "ksanaforge/fileinstaller": "*",
-    "ksanaforge/checkbrowser":"*",
-    "ksanaforge/htmlfs":"*"
-
+    "ksanaforge/checkbrowser": "*",
+    "ksanaforge/htmlfs": "*",
+    "workshop/element_comment_tibetan": "*"
   },
   "development": {},
   "paths": [
@@ -57,8 +57,7 @@
     "../components",
     "../node_modules/"
   ],
-  "local": [
-  ],
+  "local": [],
   "license": "MIT",
   "main": "index.js",
   "scripts": [

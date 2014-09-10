@@ -12,6 +12,9 @@ var tibetan={
 	,"layout":"horizontal"
 	,"navigator":"nav_tibetan"
 	,"admin_viewable_tags" :["comment"]
+	,"surface_elements": {
+		"comment" : Require("element_comment_tibetan")
+	}
 }
 var chinese={
 	"docview":"docview_chinese",
