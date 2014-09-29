@@ -11,11 +11,11 @@ var imageview = React.createClass({
     var folder=s[0];
     var filename=s[1];
     folder='00'+folder;
-    folder=folder.substring(folder.length-4);
+    folder=folder.substring(folder.length-3);
     filename='00'+filename;
     filename=filename.substring(filename.length-4);
 
-    return "http://114.34.239.14/kangyur_images/lijiang/"
+    return "http://dharma-treasure.org/kangyur_images/lijiang/"
     +folder+'/'+folder+'-'+filename+".jpg";
   }, 
   adjustImage:function() {
