@@ -3,7 +3,7 @@
 //var othercomponent=Require("other"); 
 var inlinedialog_comment_tibetan = React.createClass({
   apply:function(e) {
-    this.markup().hint=this.refs.comment.getDOMNode().value;
+    this.markup().text=this.refs.comment.getDOMNode().value;
     this.props.action("markupupdate");
   },
   keyup:function(e) {
@@ -25,10 +25,7 @@ var inlinedialog_comment_tibetan = React.createClass({
     return (
       <div onKeyUp={this.keyup} className="inlinedialog well">
         <span>Comment:</span><span>{this.props.text}</span>
-        
-        
-        <textarea rows="5" ref="comment" className="form-control"  defaultValue={this.markup().hint}></textarea>
-
+        <textarea rows="5" ref="comment" className="form-control"  defaultValue={this.markup().text}></textarea>
         <span className="row">
           <span className="col-sm-4">
             <button className="form-control btn btn-danger" onClick={this.remove}>Remove</button>

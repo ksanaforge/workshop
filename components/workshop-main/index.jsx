@@ -332,7 +332,7 @@ var main = React.createClass({
   openFileinstaller:function(autoclose) {
     if (window.location.origin.indexOf("http://127.0.0.1")==0) {
       for (var i=0;i<require_kdb.length;i++) {
-        require_kdb[i].url=window.location.origin+"/"+require_kdb[i].filename;  
+        require_kdb[i].url=window.location.origin+window.location.pathname+require_kdb[i].filename;  
       }
     }
 
