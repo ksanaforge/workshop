@@ -1,8 +1,0 @@
-.contextmenu {}
-#contextMenu { display:none;}
-
-span.inlinedialog {display: none;position:relative;left:-5px;top:10px}
-span.inlinedialog div {
-  position:absolute;
-	top:0px;left:-1px;width:400px
-}
