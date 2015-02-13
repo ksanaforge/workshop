@@ -8,7 +8,7 @@ var D=Require("ksana-document").document;
 var M=Require("ksana-document").markups;
 var excerpt=Require("ksana-document").kse.excerpt;
 var persistentmarkup=Require("ksana-document").persistentmarkup;
-var Docview_tibetan = React.createClass({
+var Docview_tibetan = React.createClass({displayName: "Docview_tibetan",
   getInitialState: function() {
     //var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
     var pageid=1;
@@ -202,22 +202,22 @@ var Docview_tibetan = React.createClass({
   },
   render: function() {
     localStorage.setItem(this.storekey(),this.state.pageid);
-    if (!this.state.doc) return <span></span>
+    if (!this.state.doc) return React.createElement("span", null)
     return ( 
-      <div className="docview_tibetan">
-        {this.nav()}
-        <Docview ref="docview"
-            page={this.page()}
-            pageid={this.state.pageid}
-            user={this.props.user}
-            template={this.props.project.tmpl}
-            customfunc={this.props.kde.customfunc}
-            styles={styles}
-            hits={this.state.activeHits}
-            autoselect={this.props.selection}
-            action={this.action}
-          ></Docview>
-      </div>
+      React.createElement("div", {className: "docview_tibetan"}, 
+        this.nav(), 
+        React.createElement(Docview, {ref: "docview", 
+            page: this.page(), 
+            pageid: this.state.pageid, 
+            user: this.props.user, 
+            template: this.props.project.tmpl, 
+            customfunc: this.props.kde.customfunc, 
+            styles: styles, 
+            hits: this.state.activeHits, 
+            autoselect: this.props.selection, 
+            action: this.action
+          })
+      )
     );
   }
 });

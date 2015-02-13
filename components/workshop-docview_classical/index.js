@@ -5,7 +5,7 @@ var D=Require("ksana-document").document;
 var contentnavigator=Require("contentnavigator");
 var excerpt=Require("ksana-document").kse.excerpt;
 
-var docview_classical = React.createClass({
+var docview_classical = React.createClass({displayName: "docview_classical",
   getInitialState: function() {
     var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
     return {doc:null,pageid:pageid};
@@ -196,26 +196,26 @@ var docview_classical = React.createClass({
   },
   render: function() {
     localStorage.setItem(this.storekey(),this.state.pageid);
-    if (!this.state.doc) return <span></span>
+    if (!this.state.doc) return React.createElement("span", null)
     return ( 
-      <div>
-        {this.nav()}
-        <Docview ref="docview"
-            page={this.page()} 
-            pageid={this.state.pageid}
-            preview={this.state.preview}
-            user={this.props.user}
-            template={this.props.project.tmpl}
-            customfunc={this.props.kde.customfunc}
-            styles={styles}
-            linksource={this.props.linksource}
-	      linktarget={this.props.linktarget}
-            action={this.action}
-            hits={this.getActiveHits()}
-            kde={this.props.kde}
+      React.createElement("div", null, 
+        this.nav(), 
+        React.createElement(Docview, {ref: "docview", 
+            page: this.page(), 
+            pageid: this.state.pageid, 
+            preview: this.state.preview, 
+            user: this.props.user, 
+            template: this.props.project.tmpl, 
+            customfunc: this.props.kde.customfunc, 
+            styles: styles, 
+            linksource: this.props.linksource, 
+	      linktarget: this.props.linktarget, 
+            action: this.action, 
+            hits: this.getActiveHits(), 
+            kde: this.props.kde}
 
-          />
-      </div>
+          )
+      )
     );
   }
 });

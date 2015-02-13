@@ -5,7 +5,11 @@
   "version": "0.0.1",
   "keywords": [],
   "dependencies": {
-    "ksana/document": "*",
+    "ksana/jsonrom": "*",
+    "ksana/analyzer": "*",
+    "ksana/database": "*",
+    "ksana/search": "*",
+    "ksana/tibetan": "*",
     "ksanaforge/boot": "*",
     "ksanaforge/tabui": "*",
     "brighthas/bootstrap": "*",

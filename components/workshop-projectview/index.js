@@ -3,12 +3,12 @@
 TODO save folder name and file name string in localstorage, instead of number
 */
 
-var FileControls=React.createClass({
+var FileControls=React.createClass({displayName: "FileControls",
   render:function() {
-    return <button className="btn">Create New File</button>
+    return React.createElement("button", {className: "btn"}, "Create New File")
   }
 });
-var FolderList = React.createClass({
+var FolderList = React.createClass({displayName: "FolderList",
   getInitialState:function() {
     return {selected:0};
   },
@@ -29,24 +29,24 @@ var FolderList = React.createClass({
       var hit="";
       if (this.props.hits&&this.props.hits[i]) hit=this.props.hits[i];
       if (i==this.state.selected) cls="success"; else cls="";
-      out.push(<tr key={'d'+i} className={cls} onClick={this.select} data-i={i}>
-        <td>{f}
-        <span className="label label-info">{hit}</span>
-        </td>
-        </tr>);
+      out.push(React.createElement("tr", {key: 'd'+i, className: cls, onClick: this.select, "data-i": i}, 
+        React.createElement("td", null, f, 
+        React.createElement("span", {className: "label label-info"}, hit)
+        )
+        ));
     };
     return out;
   },
 
   render:function() {
-    return <div className="folderList">
-    <table className="table table-hover">
-    <tbody>{this.renderFolders()}</tbody>
-    </table>
-    </div>;
+    return React.createElement("div", {className: "folderList"}, 
+    React.createElement("table", {className: "table table-hover"}, 
+    React.createElement("tbody", null, this.renderFolders())
+    )
+    );
   }
 });
-var FileList = React.createClass({
+var FileList = React.createClass({displayName: "FileList",
   getInitialState:function() {
     return {selected:0,hovered:-1};
   },
@@ -90,17 +90,17 @@ var FileList = React.createClass({
       if (this.props.hits) hit=this.props.hits[filestart+i]?this.props.hits[filestart+i].length:"";
       if (!hit) hit="";
       if (i==this.state.selected) cls="success"; else cls="";
-      out.push(<tr key={'f'+i} onClick={this.select} 
-           onMouseEnter={this.hoverFile} onMouseLeave={this.leave}
-           className={cls} data-i={i}>
-        <td onDoubleClick={this.openfile}>{f.substring(0,f.length-4)}
+      out.push(React.createElement("tr", {key: 'f'+i, onClick: this.select, 
+           onMouseEnter: this.hoverFile, onMouseLeave: this.leave, 
+           className: cls, "data-i": i}, 
+        React.createElement("td", {onDoubleClick: this.openfile}, f.substring(0,f.length-4), 
         
-        <span className="label label-info">{hit}</span>
-        <span className="pull-right" style={{visibility:this.state.hovered==i?"":"hidden"}}>
-        <button className="btn btn-success"  onClick={this.openfile}>Open</button>
-        </span>
-        </td>
-        </tr>);
+        React.createElement("span", {className: "label label-info"}, hit), 
+        React.createElement("span", {className: "pull-right", style: {visibility:this.state.hovered==i?"":"hidden"}}, 
+        React.createElement("button", {className: "btn btn-success", onClick: this.openfile}, "Open")
+        )
+        )
+        ));
     };
     return out;
   }, 
@@ -112,12 +112,12 @@ var FileList = React.createClass({
     this.setState({hovered:hovered});
   },
   render:function() {
-    return <div  className="fileList">
-    <table className="table table-hover">
-    <tbody>{this.renderFiles()}</tbody></table></div>;
+    return React.createElement("div", {className: "fileList"}, 
+    React.createElement("table", {className: "table table-hover"}, 
+    React.createElement("tbody", null, this.renderFiles())));
   }
 });
-var projectview = React.createClass({
+var projectview = React.createClass({displayName: "projectview",
   getInitialState: function() {
     return {bar: "world",folders:[],files:[],selectedFile:0};
   },
@@ -233,20 +233,20 @@ var projectview = React.createClass({
   },
   render: function() {
     return (
-      <div className="projectview">
-        <div className="row">
-        <div className="col-md-3">
-        <FolderList ref="folderList" folders={this.state.folders} onSelectFolder={this.selectFolder} hits={this.getFolderHits()} />
-        </div>
-        <div className="col-md-9">
-        <FileControls/>
-        <FileList ref="fileList" className="fileList" 
-           selected={this.state.selectedFile} 
-            files={this.state.files} 
-            onSelectFile={this.selectFile} onOpenFile={this.openFile} start={this.state.filestart} hits={this.getFileHits()}/>
-        </div>
-        </div>
-      </div>
+      React.createElement("div", {className: "projectview"}, 
+        React.createElement("div", {className: "row"}, 
+        React.createElement("div", {className: "col-md-3"}, 
+        React.createElement(FolderList, {ref: "folderList", folders: this.state.folders, onSelectFolder: this.selectFolder, hits: this.getFolderHits()})
+        ), 
+        React.createElement("div", {className: "col-md-9"}, 
+        React.createElement(FileControls, null), 
+        React.createElement(FileList, {ref: "fileList", className: "fileList", 
+           selected: this.state.selectedFile, 
+            files: this.state.files, 
+            onSelectFile: this.selectFile, onOpenFile: this.openFile, start: this.state.filestart, hits: this.getFileHits()})
+        )
+        )
+      )
     );   
   }
 });

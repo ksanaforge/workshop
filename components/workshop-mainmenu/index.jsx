@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 
-var contentnavigator=Require("contentnavigator"); 
+var Contentnavigator=Require("contentnavigator"); 
 var BTN=React.createClass({
   render:function() {
     return <button className="btn btn-primary" onClick={this.props.onClick}>
@@ -34,7 +34,7 @@ var mainmenu = React.createClass({
 
         <input style={{"display":"none"}} ref="fileDialog" type="file" 
         accept=".json,.js" />
-        <contentnavigator action={this.props.action}/>
+        <Contentnavigator action={this.props.action}/>
         
         <BTN caption="Open File" onClick={this.chooseFile}/>
         <BTN caption="Open Markup" onClick={this.chooseFile}/>

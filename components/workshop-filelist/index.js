@@ -2,7 +2,7 @@
 
 //var othercomponent=Require("other"); 
 
-var FileListing = React.createClass({
+var FileListing = React.createClass({displayName: "FileListing",
   getInitialState:function() {
     return {selected:0,hovered:-1};
   },
@@ -46,17 +46,17 @@ var FileListing = React.createClass({
       if (this.props.hits) hit=this.props.hits[filestart+i]?this.props.hits[filestart+i].length:"";
       if (!hit) hit="";
       if (i==this.state.selected) cls="success"; else cls="";
-      out.push(<tr key={'f'+i} onClick={this.select} 
-           onMouseEnter={this.hoverFile} onMouseLeave={this.leave}
-           className={cls} data-i={i}>
-        <td onDoubleClick={this.openfile}>{f.substring(0,f.length-4)}
+      out.push(React.createElement("tr", {key: 'f'+i, onClick: this.select, 
+           onMouseEnter: this.hoverFile, onMouseLeave: this.leave, 
+           className: cls, "data-i": i}, 
+        React.createElement("td", {onDoubleClick: this.openfile}, f.substring(0,f.length-4), 
         
-        <span className="label label-info">{hit}</span>
-        <span className="pull-right" style={{visibility:this.state.hovered==i?"":"hidden"}}>
-        <button className="btn btn-success"  onClick={this.openfile}>Open</button>
-        </span>
-        </td>
-        </tr>);
+        React.createElement("span", {className: "label label-info"}, hit), 
+        React.createElement("span", {className: "pull-right", style: {visibility:this.state.hovered==i?"":"hidden"}}, 
+        React.createElement("button", {className: "btn btn-success", onClick: this.openfile}, "Open")
+        )
+        )
+        ));
     };
     return out;
   }, 
@@ -68,13 +68,13 @@ var FileListing = React.createClass({
     this.setState({hovered:hovered});
   },
   render:function() {
-    return <div  className="fileList">
-    <table className="table table-hover">
-    <tbody>{this.renderFiles()}</tbody></table></div>;
+    return React.createElement("div", {className: "fileList"}, 
+    React.createElement("table", {className: "table table-hover"}, 
+    React.createElement("tbody", null, this.renderFiles())));
   }
 });
 
-var filelist = React.createClass({
+var filelist = React.createClass({displayName: "filelist",
   getInitialState: function() {
     return {bar: "world",files:[],selectedFile:0};
   },
@@ -108,15 +108,15 @@ var filelist = React.createClass({
   },
   render: function() {
     return (
-      <div>
-        <FileListing files={this.state.files} 
-            selected={this.state.selectedFile} 
-            onSelectFile={this.selectFile} 
-            onOpenFile={this.openFile} 
-            start={this.state.filestart} 
-            hits={this.getFileHits()}
-        />
-      </div>
+      React.createElement("div", null, 
+        React.createElement(FileListing, {files: this.state.files, 
+            selected: this.state.selectedFile, 
+            onSelectFile: this.selectFile, 
+            onOpenFile: this.openFile, 
+            start: this.state.filestart, 
+            hits: this.getFileHits()}
+        )
+      )
     );
   },
   componentDidMount:function() {

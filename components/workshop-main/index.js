@@ -50,7 +50,7 @@ var login=function(opts){
   }
   return out;
 }
-var main = React.createClass({ 
+var main = React.createClass({displayName: "main", 
   searchtab:0,
   getProjects:function() {
     return this.state.projects?this.state.projects:[];
@@ -336,18 +336,18 @@ var main = React.createClass({
       }
     }
 
-        return <Fileinstaller quota="512M" autoclose={autoclose} needed={require_kdb} 
-                     onReady={this.onReady}/>
+        return React.createElement(Fileinstaller, {quota: "512M", autoclose: autoclose, needed: require_kdb, 
+                     onReady: this.onReady})
   },
   render:function() {
     if (!this.state.quota) { // install required db
         return this.openFileinstaller(true);
     } else { 
-      return <div style={{"width":"100%"}}>
-      <Tabui ref="maintab" lastfile={this.state.lastfile} tabs={this.state.tabs}/>
-      <Tabui ref="auxtab" tabs={this.state.auxs}/>
-      <Buildindex ref="builddialog"/>
-      </div>
+      return React.createElement("div", {style: {"width":"100%"}}, 
+      React.createElement(Tabui, {ref: "maintab", lastfile: this.state.lastfile, tabs: this.state.tabs}), 
+      React.createElement(Tabui, {ref: "auxtab", tabs: this.state.auxs}), 
+      React.createElement(Buildindex, {ref: "builddialog"})
+      )
     }
   }
 });
