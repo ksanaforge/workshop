@@ -50,7 +50,7 @@ var searchmain = React.createClass({
     var i=parseInt(e.target.attributes['data-i'].value);
     var excerpt=this.state.output.excerpt[i];
     var fileNames=this.db.get("filenames");
-    this.props.action("openfile",this.props.db, fileNames[excerpt.file],excerpt.page+1 );
+    this.props.action("openfile",this.props.db, fileNames[excerpt.file],excerpt.seg+1 );
   },
   renderExcerpt:function(excerpt,i) {
     return <div>

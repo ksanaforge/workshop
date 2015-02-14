@@ -290,6 +290,7 @@ var Surface = React.createClass({
     this.offsets=offsets;
     if (!TK || !TK.length) return [] ;
     var xml=[], hits=this.props.hits ||[], nhit=0, voff=0;
+    //hits format [vpos, phrase_width, phrase_id]
     var tagset={};//tags used in the page, comma to seperate overlap tag 
     var selstart=opts.selstart||0,sellength=opts.sellength||0;
     var viewonlys = this.prepareViewonly(page);
@@ -301,9 +302,9 @@ var Surface = React.createClass({
       var M=this.getMarkupsAt(offsets[i]);
       if (offsets[i]>=selstart && offsets[i]<selstart+sellength) extraclass+=' selected';
       if (nhit<hits.length){ 
-        if (voff>=hits[nhit][0]&& voff<hits[nhit][0]+hits[nhit][2] ) {
-          extraclass+=' hl'+hits[nhit][1];
-        } else if (voff>=hits[nhit][0]+hits[nhit][2]) {
+        if (voff>=hits[nhit][0]&& voff<hits[nhit][0]+hits[nhit][1] ) {
+          extraclass+=' hl'+hits[nhit][2];
+        } else if (voff>=hits[nhit][0]+hits[nhit][1]) {
           nhit++;
         }
       }

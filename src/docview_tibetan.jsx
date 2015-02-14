@@ -8,6 +8,8 @@ var excerpt=require("ksana-search").excerpt;
 var isSkip=require("ksana-analyzer").getAPI("tibetan1").isSkip;
 var legacy2014=require("./legacy2014");
 var persistentmarkup=require("./persistentmarkup_pouchdb");
+var Nav_tibetan=require("./nav_tibetan.jsx");
+
 var Docview_tibetan = React.createClass({
   getInitialState: function() {
     //var pageid=parseInt(this.props.pageid||localStorage.getItem(this.storekey())) || 1;
@@ -16,7 +18,7 @@ var Docview_tibetan = React.createClass({
   },
   shouldComponentUpdate:function(nextProps,nextState) {
       var samehit=JSON.stringify(this.state.activeHits)==JSON.stringify(nextState.activeHits);
-
+      var r=true;
       if (nextProps.pageid!=this.props.pageid) {
         nextState.pageid=nextProps.pageid;
       } 
@@ -33,7 +35,7 @@ var Docview_tibetan = React.createClass({
         },100)
       }
 
-      return true;
+      return r;
   },
   storekey:function() {
     return this.props.project.shortname+'.pageid';
@@ -54,13 +56,17 @@ var Docview_tibetan = React.createClass({
   },
   getActiveHits:function() { // get hits in this page and send to docsurface 
     if (!this.props.kde.activeQuery) return [];
-    var po=this.props.kde.segOffset(this.getPageName());
+    //var po=this.props.kde.segOffset(this.getPageName());
+    var nfile=this.props.kde.findFile(this.props.filename);
+    var segoffsets=this.props.kde.getFileSegOffsets(nfile);
+
+    var start=segoffsets[this.state.pageid-2];
+    var end=segoffsets[this.state.pageid-1];
     var Q=this.props.kde.activeQuery;
     var relative_hits=[];
-    if (po) {
-        var absolute_hits=excerpt.hitInRange(Q,po.start,po.end);
-        var relative_hits=absolute_hits.map(function(h){  return [ h[0]-po.start,h[1],h[2]]; });
-    }
+    var absolute_hits=excerpt.hitInRange(Q,start,end); //vpos, phrase_width, phrase_id
+    var relative_hits=absolute_hits.map(function(h){  return [ h[0]-start,h[1],h[2]]; });
+
     return relative_hits;
   },
   action:function(type) {
@@ -198,8 +204,8 @@ var Docview_tibetan = React.createClass({
   nav:function() {
     var params={ref:"navigator" ,user:this.props.user, preview:this.state.preview,
       page:this.page(), action:this.action,selecting:this.state.selecting};
-      var ele=require("./nav_tibetan.jsx")
-      return React.createElement(ele,params);
+
+      return React.createElement(Nav_tibetan,params);
       //return Require(this.props.project.tmpl.navigator)(params);
   },
   render: function() {
