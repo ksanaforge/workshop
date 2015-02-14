@@ -54,7 +54,7 @@ var Docview_tibetan = React.createClass({
   },
   getActiveHits:function() { // get hits in this page and send to docsurface 
     if (!this.props.kde.activeQuery) return [];
-    var po=this.props.kde.pageOffset(this.getPageName());
+    var po=this.props.kde.segOffset(this.getPageName());
     var Q=this.props.kde.activeQuery;
     var relative_hits=[];
     if (po) {

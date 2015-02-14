@@ -19,7 +19,7 @@ var searchmain = React.createClass({
   dosearch:function(e) {
     if (!this.db)return;
 
-    var range={maxhit:500,start:1,end:this.db.get("meta").vsize};
+    var range={maxhit:100,start:1,end:this.db.get("meta").vsize};
     if (this.activeFolder!=this.db.activeFolder && this.db.activeFolder) {
       range=this.db.folderOffset(this.db.activeFolder);
       this.activeFolder=this.db.activeFolder;
@@ -36,7 +36,7 @@ var searchmain = React.createClass({
     }
 
     var that=this;
-    kse.search(this.db,this.tofind,{range:range},function(data){
+    kse.search(this.db,this.tofind,{range:range},function(err,data){
       that.db.activeQuery=data;
       setTimeout(function(){  
         that.setState({output:data}); 
@@ -49,12 +49,12 @@ var searchmain = React.createClass({
   openpage:function(e) {
     var i=parseInt(e.target.attributes['data-i'].value);
     var excerpt=this.state.output.excerpt[i];
-    var fileNames=this.db.get("fileNames");
+    var fileNames=this.db.get("filenames");
     this.props.action("openfile",this.props.db, fileNames[excerpt.file],excerpt.page+1 );
   },
   renderExcerpt:function(excerpt,i) {
     return <div>
-      <a data-i={i} onClick={this.openpage} className="btn btn-link">{"["+excerpt.pagename+"]"}</a>
+      <a data-i={i} onClick={this.openpage} className="btn btn-link">{"["+excerpt.segname+"]"}</a>
       <span className="excerpt" dangerouslySetInnerHTML={{__html: excerpt.text}} ></span>
     </div>; 
   }, 
@@ -66,7 +66,7 @@ var searchmain = React.createClass({
   componentWillMount:function() {
     if (!this.props.db) return;
     if (this.db) return; //
-    kde.open(this.props.db,function(db){
+    kde.open(this.props.db,function(err,db){
       this.db=db;
     },this);
   },
