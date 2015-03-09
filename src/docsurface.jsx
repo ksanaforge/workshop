@@ -181,7 +181,7 @@ var Surface = React.createClass({
           sel.start=this.props.selstart;
           sel.len=this.props.sellength;
         } 
-      } else if (sel.start>0) {
+      } else if (sel.start>-1) {
         var next=this.nextTokenStart(sel.start);
         if (next) {
           sel.len=next-sel.start;
@@ -283,7 +283,7 @@ var Surface = React.createClass({
     if (!page) return [];
     var inscription=page.inscription;
 
-    var res=this.props.template.tokenize(inscription);
+    var res=this.props.template.tokenize(inscription+"　");
     var isSkip=this.props.isSkip;
     var TK=res.tokens;
     var offsets=res.offsets;
