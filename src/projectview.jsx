@@ -42,6 +42,7 @@ var FolderList = React.createClass({
     </div>;
   }
 });
+
 var FileList = React.createClass({
   getInitialState:function() {
     return {selected:0,hovered:-1};
@@ -79,6 +80,15 @@ var FileList = React.createClass({
     this.setState({selected:i});
     this.props.onOpenFile(i);
   },
+  getSegNameInFile:function(i) {
+      var segnames=this.props.kde.getFileSegNames(this.props.start+i);
+      var start=segnames[0];
+      var end=segnames[segnames.length-1];
+      if (start=="_") {
+        start=segnames[1]; //ignore empty starting page _
+      }
+      return {start:start,end: end}
+  },  
   renderFiles:function() {
     var cls="",out=[], filestart=this.props.start;
     for (var i=0;i<this.props.files.length;i++) {
@@ -86,13 +96,17 @@ var FileList = React.createClass({
       if (this.props.hits) hit=this.props.hits[filestart+i]?this.props.hits[filestart+i].length:"";
       if (!hit) hit="";
       if (i==this.state.selected) cls="success"; else cls="";
+      var segnames=this.getSegNameInFile(i);
+
       out.push(<tr key={'f'+i} onClick={this.select} 
            onMouseEnter={this.hoverFile} onMouseLeave={this.leave}
            className={cls} data-i={i}>
         <td onDoubleClick={this.openfile}>{f.substring(0,f.length-4)}
         
         <span className="label label-info">{hit}</span>
+        <span>,Page:{segnames.start}-{segnames.end}</span>
         <span className="pull-right" style={{visibility:this.state.hovered==i?"":"hidden"}}>
+        
         <button className="btn btn-success"  onClick={this.openfile}>Open</button>
         </span>
         </td>
@@ -239,6 +253,7 @@ var projectview = React.createClass({
         <FileList ref="fileList" className="fileList" 
            selected={this.state.selectedFile} 
             files={this.state.files} 
+            kde={this.props.kde}
             onSelectFile={this.selectFile} onOpenFile={this.openFile} start={this.state.filestart} hits={this.getFileHits()}/>
         </div>
         </div>
